@@ -1,7 +1,7 @@
 #pragma once
 
 // DOUBLE CRTP COMBO !!! 
-// Where is your Java and C# now?
+// Where is your Java now?
 
 // STL
 #include <cassert>
@@ -11,7 +11,7 @@
 #include <boost/core/demangle.hpp>
 
 // Project includes
-#include "../../logger/include/logger.h"
+#include <logger>
 
 template<typename T>
 class visits : private Log< visits<T> >

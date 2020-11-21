@@ -15,3 +15,5 @@ foreach(ss ${SUBDIRS})
 		add_subdirectory(${ss})
 	endif()
 endforeach()
+
+SUBDIR_INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} )
