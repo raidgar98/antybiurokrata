@@ -4,3 +4,6 @@
 [submodule "libraries/submodules/rang"]
 	path = libraries/submodules/rang
 	url = https://github.com/raidgar98/rang.git
+[submodule "libraries/submodules/poco"]
+	path = libraries/submodules/poco
+	url = https://github.com/pocoproject/poco.git

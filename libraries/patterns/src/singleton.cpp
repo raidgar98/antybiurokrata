@@ -1,1 +1,1 @@
-#include "../include/singleton.hpp"
+#include <patterns/singleton.hpp>
