@@ -17,16 +17,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
 
-set(TS_FILES antybiurokrata_pl_PL.ts)
-
 add_executable(antybiurokrata
     main.cpp
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
-    ${TS_FILES}
 )
 
 target_link_libraries(antybiurokrata PRIVATE Qt5::Widgets)
-
-qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})

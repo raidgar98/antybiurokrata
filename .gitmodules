@@ -1,0 +1,3 @@
+[submodule "libraries/sneaky_pointer"]
+	path = libraries/sneaky_pointer
+	url = https://github.com/raidgar98/sneaky_pointer.git
