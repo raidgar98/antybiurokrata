@@ -1,0 +1,6 @@
+[submodule "libraries/submodules/sneaky_pointer"]
+	path = libraries/submodules/sneaky_pointer
+	url = https://github.com/raidgar98/sneaky_pointer.git
+[submodule "libraries/submodules/rang"]
+	path = libraries/submodules/rang
+	url = https://github.com/raidgar98/rang.git
