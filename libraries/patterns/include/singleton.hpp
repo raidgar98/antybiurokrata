@@ -1,7 +1,6 @@
 #pragma once
 
-// Project includes
-#include "../../types.hpp"
+#include <memory>
 
 // If you need more singletons of same type, change second parameter of template
 template<typename T, typename _ = void>

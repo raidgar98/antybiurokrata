@@ -1,27 +1,48 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.1)
 
 project(antybiurokrata LANGUAGES CXX)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+# prevent build in source
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+	message(FATAL_ERROR "In-source builds are not allowed, remove CMakeFiles and CMakeCache.txt")
+endif()
 
+# update submodules
+find_program(GIT_PROGRAM git)
+if(NOT GIT_PROGRAM)
+	message(WARNING "git not found, make sure that submodules are updated")
+else()
+	message("git found, updating submodules")
+	execute_process(COMMAND ${GIT_PROGRAM} submodule update --init --recursive WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} )
+endif()
+
+# CMAKE paths
+set(CUSTOM_CMAKE_SCRIPTS_DIR ${PROJECT_SOURCE_DIR}/cmake)
+
+# Qt configs
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+# C++ setup
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# QtCreator supports the following variables for Android, which are identical to qmake Android variables.
-# Check http://doc.qt.io/qt-5/deployment-android.html for more information.
-# They need to be set before the find_package(Qt5 ...) call.
+# setup threads
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
-find_package(Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
+find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+
+add_subdirectory(libraries)
 
 add_executable(antybiurokrata
-    main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
+	main.cpp
+	mainwindow.cpp
+	mainwindow.h
+	mainwindow.ui
 )
 
-target_link_libraries(antybiurokrata PRIVATE Qt5::Widgets)
+target_link_libraries(antybiurokrata PRIVATE Qt5::Widgets sneaky_pointer)

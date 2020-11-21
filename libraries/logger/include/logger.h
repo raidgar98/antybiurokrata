@@ -6,7 +6,6 @@
 #include <sstream>
 
 // submodule
-// #include "../../rang/include/rang.hpp"
 #include <rang.hpp>
 
 // Boost
