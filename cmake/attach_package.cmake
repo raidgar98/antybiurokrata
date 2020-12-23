@@ -6,3 +6,10 @@ MACRO(attach_boost)
 	find_package(Boost 1.70 REQUIRED COMPONENTS ${variadic} )
 
 ENDMACRO()
+
+MACRO(attach_qt)
+
+	set(variadic ${ARGN})
+	find_package(Qt5 COMPONENTS Core Widgets ${variadic} REQUIRED )
+
+ENDMACRO()

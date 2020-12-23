@@ -19,7 +19,7 @@
 #define ENUM_CLASS_WITH_STRING_CONVERSION(name, parent, invalid, enumerators) \
 	enum class name : parent                                                  \
 	{                                                                         \
-		invalid = parent(),                                                           \
+		invalid = parent(),                                                   \
 		BOOST_PP_SEQ_ENUM(enumerators)                                        \
 	};                                                                        \
                                                                               \
@@ -29,7 +29,7 @@
 			X_ENUM_WITH_STRING_CONVERSION_FROMSTRING_CASE,                    \
 			name,                                                             \
 			enumerators)                                                      \
-		return name :: invalid;                                                       \
+		return name :: invalid;                                               \
 	}                                                                         \
                                                                               \
 	inline std::string to_string(name v)                                      \

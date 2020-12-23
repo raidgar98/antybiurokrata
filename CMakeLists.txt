@@ -20,6 +20,9 @@ endif()
 # CMAKE paths
 set(CUSTOM_CMAKE_SCRIPTS_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
+#includes
+include("$CUSTOM_CMAKE_SCRIPTS_DIR/attach_package.cmake")
+
 # Qt configs
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOUIC ON)
@@ -34,9 +37,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
-
 add_subdirectory(libraries)
+add_subdirectory(windows)
 
 add_executable(antybiurokrata
 	main.cpp
@@ -45,4 +47,4 @@ add_executable(antybiurokrata
 	mainwindow.ui
 )
 
-target_link_libraries(antybiurokrata PRIVATE Qt5::Widgets sneaky_pointer)
+target_link_libraries(antybiurokrata PRIVATE Qt5::Widgets)
