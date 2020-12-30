@@ -1,5 +1,7 @@
 #include <mainwindow/mainwindow.h>
-#include "../ui_mainwindow.h"
+#include "ui_mainwindow.h"
+
+#include <info_dialog/info_dialog.h>
 
 #include <iostream>
 
@@ -18,5 +20,7 @@ MainWindow::~MainWindow()
 void MainWindow::on_bt_1_clicked(bool checked)
 {
     std::cout << "Eluwina !!! " << checked << std::endl;
+    std::unique_ptr<info_dialog> ptr{ new info_dialog{ this } };
+    ptr->exec();
 }
 

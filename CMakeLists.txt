@@ -9,13 +9,13 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 endif()
 
 # update submodules
-# find_program(GIT_PROGRAM git)
-# if(NOT GIT_PROGRAM)
-# 	message(WARNING "git not found, make sure that submodules are updated")
-# else()
-# 	message("git found, updating submodules")
-# 	execute_process(COMMAND ${GIT_PROGRAM} submodule update --init --recursive WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} )
-# endif()
+find_program(GIT_PROGRAM git)
+if(NOT GIT_PROGRAM)
+	message(WARNING "git not found, make sure that submodules are updated")
+else()
+	message("git found, updating submodules")
+	execute_process(COMMAND ${GIT_PROGRAM} submodule update --init --recursive WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} )
+endif()
 
 # CMAKE paths
 set(CUSTOM_CMAKE_SCRIPTS_DIR ${PROJECT_SOURCE_DIR}/cmake)
