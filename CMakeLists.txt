@@ -23,6 +23,7 @@ set(WINDOWS_DIR "windows")
 
 #includes
 include("${CUSTOM_CMAKE_SCRIPTS_DIR}/attach_package.cmake")
+include("${CUSTOM_CMAKE_SCRIPTS_DIR}/add_compiler_flags.cmake")
 
 # Qt configs
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -34,6 +35,7 @@ attach_qt()
 # C++ setup
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compiler_flags("-fcoroutines")
 
 # setup threads
 set(THREADS_PREFER_PTHREAD_FLAG ON)
