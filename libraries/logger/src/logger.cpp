@@ -4,7 +4,7 @@
 #include <fstream>
 
 // Boost
-#include <boost/stacktrace/stacktrace.hpp>
+#include <boost/stacktrace.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem/operations.hpp>
 

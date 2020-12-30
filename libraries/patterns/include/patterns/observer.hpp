@@ -38,7 +38,7 @@ namespace patterns
 		}
 
 	private:
-		signal<void(arg_type), Priority> __signal;
+		signal<void(arg_type), Priority, uint8_t> __signal;
 	};
 
 	// add this as a member to your class ex. observable<position, my_super_button> on_click;
