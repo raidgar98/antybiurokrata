@@ -5,6 +5,8 @@ MACRO(create_library libname)
 	set(variadic ${ARGN})
 	list(LENGTH variadic var_length)
 
+	set_property(GLOBAL PROPERTY ${libname}_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 	if(var_length GREATER 0)
 		target_link_libraries( ${libname} ${variadic} )
 	endif()

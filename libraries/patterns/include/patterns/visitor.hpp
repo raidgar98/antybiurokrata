@@ -11,7 +11,7 @@
 #include <boost/core/demangle.hpp>
 
 // Project includes
-#include <logger>
+#include <logger/logger.h>
 
 namespace patterns
 {
