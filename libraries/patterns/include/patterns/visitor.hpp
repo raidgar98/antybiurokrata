@@ -1,8 +1,5 @@
 #pragma once
 
-// DOUBLE CRTP COMBO !!!
-// Where is your Java now?
-
 // STL
 #include <cassert>
 #include <memory>
@@ -22,7 +19,7 @@ namespace patterns
 		using Log<visits<T>>::get_logger;
 
 	public:
-		// default visitor (throw error)
+		// default visitor
 		virtual bool visit(T *ptr)
 		{
 			get_logger().warn("Empty visit, by: `" + boost::typeindex::type_id<T>().pretty_name() + "`.");
