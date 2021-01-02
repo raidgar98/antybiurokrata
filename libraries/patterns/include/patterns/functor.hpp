@@ -40,7 +40,7 @@ namespace patterns
 
     namespace processors
     {
-        template <class variadic_t>
+        template <class variadic_t /*Ex. std::variant*/>
         struct processor_base
         {
             processor_base *get() { return this; }
@@ -57,7 +57,7 @@ namespace patterns
             using variadic_t = std::variant<Supp, c_func<float>>;
 
             template <template <class v_t, typename _Supp> typename T>
-            concept processor_concept = requires(T <variadic_t, Supp> var)
+            concept is_valid_processor_t = requires(T <variadic_t, Supp> var)
             {
                 std::is_base_of<processor_base<variadic_t>, T<variadic_t, Supp>>::value;
                 { var.is_my_type( variadic_t{ [](int){} } ) };
@@ -65,7 +65,7 @@ namespace patterns
             };
         } // namespace processor_concept_ns
         
-        using processor_concept_ns::processor_concept;
+        using processor_concept_ns::is_valid_processor_t;
 
         template <class variadic_t, typename _Supported>
         struct processor : public processor_base<variadic_t>

@@ -63,6 +63,8 @@ public:
 		return boost::typeindex::type_id<T>().pretty_name();
 	}
 
+	void print_stacktrace() const;
+
 private:
 
 	inline static std::string dump_file;

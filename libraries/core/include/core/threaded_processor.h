@@ -9,10 +9,10 @@
 #include <patterns/visitor.hpp>
 #include <logger/logger.h>
 
-using patterns::processors::processor_concept;
+using patterns::processors::is_valid_processor_t;
 using patterns::Visitable;
 
-template<template <class v_t, typename _Supp> typename _Processor > requires processor_concept< _Processor >
+template<template <class v_t, typename _Supp> typename _Processor > requires is_valid_processor_t< _Processor >
 class threaded_processor : public Visitable<threaded_processor<_Processor>>, public Log<threaded_processor<_Processor>>
 {
     using thp = threaded_processor;

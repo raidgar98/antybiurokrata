@@ -48,6 +48,13 @@ void logger::print_out(const std::string &msg, const format_function &_format) c
 	std::cout << "";
 }
 
+void logger::print_stacktrace() const
+{
+	std::stringstream ss;
+	ss << boost::stacktrace::stacktrace();
+	print_out( get_preambula(2) + ss.str(), debug_format );
+}
+
 void logger::dbg(const std::string & msg) const
 {
 	print_out( get_preambula(2) + msg, debug_format );
