@@ -2,6 +2,7 @@
 
 // Project includes
 #include "recursive_type_collection.hpp"
+#include "visitor.hpp"
 
 // STL
 #include <concepts>
@@ -9,12 +10,15 @@
 #include <variant>
 #include <functional>
 
+
 namespace patterns
 {
     namespace functors
     {
+        using patterns::Visitable;
+
         template <typename return_t = void, typename... arg_t>
-        struct _functor
+        struct _functor : public Visitable< _functor<return_t, arg_t...> >
         {
             virtual return_t operator()(arg_t...){};
         };
@@ -26,12 +30,9 @@ namespace patterns
         };
 
         template <typename _Last>
-        struct do_nothing_functor_end : public functor<_Last>
-        {
-        };
-        struct do_nothing_functor_begin : _functor<>
-        {
-        };
+        struct do_nothing_functor_end : public functor<_Last> {};
+
+        struct do_nothing_functor_begin : _functor<>{};
 
         template <typename _Last>
         using functor_collection_t = RCNS::recursive_concentrator<std::variant, do_nothing_functor_begin, do_nothing_functor_end<_Last>>::result;
@@ -40,14 +41,6 @@ namespace patterns
 
     namespace processors
     {
-        template <class variadic_t /*Ex. std::variant*/>
-        struct processor_base
-        {
-            processor_base *get() { return this; }
-            virtual bool is_my_type(variadic_t &) const = 0;
-            virtual void invoke(variadic_t &) = 0;
-        };
-
         namespace processor_concept_ns
         {
             template<typename T>
@@ -56,54 +49,31 @@ namespace patterns
             using Supp = c_func<int>;
             using variadic_t = std::variant<Supp, c_func<float>>;
 
-            template <template <class v_t, typename _Supp> typename T>
-            concept is_valid_processor_t = requires(T <variadic_t, Supp> var)
+            template <template <typename _Supp> typename T>
+            concept is_valid_processor_t = requires(T <Supp> var)
             {
-                std::is_base_of<processor_base<variadic_t>, T<variadic_t, Supp>>::value;
-                { var.is_my_type( variadic_t{ [](int){} } ) };
-                { var.invoke( variadic_t{ [](int){} } ) };
+                { var.invoke( variadic_t{ [](int){} } ) } -> std::same_as<void>;
             };
         } // namespace processor_concept_ns
         
         using processor_concept_ns::is_valid_processor_t;
 
-        template <class variadic_t, typename _Supported>
-        struct processor : public processor_base<variadic_t>
+        template <typename _Supported>
+        struct processor
         {
-            // not sofisticated, but looks, and works fine
-            virtual bool is_my_type(variadic_t &op) const override
-            {
-                return std::get_if<_Supported>(&op);
-            }
-
-            virtual void invoke(variadic_t &op) = 0;
+            virtual void invoke(_Supported &&op) = 0;
         };
 
-        template <class variadic_t, typename _Supported>
-        struct processor_autocall : public processor<variadic_t, _Supported>
+        template <typename _Supported>
+        struct processor_autocall : public processor<_Supported>
         {
             // default call
-            virtual void invoke(variadic_t &op) override
+            virtual void invoke(_Supported &&op) override
             {
-                std::get<_Supported>(op)();
+                op();
             }
         };
 
-        // if you have collection of processors it's good to put it at end of collection
-        template <class variadic_t>
-        struct not_supported_operation_type_processor : public processor_base<variadic_t>
-        {
-            virtual bool is_my_type(variadic_t &op) const override
-            {
-                assert(false);
-                return true;
-            }
-
-            [[noreturn]] virtual void invoke(variadic_t &op) override
-            {
-                assert(false);
-            }
-        };
     } // namespace processors
 
 } // namespace patterns

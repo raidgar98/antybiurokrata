@@ -11,7 +11,3 @@ create_library( observer macros )
 create_library( generator )
 create_library( recursive_type_collection )
 create_library( functor recursive_type_collection )
-
-# example usage
-add_executable( rc_functor_example src/rc_functors_example.cpp )
-target_link_libraries( rc_functor_example functor )

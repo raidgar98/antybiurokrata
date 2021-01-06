@@ -19,6 +19,8 @@ class logger
 public:
 	using format_function = std::function<std::ostream &(std::ostream &)>;
 
+	inline static const char endl{ '\n' };
+
 	template <class T>
 	inline static logger _get_logger(const char * alternative = "unknown")
 	{
@@ -28,6 +30,18 @@ public:
 				return logger(alternative);
 		return logger( name );
 	}
+
+	struct tmp_logger
+	{
+		std::stringstream ss;
+		const format_function& _do_reset;
+
+		~tmp_logger()
+		{
+			std::cout << ss.str();
+			_do_reset(std::cout);
+		}
+	};
 
 	static bool set_dump_file( const std::string& file );
 
@@ -43,13 +57,13 @@ public:
 	inline static format_function erro_format = [](std::ostream &os) -> std::ostream & { logger::erro_color_scheme(os); return os << "[ERROR]"; };
 
 	template <typename T>
-	const logger &operator<<(const T &obj) const
+	tmp_logger & operator<<(const T &obj) const
 	{
 		std::stringstream ss;
 		ss << get_preambula(3);
 		ss << obj;
-		print_out(ss.str(), debug_format);
-		return *this;
+		ss << debug_format;
+		return tmp_logger{ std::move(ss), reset_color_scheme };
 	}
 
 	void dbg(const std::string &) const;
@@ -75,7 +89,7 @@ private:
 };
 
 template<typename T>
-inline const logger& operator<<(logger& out, const T& obj)
+inline typename logger::tmp_logger& operator<<(logger& out, const T& obj)
 {
 	return out.operator<<(obj);
 }
@@ -91,3 +105,5 @@ public:
 		return log;
 	}
 };
+
+template<typename T> inline typename logger::tmp_logger& operator<<(logger::tmp_logger& src, const T& v) { src.ss << v; return src; }

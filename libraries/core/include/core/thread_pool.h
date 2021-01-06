@@ -23,15 +23,6 @@ singleton:
 namespace core
 {
 
-    template <typename FuncT>
-    concept is_callable_wo_args_no_return = requires(FuncT t)
-    {
-        {
-            t()
-        }
-        ->std::same_as<void>; // should be callable without arguments, and should return nothing
-    };
-
     struct thread_with_status : Log<thread_with_status>
     {
         using Log<thread_with_status>::log;
@@ -39,14 +30,14 @@ namespace core
 
         sneaky_pointer<thread_t, 1 /*is_ready*/> worker;
 
-        template <is_callable_wo_args_no_return FuncT>
-        explicit thread_with_status(const FuncT fun)
+        template <typename FuncT, typename ... Args>
+        explicit thread_with_status(const FuncT fun, Args&& ... argv)
         {
             clean_worker();
-            worker.set_pointer(new thread_t([this, fun]() -> void {
+            worker.set_pointer(new thread_t([this, fun](Args&& ... vargs) -> void {
                 try
                 {
-                    fun();
+                    fun(std::forward<Args>(vargs)...);
                 }
                 catch (const std::exception &e)
                 {
@@ -61,7 +52,7 @@ namespace core
                     this->log.print_stacktrace();
                 }
                 this->worker.set_flag(1, true);
-            }));
+            }, std::forward<Args>(argv)... ));
         }
 
         ~thread_with_status()
@@ -91,12 +82,11 @@ namespace core
         collection_t threads;
 
     public:
-        template <typename FuncT>
-        void push(const FuncT fun, const bool fast_cleanup = true)
+        template <typename FuncT, typename ... Args>
+        void push(const FuncT fun, Args&& ... argv )
         {
-            threads.emplace_back<FuncT>(fun);
-            if (fast_cleanup)
-                cleanup();
+            threads.emplace_back<FuncT>(fun, std::forward<Args>(argv)...);
+            cleanup();
         }
 
         void cleanup();
@@ -109,4 +99,5 @@ namespace core
 
     // Singleton
     using thread_pool = patterns::thread_safe_singleton<_thread_pool_impl>;
+
 } // namespace core
