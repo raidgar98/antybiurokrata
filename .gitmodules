@@ -4,6 +4,6 @@
 [submodule "libraries/submodules/rang"]
 	path = libraries/submodules/rang
 	url = https://github.com/raidgar98/rang.git
-[submodule "libraries/submodules/poco"]
-	path = libraries/submodules/poco
-	url = https://github.com/raidgar98/poco.git
+[submodule "libraries/submodules/drogon"]
+	path = libraries/submodules/drogon
+	url = git@github.com:an-tao/drogon.git
