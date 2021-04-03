@@ -1,5 +1,5 @@
 #include <QApplication>
-#include <mainwindow/mainwindow.h>
+#include <antybiurokrata/windows/mainwindow/mainwindow.h>
 
 int main(int argc, char *argv[])
 {

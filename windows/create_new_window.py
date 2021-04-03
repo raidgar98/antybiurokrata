@@ -4,6 +4,9 @@ import os
 from sys import argv
 from os.path import join as join_path
 
+PROJECT_NAME = "antybiurokrata"
+WINDOWS_DIR_NAME = "windows"
+
 print("checking aruments...")
 assert len(argv) == 2, 'not enough arguments, pass window name. Ex: ./create_new_window.py super_dooooooper_window_2'
 WINDOW_NAME : str = argv[1]
@@ -20,7 +23,9 @@ UI_FILE_PATH = join_path( INPUT_DIRECTORY, 'win.ui.in' )
 CMAKE_FILE_PATH = join_path( INPUT_DIRECTORY, 'win.cmake.in' )
 
 PRE_INCLUDE_DIRECTORY = join_path( WINDOW_NAME, "include" )
-INCLUDE_DIRECTORY = join_path( WINDOW_NAME, "include", WINDOW_NAME )
+INCLUDE_PROJ_DIR = join_path( PRE_INCLUDE_DIRECTORY, PROJECT_NAME )
+INCLUDE_WIN_DIR = join_path( INCLUDE_PROJ_DIR, WINDOWS_DIR_NAME )
+INCLUDE_DIRECTORY = join_path( INCLUDE_WIN_DIR, WINDOW_NAME )
 SRC_DIRECTORY = join_path( WINDOW_NAME, "src" )
 
 swap_dict = {
@@ -31,8 +36,11 @@ print("creating directory structure...")
 from os import mkdir
 from os.path import getsize
 
+
 mkdir( WINDOW_NAME )
 mkdir( PRE_INCLUDE_DIRECTORY )
+mkdir( INCLUDE_PROJ_DIR )
+mkdir( INCLUDE_WIN_DIR )
 mkdir( INCLUDE_DIRECTORY )
 mkdir( SRC_DIRECTORY )
 

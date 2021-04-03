@@ -1,4 +1,4 @@
-#include <info_dialog/info_dialog.h>
+#include <antybiurokrata/windows/info_dialog/info_dialog.h>
 #include "ui_info_dialog.h"
 
 info_dialog::info_dialog(QWidget *parent) :

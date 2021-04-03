@@ -1,7 +1,6 @@
-#include <mainwindow/mainwindow.h>
+#include <antybiurokrata/windows/info_dialog/info_dialog.h>
+#include <antybiurokrata/windows/mainwindow/mainwindow.h>
 #include "ui_mainwindow.h"
-
-#include <info_dialog/info_dialog.h>
 
 #include <iostream>
 

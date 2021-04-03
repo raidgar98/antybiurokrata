@@ -1,3 +1,5 @@
+include("${CUSTOM_CMAKE_SCRIPTS_DIR}/get_all_files.cmake")
+
 MACRO(create_library libname)
 	add_library(${libname} STATIC src/${libname}.cpp)
 	target_include_directories( ${libname} PUBLIC ${BOOST_INCLUDE_DIRS} include )
@@ -16,7 +18,11 @@ MACRO(create_qt_library libname)
 	set(CMAKE_AUTOUIC ON)
 	set(CMAKE_AUTOMOC ON)
 	set(CMAKE_AUTORCC ON)
-	add_library(${libname} STATIC src/${libname}.cpp include/${libname}/${libname}.h src/${libname}.ui)
+
+	GET_ALL_FILES(header_list)
+	MESSAGE("while creating Qt library `${libname}` found headers: [ ${header_list} ]")
+
+	add_library(${libname} STATIC src/${libname}.cpp ${header_list} src/${libname}.ui)
 	target_include_directories( ${libname} PUBLIC include )
 
 	set(variadic ${ARGN})

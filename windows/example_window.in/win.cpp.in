@@ -1,4 +1,4 @@
-#include <ExWindow/ExWindow.h>
+#include <antybiurokrata/windows/ExWindow/ExWindow.h>
 #include "ui_ExWindow.h"
 
 ExWindow::ExWindow(QWidget *parent) :
