@@ -43,10 +43,9 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 # add subdirectories
-# add_subdirectory(libraries)
+add_subdirectory(libraries)
 add_subdirectory(${WINDOWS_DIR})
 get_directory_property(WINDOW_LIBS DIRECTORY ${WINDOWS_DIR} DEFINITION WINDOWSES)
-SUBDIR_INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/${WINDOWS_DIR} )
 
 # create executable
 add_executable( antybiurokrata main.cpp )

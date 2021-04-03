@@ -9,15 +9,8 @@
 
 #pragma once
 
-// STL
-#include <cassert>
-#include <memory>
-
-// Boost
-#include <boost/core/demangle.hpp>
-
 // Project includes
-#include <logger/logger.h>
+#include <antybiurokrata/libraries/logger/logger.h>
 
 namespace patterns
 {
@@ -42,7 +35,7 @@ namespace patterns
 		 */
 		virtual bool visit(T *ptr)
 		{
-			get_logger().warn("Empty visit, by: `" + boost::typeindex::type_id<T>().pretty_name() + "`.");
+			get_logger().warn("Empty visit, by: `" + get_logger().class_name<T>() + "`.");
 			return true;
 		}
 	};
@@ -76,7 +69,7 @@ namespace patterns
 		 */
 		virtual bool accept(visits<T> *v)
 		{
-			get_logger().info("Accepted: `" + boost::typeindex::type_id<T>().pretty_name() + "`.");
+			get_logger().info("Accepted: `" + get_logger().class_name<T>() + "`.");
 			return v->visit(dynamic_cast<T *>(this));
 		}
 	};

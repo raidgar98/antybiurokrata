@@ -1,3 +1,12 @@
+/**
+ * @file logger.h
+ * @author Krzysztof Mochocki (raidgar98@onet.pl)
+ * @brief complete implementation of class specific logger 
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #pragma once
 
 // STL
@@ -7,7 +16,7 @@
 #include <cctype>
 
 // submodules
-#include <rang.hpp>
+#include "rang.hpp"
 
 // Boost
 #include <boost/type_index.hpp>
