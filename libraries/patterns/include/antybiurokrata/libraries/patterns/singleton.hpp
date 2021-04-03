@@ -11,6 +11,11 @@ namespace patterns
 {
 	namespace singleton_wrappers
 	{
+		/**
+		 * @brief requirements for wrapper
+		 * 
+		 * @tparam T any item
+		 */
 		template <typename T>
 		concept wrapped_item_req = requires
 		{
@@ -18,155 +23,242 @@ namespace patterns
 			std::is_destructible<T>::value;
 		};
 
+		/**
+		 * @brief opeartor() should set value into wrapper
+		 * 
+		 * @tparam _WrapperSetter functor that changes wrapper content
+		 * @tparam Wrapper any wrapper
+		 */
 		template <template <typename _Wrapper> typename _WrapperSetter, template <wrapped_item_req T> typename Wrapper>
 		concept wrapper_setter_req = requires(Wrapper<int> w)
 		{
-			// opeartor() should set value into wrapper
-			{
-				_WrapperSetter<Wrapper<int>>{}(w, int{3})
-			};
+			{_WrapperSetter<Wrapper<int>>{}(w, int{3})};
 		};
 
+		/** 
+		 * @brief operator() should return T& of stored value in Wrapper 
+		 * 
+		 * @tparam _WrapperGetter functor that returns wrapper content
+		 * @tparam Wrapper any wrapper
+		 */
 		template <template <typename _Wrapper> typename _WrapperGetter, template <wrapped_item_req T> typename Wrapper>
 		concept wrapper_getter_req = requires(Wrapper<int> w)
 		{
-			// operator() should return T& of stored value in Wrapper
 			{
 				_WrapperGetter<Wrapper<int>>{}(w)
 			}
 			->std::same_as<int &>;
 		};
 
+		/**
+		 * @brief operator() should return bool; true - if is empty, and false if it's storing something
+		 * 
+		 * @tparam _WrapperIsEmpty check is wrapper empty
+		 * @tparam Wrapper any wrapper
+		 */
 		template <template <typename _Wrapper> typename _WrapperIsEmpty, template <wrapped_item_req T> typename Wrapper>
 		concept wrapper_is_empty_req = requires(Wrapper<int> w)
 		{
-			// operator() should return bool; true - if is empty, and false if it's storing something
 			{
 				_WrapperIsEmpty<Wrapper<int>>{}(w)
 			}
 			->std::same_as<bool>;
 		};
 
+		/**
+		 * @brief interface for all wrapper setters
+		 * 
+		 * @tparam Wrapper any wrapper
+		 * @tparam T wrapped type
+		 */
 		template <template <wrapped_item_req T> typename Wrapper, wrapped_item_req T>
 		struct wrapper_setter_base
 		{
+			/**
+			 * @brief proxy to set methode
+			 * 
+			 * @param _wrapper wrapper that will be modified
+			 * @param _value value to set
+			 */
 			void operator()(Wrapper<T> &_wrapper, T &_value) const { set(_wrapper, _value); }
 
 		protected:
+			/**
+			 * @brief this methode have to be overloaded
+			 * 
+			 * @param _wrapper wrapper to modify
+			 * @param _value value to set
+			 */
 			virtual void set(Wrapper<T> &_wrapper, T &_value) const = 0;
 		};
 
+		/**
+		 * @brief interface for all wrapper getters
+		 * 
+		 * @tparam Wrapper any wrapper
+		 * @tparam T wrapped type
+		 */
 		template <template <wrapped_item_req T> typename Wrapper, wrapped_item_req T>
 		struct wrapper_getter_base
 		{
+			/**
+			 * @brief proxy to get methode
+			 * 
+			 * @param _w wrapper that will be accessed
+			 * @return T& value from given wrapper
+			 */
 			T &operator()(Wrapper<T> &_w) const { return get(_w); }
 			const T &operator()(Wrapper<T> &_w) const { return get(_w); }
 
 		protected:
+			/**
+			 * @brief both of these methodes, have to be overloaded
+			 * 
+			 * @param _w wrapper that will be accessed
+			 * @return T& value from given wrapper
+			 */
 			virtual T &get(Wrapper<T> &_wrapper) const = 0;
 			virtual const T &get(Wrapper<T> &_wrapper) const = 0;
 		};
 
+		/**
+		 * @brief interface for all empty checkers
+		 * 
+		 * @tparam Wrapper any specialized wrapper
+		 */
 		template <typename Wrapper>
 		struct wrapper_is_empty_base
 		{
+			/**
+			 * @brief proxy to empty methode
+			 * 
+			 * @param _w any wrapper
+			 * @return true if given wrapper is empty
+			 * @return false if given wrapper is set to something
+			 */
 			bool operator()(const Wrapper &_w) const { return empty(_w); }
 
 		protected:
+			/**
+			 * @brief this methode have to be overloaded
+			 * 
+			 * @param _wrapper wrapper to check
+			 * @return true if given wrapper is empty
+			 * @return false if given wrapper is set to something
+			 */
 			virtual bool empty(const Wrapper &_wrapper) const = 0;
 		};
 
-		// Uniq ptr
-
-		template <wrapped_item_req T>
-		struct uniq_ptr_set : public wrapper_setter_base<std::unique_ptr<T>, T>
+		/**
+		 * @brief whole implementation of uniq_ptr based wrapper
+		 */
+		namespace uniq_ptr_w
 		{
-			using wrapper_setter_base<std::unique_ptr<T>, T>::wrapper_setter_base;
-
-		protected:
-			virtual void set(std::unique_ptr<T> &ptr, T &p) const override
+			template <wrapped_item_req T>
+			struct uniq_ptr_set : public wrapper_setter_base<std::unique_ptr<T>, T>
 			{
-				ptr.reset(new T{std::move(p)});
-			}
-		};
+				using wrapper_setter_base<std::unique_ptr<T>, T>::wrapper_setter_base;
 
-		template <wrapped_item_req T>
-		struct uniq_ptr_get : public wrapper_getter_base<std::unique_ptr<T>, T>
+			protected:
+				virtual void set(std::unique_ptr<T> &ptr, T &p) const override
+				{
+					ptr.reset(new T{std::move(p)});
+				}
+			};
+
+			template <wrapped_item_req T>
+			struct uniq_ptr_get : public wrapper_getter_base<std::unique_ptr<T>, T>
+			{
+			protected:
+				virtual T &get(std::unique_ptr<T> &ptr) const override
+				{
+					assert(ptr.get());
+					return *ptr;
+				}
+
+				virtual const T &get(std::unique_ptr<T> &ptr) const override
+				{
+					assert(ptr.get());
+					return *ptr;
+				}
+			};
+
+			template <wrapped_item_req T>
+			struct uniq_ptr_is_empty : public wrapper_is_empty_base<std::unique_ptr<T>>
+			{
+			protected:
+				virtual bool empty(std::unique_ptr<T> &ptr) const override
+				{
+					return ptr.get() == nullptr;
+				}
+			};
+		}
+
+		/**
+		 * @brief whole implementation of std::atomic based wrapper
+		 */
+		namespace atomic_w
 		{
-		protected:
-			virtual T &get(std::unique_ptr<T> &ptr) const override
+			template <wrapped_item_req _T, typename T = std::unique_ptr<_T>>
+			struct atomic_set : public wrapper_setter_base<std::atomic<T>, T>
 			{
-				assert(ptr.get());
-				return *ptr;
-			}
+				using wrapper_setter_base<std::atomic<T>, T>::wrapper_setter_base;
 
-			virtual const T &get(std::unique_ptr<T> &ptr) const override
+			protected:
+				virtual void set(std::atomic<std::unique_ptr<_T>> &w, T &p) const override
+				{
+					w.store(std::move(T(new _T{std::move(p)})));
+				}
+			};
+
+			template <wrapped_item_req _T, typename T = std::unique_ptr<_T>>
+			struct atomic_get : public wrapper_getter_base<std::atomic<T>, T>
 			{
-				assert(ptr.get());
-				return *ptr;
-			}
-		};
+				using wrapper_getter_base<std::atomic<T>, T>::wrapper_getter_base;
 
-		template <wrapped_item_req T>
-		struct uniq_ptr_is_empty : public wrapper_is_empty_base<std::unique_ptr<T>>
-		{
-		protected:
-			virtual bool empty(std::unique_ptr<T> &ptr) const override
+			protected:
+				virtual T &get(std::atomic<T> &w) const override
+				{
+					assert(w.load().get());
+					return *w.load();
+				}
+
+				virtual const T &get(std::atomic<T> &w) const override
+				{
+					assert(w.load().get());
+					return *w.load();
+				}
+			};
+
+			template <wrapped_item_req T>
+			struct atomic_is_empty : public wrapper_is_empty_base<std::atomic<T>>
 			{
-				return ptr.get() == nullptr;
-			}
-		};
+				using wrapper_is_empty_base<std::atomic<T>>::wrapper_is_empty_base;
 
-		// Atomic
-
-		template <wrapped_item_req _T, typename T = std::unique_ptr<_T>>
-		struct atomic_set : public wrapper_setter_base<std::atomic<T>, T>
-		{
-			using wrapper_setter_base<std::atomic<T>, T>::wrapper_setter_base;
-
-		protected:
-			virtual void set(std::atomic<std::unique_ptr<_T>> &w, T &p) const override
-			{
-				w.store(std::move(T(new _T{std::move(p)})));
-			}
-		};
-
-		template <wrapped_item_req _T, typename T = std::unique_ptr<_T>>
-		struct atomic_get : public wrapper_getter_base<std::atomic<T>, T>
-		{
-			using wrapper_getter_base<std::atomic<T>, T>::wrapper_getter_base;
-
-		protected:
-			virtual T &get(std::atomic<T> &w) const override
-			{
-				assert(w.load().get());
-				return *w.load();
-			}
-
-			virtual const T &get(std::atomic<T> &w) const override
-			{
-				assert(w.load().get());
-				return *w.load();
-			}
-		};
-
-		template <wrapped_item_req T>
-		struct atomic_is_empty : public wrapper_is_empty_base<std::atomic<T>>
-		{
-			using wrapper_is_empty_base<std::atomic<T>>::wrapper_is_empty_base;
-
-		protected:
-			virtual bool empty(std::atomic<T> &ptr) const override
-			{
-				return w.load().get() == nullptr;
-			}
-		};
-
+			protected:
+				virtual bool empty(std::atomic<T> &ptr) const override
+				{
+					return w.load().get() == nullptr;
+				}
+			};
+		}
 	} // namespace singleton_wrappers
 
 	using namespace singleton_wrappers;
+	using namespace uniq_ptr_w;
 
-	// If you need more singletons of same type, change second parameter of template
+	// 
+	/**
+	 * @brief core implementaion of singleton
+	 * @note If you need more singletons with same type, change second parameter of template
+	 * 
+	 * @tparam T type to hold by singleton
+	 * @tparam _ dummy type
+	 * @tparam _WrapperType wrapper to use to hold T
+	 * @tparam _WrapperGetter getter, compatibile with _WrapperType
+	 * @tparam _WrapperSetter setter, compatibile with _WrapperType
+	 * @tparam _WrapperIsEmpty empty checker, compatibile with _WrapperType
+	 */
 	template <
 		wrapped_item_req T,
 		typename _ = void,
@@ -179,32 +271,62 @@ namespace patterns
 	private:
 		using _singl_t = _singleton_impl<T, _, _WrapperType, _WrapperGetter, _WrapperSetter, _WrapperIsEmpty>;
 
+		/**
+		 * @brief functor, responsible for notifying all users of this singleton, if they care of course
+		 */
 		struct singleton_notify_deleter
 		{
+			/**
+			 * @brief this is called by unique_ptr
+			 * 
+			 * @param w currently destroyed value
+			 */
 			void operator()(_WrapperType *w) const
 			{
 				assert(w != nullptr);
 				_singl_t::on_delete(_WrapperGetter{}(*w));
-				delete w;
+				std::default_delete<_WrapperType>{}(w);
 			}
 		};
 
+		/**
+		 * @brief holder of data
+		 */
 		inline static std::unique_ptr<_WrapperType, singleton_notify_deleter> __m_wrapped_item{new _WrapperType{}, singleton_notify_deleter{}};
 
 	public:
+
+		/**
+		 * @brief signal that can be subscribed by anyone, who need to knopw when this singleton is destroyed
+		 */
 		inline static patterns::observable<T &, singleton_notify_deleter> on_delete;
 
-		// memory will be automatically released, so do not put any references here
+		/**
+		 * @brief sets value holded by this singleton
+		 * @note on change, memory will be automatically released, so do not put any references here
+		 * @param item value to set
+		 */
 		static void set(T *item)
 		{
 			_WrapperSetter{}(*__m_wrapped_item, *item);
 		}
 
+		/**
+		 * @brief returns reference to currently holding value
+		 * 
+		 * @return T& value
+		*/
 		static T &get()
 		{
 			return _WrapperGetter{}(*__m_wrapped_item);
 		}
 
+		/**
+		 * @brief returns is singleton empty or not
+		 * 
+		 * @return true if empty
+		 * @return false if not empty
+		*/
 		static bool empty()
 		{
 			return _WrapperIsEmpty{}(*__m_wrapped_item);
@@ -213,9 +335,21 @@ namespace patterns
 		using value_type = T;
 	};
 
+	/**
+	 * @brief aliasing for easier usage
+	 * 
+	 * @tparam T data to store
+	 * @tparam _ dummy type
+	 */
 	template <typename T, typename _ = void>
 	using simple_singleton = _singleton_impl<T, _>;
 
+	/**
+	 * @brief threadsafe singleton, that uses std::atomic as container
+	 * 
+	 * @tparam T value to store
+	 * @tparam _ dummy type
+	 */
 	template <typename T, typename _ = void>
 	using thread_safe_singleton = _singleton_impl<
 		T,
@@ -223,6 +357,7 @@ namespace patterns
 		std::atomic<T>,
 		atomic_set<T>,
 		atomic_get<T>,
-		atomic_is_empty<T>>;
+		atomic_is_empty<T>
+	>;
 
 } // namespace patterns
