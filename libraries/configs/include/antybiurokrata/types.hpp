@@ -45,7 +45,9 @@ namespace core
 		struct exception_base : public std::exception, Log<exception_base<T>>
 		{
 			using Log<exception_base<T>>::get_logger;
-			const str ___what; /**< stores message */
+
+			/** stores message */
+			const str ___what; 
 
 			virtual const char *what() const noexcept override
 			{
@@ -89,7 +91,9 @@ namespace core
 		struct ____require_base
 		{
 		protected:
-			static constexpr bool __log_pass{false}; /** if set to true logs passed checks */
+
+			/** if set to true logs passed checks */
+			static constexpr bool __log_pass{false}; 
 		};
 
 		/**
@@ -137,5 +141,7 @@ namespace core
 	 */
 	template<typename Ex_t = typename exceptions::assert_exception>
 	using cassert = typename exceptions::require<Ex_t>;
-	using dassert = cassert<>; /** [ d(efault) asssert ] */
+	
+	/** [ d(efault) asssert ] */
+	using dassert = cassert<>; 
 } // namespace core

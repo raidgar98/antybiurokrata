@@ -69,7 +69,8 @@ namespace patterns
 		}
 
 	private:
-		signal<void(arg_type), Priority, uint8_t> __signal; /** signal holder */
+		/** signal holder */
+		signal<void(arg_type), Priority, uint8_t> __signal; 
 	};
 
 	/**
@@ -83,7 +84,8 @@ namespace patterns
 	template <class arg_type, class __owner>
 	class observable : protected observable_impl<arg_type>
 	{
-		friend __owner; /** required to make possible invoking by owner */
+		/** required to make possible invoking by owner */
+		friend __owner; 
 
 	protected:
 

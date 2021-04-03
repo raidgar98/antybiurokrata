@@ -50,3 +50,35 @@ get_directory_property(WINDOW_LIBS DIRECTORY ${WINDOWS_DIR} DEFINITION WINDOWSES
 # create executable
 add_executable( antybiurokrata main.cpp )
 target_link_libraries(antybiurokrata PRIVATE Qt5::Widgets PUBLIC ${WINDOW_LIBS} )
+
+# doxygen
+option(DOXYGEN "determines to generate docs or not" ON)
+IF(${DOXYGEN})
+
+	# Preparing tree driectory
+	set(DOXYFILE_PATH_SOURCE "${CMAKE_SOURCE_DIR}/gen/docs/Doxyfile.in")
+	set(DOXYFILE_PATH_DEST "${CMAKE_BINARY_DIR}/docs")
+	file(MAKE_DIRECTORY ${DOXYFILE_PATH_DEST})
+	file(COPY ${DOXYFILE_PATH_SOURCE} DESTINATION ${DOXYFILE_PATH_DEST})
+	set(DOXYFILE_PATH_DEST "${DOXYFILE_PATH_DEST}/Doxyfile")
+	file(RENAME ${DOXYFILE_PATH_DEST}.in ${DOXYFILE_PATH_DEST})
+
+	# Setting up sources
+	file(APPEND ${DOXYFILE_PATH_DEST} "\nINPUT = ${CMAKE_SOURCE_DIR}/libraries \n")
+	file(APPEND ${DOXYFILE_PATH_DEST} "OUTPUT_DIRECTORY = ${CMAKE_BINARY_DIR}/docs \n")
+	
+	# # Theme
+	set(THEME_SUBMODULE_PATH ${CMAKE_SOURCE_DIR}/gen/docs/doxygen-dark-theme)
+	set(THEME_SUBMODULE_CSS "\"${THEME_SUBMODULE_PATH}/custom.css\" \"${THEME_SUBMODULE_PATH}/custom_dark_theme.css\"")
+
+	file(APPEND ${DOXYFILE_PATH_DEST} "HTML_EXTRA_STYLESHEET = ${THEME_SUBMODULE_CSS} \n")
+	file(APPEND ${DOXYFILE_PATH_DEST} "HTML_HEADER = \"${THEME_SUBMODULE_PATH}/html_header.html\"\n")
+	file(APPEND ${DOXYFILE_PATH_DEST} "HTML_FOOTER = \"${THEME_SUBMODULE_PATH}/html_footer.html\"\n")
+	file(APPEND ${DOXYFILE_PATH_DEST} "PROJECT_LOGO = \"${CMAKE_SOURCE_DIR}/gen/docs/image.png\" \n")
+
+
+	# Executing
+	find_program(DOXYGEN_EXE doxygen HINTS /usr/bin)
+	execute_process(COMMAND ${DOXYGEN_EXE} ${DOXYFILE_PATH_DEST} WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/docs")
+	message("documentation has been generated in: ${CMAKE_BINARY_DIR}/docs")
+ENDIF()

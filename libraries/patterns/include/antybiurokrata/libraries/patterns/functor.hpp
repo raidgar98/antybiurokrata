@@ -62,9 +62,17 @@ namespace patterns
 			using Prev = _Prev;
 		};
 
+		/**
+		 * @brief this is helper class for creating type collections, whichc is putted at the end
+		 * 
+		 * @tparam _Last type of last item in type collection
+		 */
 		template <typename _Last>
 		struct do_nothing_functor_end : public functor<_Last> {};
 
+		/**
+		 * @brief this is helper class for creating type collections, whichc is putted at the begining
+		 */
 		struct do_nothing_functor_begin : _functor<>{};
 
 		/**

@@ -2,16 +2,19 @@
 
 #include <QtWidgets/QDialog>
 
-namespace Ui { class info_dialog; }
+namespace Ui
+{
+	class info_dialog;
+}
 
 class info_dialog : public QDialog
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit info_dialog(QWidget *parent = nullptr);
-    ~info_dialog();
+	explicit info_dialog(QWidget *parent = nullptr);
+	~info_dialog();
 
 private:
-    Ui::info_dialog *ui;
+	Ui::info_dialog *ui;
 };

@@ -1,0 +1,17 @@
+
+PROJECT_NAME = antybiurokrata
+PROJECT_BRIEF = This project aims for creating diffs between diffrent scince articles aggregation sites
+HTML_OUTPUT = html
+HTML_FILE_EXTENSION = .html
+GENERATE_HTML = YES
+OUTPUT_LANGUAGE = English
+JAVADOC_AUTOBRIEF = NO
+EXTRACT_ALL = YES
+EXTRACT_LOCAL_METHODS = YES
+WARN_IF_UNDOCUMENTED = YES
+WARN_IF_DOC_ERROR = YES
+RECURSIVE = YES
+FILE_PATTERNS = *.hpp *.h *.cpp *.c
+GENERATE_LATEX = NO
+GENERATE_MAN = YES
+CLASS_DIAGRAMS = YES

@@ -66,8 +66,11 @@ public:
 	 */
 	struct logger_piper
 	{
-		std::stringstream ss; /** used as stringinizer */ 
-		const format_function& _do_reset; /** restores stream to given settings */ 
+		/** used as stringinizer */ 
+		std::stringstream ss; 
+		
+		/** restores stream to given settings */
+		const format_function& _do_reset;  
 
 		/**
 		 * @brief always resets stream to defaults and put data into stream
@@ -83,8 +86,8 @@ public:
 	 * @brief sets dump file
 	 * 
 	 * @param file if set, logs will be outputted to stdout and file 
-	 * @return true 
-	 * @return false 
+	 * @return true if opening file goes well
+	 * @return false if opening file failed
 	 */
 	static bool set_dump_file( const std::string& file );
 
@@ -104,7 +107,7 @@ public:
 	 * 
 	 * @tparam T make avaiable for any type
 	 * @param obj any object
-	 * @return logger_piper& which put into stdout on destruction
+	 * @return logger_piper& struct that takes care about flush collected data
 	*/
 	template <typename T>
 	logger_piper start_stream(const T &obj) const
@@ -128,8 +131,11 @@ public:
 
 private:
 
-	inline static std::string dump_file; /**< stores file name, where logs are dumped */
-	const std::string preambula; /**< short text, which is concatenated at the beginnig of message */
+	/** stores file name, where logs are dumped */
+	inline static std::string dump_file; 
+
+	/** short text, which is concatenated at the beginnig of message */
+	const std::string preambula; 
 	/**
 	 * @brief returns preambula with additional data
 	 * 
@@ -164,7 +170,8 @@ template <typename T>
 class Log
 {
 public:
-	inline static logger log = logger::_get_logger<T>(); /** logger holder */
+	/** logger holder */
+	inline static logger log = logger::_get_logger<T>(); 
 	
 	/**
 	 * @brief returns logger instance
