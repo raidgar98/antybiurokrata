@@ -25,8 +25,8 @@ MACRO(create_qt_library libname)
 	set(CMAKE_AUTOMOC ON)
 	set(CMAKE_AUTORCC ON)
 
-	GET_ALL_FILES(header_list *.h(pp)?)
-	# MESSAGE("while creating Qt library `${libname}` found headers: [ ${header_list} ]")
+	GET_ALL_FILES(header_list *.h(pp)? *.ui )
+	MESSAGE("while creating Qt library `${libname}` found headers: [ ${header_list} ]")
 
 	add_library(${libname} STATIC src/${libname}.cpp ${header_list} src/${libname}.ui)
 	target_include_directories( ${libname} PUBLIC include )

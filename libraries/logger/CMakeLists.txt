@@ -4,8 +4,5 @@ set(CMAKE_CXX_STANDARD 20)
 include("${CUSTOM_CMAKE_SCRIPTS_DIR}/attach_package.cmake")
 include("${CUSTOM_CMAKE_SCRIPTS_DIR}/create_library.cmake")
 
-find_library(ranglib rang)
 attach_boost(filesystem date_time stacktrace_addr2line stacktrace_noop stacktrace_basic)
-# file(CREATE_LINK ${rang_INCLUDE_DIRECTORIES}/rang.hpp rang.hpp SYMBOLIC)
 create_library(logger)
-# target_include_directories(logger INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)

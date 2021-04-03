@@ -10,7 +10,6 @@
 #pragma once
 
 // Project includes
-#include <patterns/functor.hpp>
 #include <antybiurokrata/libraries/logger/logger.h>
 
 // STL
@@ -45,11 +44,12 @@ namespace core
 		template <typename T>
 		struct exception_base : public std::exception, Log<exception_base<T>>
 		{
+			using Log<exception_base<T>>::get_logger;
 			const str ___what; /**< stores message */
 
 			virtual const char *what() const noexcept override
 			{
-				return (log.get_class_name<T>() + ___what).c_str();
+				return (get_class_name<T>() + ___what).c_str();
 			}
 		};
 
@@ -69,7 +69,7 @@ namespace core
 		struct tee_exception : public exception_base<tee_exception>
 		{
 			template <stringizable U>
-			explicit tee_exception(const U &msg) : ___what{msg} { get_logger().error(what()); }
+			explicit tee_exception(const U &msg) : exception_base{msg} { get_logger().error(what()); }
 		};
 
 		/**
@@ -100,6 +100,7 @@ namespace core
 		template <supported_exception _ExceptionType = exception>
 		struct require : Log<require<_ExceptionType>>, ____require_base
 		{
+			using Log<require<_ExceptionType>>::get_logger;
 			/**
 			 * @brief Construct a new require object, which is also checker
 			 * 
@@ -135,6 +136,6 @@ namespace core
 	 * @tparam Ex_t exception to throw, by default assert_exception
 	 */
 	template<typename Ex_t = typename exceptions::assert_exception>
-	using cassert = require<Ex_t>;
+	using cassert = typename exceptions::require<Ex_t>;
 	using dassert = cassert<>; /** [ d(efault) asssert ] */
 } // namespace core

@@ -35,7 +35,7 @@ namespace patterns
 		 */
 		virtual bool visit(T *ptr)
 		{
-			get_logger().warn("Empty visit, by: `" + get_logger().class_name<T>() + "`.");
+			get_logger().warn("Empty visit, by: `" + get_class_name<T>() + "`.");
 			return true;
 		}
 	};
@@ -69,7 +69,7 @@ namespace patterns
 		 */
 		virtual bool accept(visits<T> *v)
 		{
-			get_logger().info("Accepted: `" + get_logger().class_name<T>() + "`.");
+			get_logger().info("Accepted: `" + get_class_name<T>() + "`.");
 			return v->visit(dynamic_cast<T *>(this));
 		}
 	};

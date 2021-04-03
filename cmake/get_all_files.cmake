@@ -1,5 +1,5 @@
-MACRO(GET_ALL_FILES return_list regex)
-	file(GLOB_RECURSE ${return_list} regex )
+MACRO(GET_ALL_FILES return_list)
+	file(GLOB_RECURSE ${return_list} ${ARGN} )
 ENDMACRO()
 
 MACRO(GET_ALL_DIRS sub return_list reg)

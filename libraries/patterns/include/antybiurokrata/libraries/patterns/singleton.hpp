@@ -117,7 +117,6 @@ namespace patterns
 			 * @return T& value from given wrapper
 			 */
 			T &operator()(Wrapper<T> &_w) const { return get(_w); }
-			const T &operator()(Wrapper<T> &_w) const { return get(_w); }
 
 		protected:
 			/**
@@ -127,7 +126,6 @@ namespace patterns
 			 * @return T& value from given wrapper
 			 */
 			virtual T &get(Wrapper<T> &_wrapper) const = 0;
-			virtual const T &get(Wrapper<T> &_wrapper) const = 0;
 		};
 
 		/**
@@ -164,9 +162,9 @@ namespace patterns
 		namespace uniq_ptr_w
 		{
 			template <wrapped_item_req T>
-			struct uniq_ptr_set : public wrapper_setter_base<std::unique_ptr<T>, T>
+			struct uniq_ptr_set : public wrapper_setter_base<std::unique_ptr, T>
 			{
-				using wrapper_setter_base<std::unique_ptr<T>, T>::wrapper_setter_base;
+				using wrapper_setter_base<std::unique_ptr, T>::wrapper_setter_base;
 
 			protected:
 				virtual void set(std::unique_ptr<T> &ptr, T &p) const override
@@ -176,16 +174,10 @@ namespace patterns
 			};
 
 			template <wrapped_item_req T>
-			struct uniq_ptr_get : public wrapper_getter_base<std::unique_ptr<T>, T>
+			struct uniq_ptr_get : public wrapper_getter_base<std::unique_ptr, T>
 			{
 			protected:
 				virtual T &get(std::unique_ptr<T> &ptr) const override
-				{
-					assert(ptr.get());
-					return *ptr;
-				}
-
-				virtual const T &get(std::unique_ptr<T> &ptr) const override
 				{
 					assert(ptr.get());
 					return *ptr;
@@ -209,9 +201,9 @@ namespace patterns
 		namespace atomic_w
 		{
 			template <wrapped_item_req _T, typename T = std::unique_ptr<_T>>
-			struct atomic_set : public wrapper_setter_base<std::atomic<T>, T>
+			struct atomic_set : public wrapper_setter_base<std::atomic, T>
 			{
-				using wrapper_setter_base<std::atomic<T>, T>::wrapper_setter_base;
+				using wrapper_setter_base<std::atomic, T>::wrapper_setter_base;
 
 			protected:
 				virtual void set(std::atomic<std::unique_ptr<_T>> &w, T &p) const override
@@ -221,18 +213,12 @@ namespace patterns
 			};
 
 			template <wrapped_item_req _T, typename T = std::unique_ptr<_T>>
-			struct atomic_get : public wrapper_getter_base<std::atomic<T>, T>
+			struct atomic_get : public wrapper_getter_base<std::atomic, T>
 			{
-				using wrapper_getter_base<std::atomic<T>, T>::wrapper_getter_base;
+				using wrapper_getter_base<std::atomic, T>::wrapper_getter_base;
 
 			protected:
 				virtual T &get(std::atomic<T> &w) const override
-				{
-					assert(w.load().get());
-					return *w.load();
-				}
-
-				virtual const T &get(std::atomic<T> &w) const override
 				{
 					assert(w.load().get());
 					return *w.load();
@@ -247,7 +233,7 @@ namespace patterns
 			protected:
 				virtual bool empty(std::atomic<T> &ptr) const override
 				{
-					return w.load().get() == nullptr;
+					return ptr.load().get() == nullptr;
 				}
 			};
 		}
@@ -364,9 +350,9 @@ namespace patterns
 		T,
 		_,
 		std::atomic<T>,
-		atomic_set<T>,
-		atomic_get<T>,
-		atomic_is_empty<T>
+		typename atomic_w::atomic_set<T>,
+		typename atomic_w::atomic_get<T>,
+		typename atomic_w::atomic_is_empty<T>
 	>;
 
 } // namespace patterns

@@ -16,10 +16,22 @@
 #include <cctype>
 
 // submodules
-#include "rang.hpp"
+#include <rang/rang.hpp>
 
 // Boost
 #include <boost/type_index.hpp>
+
+/**
+ * @brief returns class name; basiclly proxy for boost::typeindex::type_id<>
+ * 
+ * @tparam T any class
+ * @return std::string stringinized T
+ */
+template<typename T>
+inline std::string get_class_name()
+{
+	return boost::typeindex::type_id<T>().pretty_name();
+}
 
 /**
  * @brief This class provides logging system fitted for every class
@@ -93,14 +105,14 @@ public:
 	 * @tparam T make avaiable for any type
 	 * @param obj any object
 	 * @return logger_piper& which put into stdout on destruction
-	 */
+	*/
 	template <typename T>
-	logger_piper & operator<<(const T &obj) const
+	logger_piper start_stream(const T &obj) const
 	{
 		std::stringstream ss;
 		ss << get_preambula(3);
 		ss << obj;
-		ss << debug_format;
+		debug_format(ss);
 		return logger_piper{ std::move(ss), reset_color_scheme };
 	}
 
@@ -108,18 +120,6 @@ public:
 	void info(const std::string &) const;
 	void warn(const std::string &) const;
 	void error(const std::string &) const;
-
-	/**
-	 * @brief returns class name; basiclly proxy for boost::typeindex::type_id<>
-	 * 
-	 * @tparam T any class
-	 * @return std::string stringinized T
-	 */
-	template<typename T>
-	static std::string get_class_name()
-	{
-		return boost::typeindex::type_id<T>().pretty_name();
-	}
 
 	/**
 	 * @brief prints stacktrace
@@ -150,9 +150,9 @@ private:
  * @return logger::logger_piper& self
  */
 template<typename T>
-inline typename logger::logger_piper& operator<<(logger& out, const T& obj)
+inline typename logger::logger_piper operator<<(logger& out, const T& obj)
 {
-	return out.operator<<(obj);
+	return out.start_stream(obj);
 }
 
 /**
@@ -183,4 +183,5 @@ public:
  * @param v any object
  * @return logger::logger_piper&  returning self
  */
-template<typename T> inline typename logger::logger_piper& operator<<(logger::logger_piper& src, const T& v) { src.ss << v; return src; }
+template<typename T> inline typename logger::logger_piper& operator<<(logger::logger_piper&& src, const T& v) { src.ss << v; return src; }
+
