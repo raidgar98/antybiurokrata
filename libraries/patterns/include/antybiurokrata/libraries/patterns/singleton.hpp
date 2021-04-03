@@ -1,3 +1,12 @@
+/**
+ * @file singleton.hpp
+ * @author Krzysztof Mochocki (raidgar98@onet.pl)
+ * @brief Implementation of various singletons
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #pragma once
 
 #include <memory>
