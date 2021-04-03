@@ -1,17 +1,8 @@
 #pragma once
 
-#include <QtWidgets/QDialog>
+#include <antybiurokrata/libraries/logger/logger.h>
 
-namespace Ui { class ExWindow; }
-
-class ExWindow : public QDialog
+class ExLib : public Log<ExLib>
 {
-    Q_OBJECT
-
-public:
-    explicit ExWindow(QWidget *parent = nullptr);
-    ~ExWindow();
-
-private:
-    Ui::ExWindow *ui;
+    using Log<ExLib>::log;
 };

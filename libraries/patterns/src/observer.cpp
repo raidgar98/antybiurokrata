@@ -1,1 +1,1 @@
-#include <patterns/observer.hpp>
+#include <antybiurokrata/libraries/patterns/observer.hpp>

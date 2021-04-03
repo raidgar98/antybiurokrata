@@ -1,5 +1,7 @@
-# project(components CXX)
-# include("${CUSTOM_CMAKE_SCRIPTS_DIR}/create_library.cmake")
-# include("${CUSTOM_CMAKE_SCRIPTS_DIR}/attach_package.cmake")
+cmake_minimum_required(VERSION 3.19)
 
-# create_library( config )
+include("${CUSTOM_CMAKE_SCRIPTS_DIR}/create_library.cmake")
+include("${CUSTOM_CMAKE_SCRIPTS_DIR}/attach_package.cmake")
+
+attach_boost()
+create_library( config logger )

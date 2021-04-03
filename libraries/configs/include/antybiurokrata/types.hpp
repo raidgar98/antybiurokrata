@@ -10,6 +10,8 @@
 
 namespace core
 {
+    using str = std::string;
+
     namespace operations
     {
         using namespace patterns::functors;
@@ -29,9 +31,12 @@ namespace core
     namespace exceptions
     {
         template<typename T>
+        concept stringizable = requires { std::is_convertible_v<T, str>; };
+
+        template<typename T>
         struct exception_base : public std::exception, Log< exception_base<T> >
         {
-            const char* ___what;
+            const str ___what;
 
             virtual const char* what() const noexcept override
             {
@@ -40,6 +45,14 @@ namespace core
         };
 
         struct exception : public exception_base<exception> {};
+
+        // while creating, print it to stdout with logger
+        struct tee_exception : public exception_base<tee_exception>, Log<tee_exception>
+        {
+            using Log<tee_exception>::get_logger;
+            template<stringizable U>
+            explicit tee_exception(const U& msg) : ___what{msg} { get_logger().error( what() ); }
+        };
 
         template<typename T>
         concept supported_exception = requires{

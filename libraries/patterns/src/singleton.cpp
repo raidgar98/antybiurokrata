@@ -1,1 +1,1 @@
-#include <patterns/singleton.hpp>
+#include <antybiurokrata/libraries/patterns/singleton.hpp>

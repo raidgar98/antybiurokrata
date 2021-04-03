@@ -1,2 +1,1 @@
-#include "../include/config.h"
-
+#include <antybiurokrata/libraries/config/config.h>
