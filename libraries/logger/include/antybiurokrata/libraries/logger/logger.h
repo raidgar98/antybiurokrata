@@ -113,9 +113,9 @@ public:
 	logger_piper start_stream(const T &obj) const
 	{
 		std::stringstream ss;
+		debug_format(ss);
 		ss << get_preambula(3);
 		ss << obj;
-		debug_format(ss);
 		return logger_piper{ std::move(ss), reset_color_scheme };
 	}
 
@@ -191,4 +191,5 @@ public:
  * @return logger::logger_piper&  returning self
  */
 template<typename T> inline typename logger::logger_piper& operator<<(logger::logger_piper&& src, const T& v) { src.ss << v; return src; }
+template<typename T> inline typename logger::logger_piper& operator<<(logger::logger_piper& src, const T& v) { src.ss << v; return src; }
 

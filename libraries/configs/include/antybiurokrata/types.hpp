@@ -18,10 +18,14 @@
 
 namespace core
 {
-	/**
-	 * @brief unifies string type in whole project
-	*/
+	/** @brief unifies string type in whole project */
 	using str = std::string;
+
+	/** @brief unifies char type in whole project */
+	using char_t = typename str::value_type;
+
+	/** @brief unifies string view type in whole project */
+	using str_v = std::string_view;
 
 	/**
 	 * @brief contains basic defninitions and tools for throwing exceptions
@@ -49,10 +53,12 @@ namespace core
 			/** stores message */
 			const str ___what; 
 
-			virtual const char *what() const noexcept override
-			{
-				return (get_class_name<T>() + ___what).c_str();
-			}
+			template<typename MsgType>
+			explicit exception_base(MsgType msg) : ___what{ msg } {}
+
+			virtual const char* what() const noexcept override { return this->___what.c_str(); }
+			// virtual const str& what() const noexcept { return this->___what; }
+			virtual str_v what_v() const noexcept { return this->___what; }
 		};
 
 		/**
@@ -63,7 +69,7 @@ namespace core
 		/**
 		 * @brief default exception, that is raised on failed check
 		 */
-		struct assert_exception : public exception_base<assert_exception> {};
+		struct assert_exception : public exception_base<assert_exception> { using exception_base<assert_exception>::exception_base; };
 
 		/**
 		 * @brief same as exception, but additionally prints reason to stdout, usefull, if extended log is required
@@ -86,23 +92,12 @@ namespace core
 		};
 
 		/**
-		 * @brief this is just holder for __log_pass
-		 */
-		struct ____require_base
-		{
-		protected:
-
-			/** if set to true logs passed checks */
-			static constexpr bool __log_pass{false}; 
-		};
-
-		/**
 		 * @brief alternative to asertion
 		 * 
 		 * @tparam _ExceptionType exception to throw if check failed
 		 */
-		template <supported_exception _ExceptionType = exception>
-		struct require : Log<require<_ExceptionType>>, ____require_base
+		template <supported_exception _ExceptionType = exception, bool __log_pass = false>
+		struct require : Log<require<_ExceptionType>>
 		{
 			using Log<require<_ExceptionType>>::get_logger;
 			/**
@@ -120,7 +115,7 @@ namespace core
 				if (_check) [[likely]] // be optimist :)
 				{
 					if constexpr (__log_pass)
-						get_logger() << "passed: `" << msg << '`' << logger::endl;
+						get_logger() << "passed: `" << msg << "`\n";// << logger::endl;
 				}
 				else [[unlikely]]
 				{

@@ -50,8 +50,8 @@ void logger::print_out(const std::string &msg, const format_function &_format) c
 
 void logger::print_stacktrace() const
 {
-	std::stringstream ss;
-	ss << boost::stacktrace::stacktrace();
+	std::stringstream ss{};
+	ss << std::endl << std::endl << boost::stacktrace::stacktrace();
 	print_out( get_preambula(2) + ss.str(), debug_format );
 }
 

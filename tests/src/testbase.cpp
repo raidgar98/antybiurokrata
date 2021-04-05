@@ -1,4 +1,1 @@
-#include "../include/testbase.h"
-
-namespace testbase
-{}
+#include <antybiurokrata/tests/testbase.h>

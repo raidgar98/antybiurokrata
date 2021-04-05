@@ -343,11 +343,11 @@ namespace patterns
 		}
 
 		using value_type = T;
+	};
 
-		namespace type_enumerator
-		{
-			template<uint64_t N_> struct N { constexpr static uint64_t value{ N_ }; };
-		};
+	namespace type_enumerator
+	{
+		template<uint64_t N_> struct N { constexpr static uint64_t value{ N_ }; };
 	};
 
 	/**

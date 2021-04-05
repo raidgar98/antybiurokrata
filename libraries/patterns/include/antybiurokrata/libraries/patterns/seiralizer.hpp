@@ -53,6 +53,7 @@
  * ```*/
 
 #include <tuple>
+#include <iostream>
 #include <boost/type_index.hpp>
 
 namespace patterns
@@ -286,16 +287,14 @@ namespace patterns
 		template <auto T>
 		struct pretty_print
 		{
-			using wrap_t = typename serial::ClassWrapper<T>;
+			using wrap_t = typename serial::cser<T>;
 			const wrap_t &ref;
 			explicit pretty_print(const wrap_t &obj) : ref{obj} {}
 			inline friend std::ostream &operator<<(std::ostream &os, const pretty_print<T> &obj)
 			{
-				os << boost::typeindex::type_id<typename wrap_t::class_t>();
-				os << "[ ";
+				os << boost::typeindex::type_id<typename wrap_t::class_t>() << "[ ";
 				obj.ref.serialize_coma_separated(os);
-				os << " ]";
-				return os;
+				return os << " ]";
 			}
 		};
 

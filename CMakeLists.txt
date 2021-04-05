@@ -82,3 +82,6 @@ IF(${DOXYGEN})
 	execute_process(COMMAND ${DOXYGEN_EXE} ${DOXYFILE_PATH_DEST} WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/docs")
 	message("documentation has been generated in: ${CMAKE_BINARY_DIR}/docs")
 ENDIF()
+
+# add tests
+add_subdirectory(tests)

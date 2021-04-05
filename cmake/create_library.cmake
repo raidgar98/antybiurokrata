@@ -3,14 +3,15 @@ include("${CUSTOM_CMAKE_SCRIPTS_DIR}/get_all_files.cmake")
 MACRO(create_library libname)
 
 	add_library(${libname} STATIC src/${libname}.cpp)
-	target_include_directories( ${libname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${BOOST_INCLUDE_DIRS} )
+	target_include_directories( ${libname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include PRIVATE ${BOOST_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} )
 	message("for ${libname} added include dir: ${CMAKE_CURRENT_SOURCE_DIR}/include")
 	
+	set(${libname}_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE INTERNAL "")
+
 	set(variadic ${ARGN})
 	list(LENGTH variadic var_length)
 
-	set(${libname}_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include PARENT_SCOPE)
-
+	
 	if(var_length GREATER 0)
 		target_link_libraries( ${libname} ${variadic} )
 		foreach( pack ${variadic} )

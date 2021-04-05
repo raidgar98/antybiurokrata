@@ -4,5 +4,4 @@ include("${CUSTOM_CMAKE_SCRIPTS_DIR}/create_library.cmake")
 include("${CUSTOM_CMAKE_SCRIPTS_DIR}/attach_package.cmake")
 
 attach_boost()
-create_library( types logger )
-create_library( config logger types )
+create_library( demangler logger types )
