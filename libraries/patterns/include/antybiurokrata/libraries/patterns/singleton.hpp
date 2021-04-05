@@ -7,13 +7,28 @@
  * 
  */
 
+/**
+ * @example "singleton ~ usage"
+ * 
+ * creating singleton:
+ * 
+ * ```
+ * using my_singleton = simple_singleton< my_type >; // second param: 0 by default
+ * using my_singleton_1 = simple_singleton< my_type, 1>;
+ * using my_singleton_2 = simple_singleton< my_type, 2>;
+ * using my_singleton_other = simple_singleton< other_type >;
+ * ```
+ */
+
 #pragma once
 
+// STL
 #include <memory>
 #include <cassert>
 #include <concepts>
 #include <atomic>
 
+// Project Includes
 #include "observer.hpp"
 
 namespace patterns
@@ -248,7 +263,7 @@ namespace patterns
 	 * @note If you need more singletons with same type, change second parameter of template
 	 * 
 	 * @tparam T type to hold by singleton
-	 * @tparam _ dummy type
+	 * @tparam _ dummy value
 	 * @tparam _WrapperType wrapper to use to hold T
 	 * @tparam _WrapperGetter getter, compatibile with _WrapperType
 	 * @tparam _WrapperSetter setter, compatibile with _WrapperType
@@ -256,7 +271,7 @@ namespace patterns
 	 */
 	template <
 		wrapped_item_req T,
-		typename _ = void,
+		uint64_t _ = 0,
 		typename _WrapperType = std::unique_ptr<T>,
 		typename _WrapperGetter = uniq_ptr_set<T>,
 		typename _WrapperSetter = uniq_ptr_get<T>,
@@ -328,24 +343,29 @@ namespace patterns
 		}
 
 		using value_type = T;
+
+		namespace type_enumerator
+		{
+			template<uint64_t N_> struct N { constexpr static uint64_t value{ N_ }; };
+		};
 	};
 
 	/**
 	 * @brief aliasing for easier usage
 	 * 
 	 * @tparam T data to store
-	 * @tparam _ dummy type
+	 * @tparam _ dummy value
 	 */
-	template <typename T, typename _ = void>
+	template <typename T, uint64_t _ = 0>
 	using simple_singleton = _singleton_impl<T, _>;
 
 	/**
 	 * @brief threadsafe singleton, that uses std::atomic as container
 	 * 
 	 * @tparam T value to store
-	 * @tparam _ dummy type
+	 * @tparam _ dummy value
 	 */
-	template <typename T, typename _ = void>
+	template <typename T, uint64_t _ = 0>
 	using thread_safe_singleton = _singleton_impl<
 		T,
 		_,

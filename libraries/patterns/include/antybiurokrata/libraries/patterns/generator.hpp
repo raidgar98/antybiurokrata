@@ -1,4 +1,24 @@
-// Source: https://en.cppreference.com/w/cpp/coroutine/coroutine_handle#Example
+/**
+ * @file generator.hpp
+ * @author https://en.cppreference.com/w/cpp/coroutine/coroutine_handle#Example
+ * @brief This is implementation of generator using coroutine mechanism
+ * 
+ * @copyright https://en.cppreference.com/w/cpp/coroutine/coroutine_handle#Example
+ * 
+ */
+
+/**
+ * @example "coroutine ~ usage"
+ * declaration of coroutine:
+ * ```
+ * template<std::integral T>
+ * generator<T> range(T first, const T last) {
+ * 	while (first < last)
+ * 			co_yield first++;
+ * }
+ * ```
+*/
+
 #pragma once
 
 #include <coroutine>
@@ -9,15 +29,8 @@ namespace patterns
 {
 
 	/**
-	 * @brief This is used to create simple coroutine
-	 * 
-	 * @example usage:
-			template<std::integral T>
-			generator<T> range(T first, const T last) {
-				while (first < last)
-						co_yield first++;
-			}
-*/
+ 	 * @brief This is used to create simple coroutine
+	*/
 	template <std::movable T>
 	class generator
 	{

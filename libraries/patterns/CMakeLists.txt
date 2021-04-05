@@ -8,3 +8,5 @@ create_library( observer )
 create_library( generator )
 create_library( recursive_type_collection )
 create_library( functor recursive_type_collection )
+
+create_library( serializer )

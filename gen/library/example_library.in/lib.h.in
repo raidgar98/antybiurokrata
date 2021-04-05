@@ -4,5 +4,5 @@
 
 class ExLib : public Log<ExLib>
 {
-    using Log<ExLib>::log;
+	using Log<ExLib>::log;
 };

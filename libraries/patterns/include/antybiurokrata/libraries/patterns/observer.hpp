@@ -6,6 +6,45 @@
  * @copyright Copyright (c) 2021
  * 
 */
+
+/**
+ * @example "observer ~ usage"
+ * 
+ * adding sginal option to your class:
+ * ```
+ * struct MySuperButton : BaseButton
+ * {
+ * private:
+ * 	properties_t m_props{};
+ *	public:
+ * 	observable<
+ * 		position, // what you will send on click
+ * 		MySuperButton // name of this class
+ * 	> on_click;
+ * 
+ * 	void click(position pos)
+ * 	{
+ * 		do_button_job();
+ * 		std::cout << "hello from MySuperButton::click\n";
+ * 		on_click(pos);
+ * 	}
+ * };
+ * ```
+ * 
+ * registering:
+ * 
+ * ```
+ * int main()
+ * {
+ * 	MySuperButton btn;
+ * 	btn.on_click.register([](const postion& pos){ std::cout << "clicked on: ( " << pos.x << " ; " << pos.y << " )\n"; }, patterns::PRIORITY::LOW);
+ * 	btn.click({10, 10}); // prints: "hello from MySuperButton::click\nclicked on: ( 10 ; 10 )\n"
+ * 	return 0;
+ * }
+ * ```
+ */
+
+
 #pragma once
 
 // Boost
@@ -74,12 +113,10 @@ namespace patterns
 	};
 
 	/**
-	 * @brief add this as a member to your class ex. observable<position, my_super_button> on_click;
+	 * @brief add this as a member to your class
 	 * 
 	 * @tparam arg_type type of sending data with signal
 	 * @tparam __owner required to set friendship
-	 * @example if you want to invoke, just: on_click( position{ x, y } );
-	 * @example if you want to register slot, just: my_supper_button_object.register_slot( [&](const position& pos){ do_something(pos); }, patterns::PRIORITY::HIGH );
 	 */
 	template <class arg_type, class __owner>
 	class observable : protected observable_impl<arg_type>

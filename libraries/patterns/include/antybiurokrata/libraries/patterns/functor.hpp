@@ -6,6 +6,36 @@
  * @copyright Copyright (c) 2021
  * 
 */
+
+/**
+ * @example "functor ~ usage"
+ * 
+ * chaining:
+ * ```
+ * struct do_nothing_1 : public functor<do_nothing begin>;
+ * struct do_nothing_2 : public functor<do_nothing_1>;
+ * struct do_nothing_3 : public functor<do_nothing_2>;
+ * struct do_nothing_4 : public functor<do_nothing_3>;
+ * ```
+ * 
+ * creating chain:
+ * ```
+ * using functors = functor_collection_t<do_nothing_4>;
+ * ```
+ * 
+ * which is alternative to:
+ * ```
+ * std::variant<
+ *  	do_nothing_begin, 
+ *  	do_nothing_1, 
+ *  	do_nothing_2, 
+ *  	do_nothing_3, 
+ *  	do_nothing_4, 
+ *  	do_nothing_end
+ * >
+ * ```
+*/
+
 #pragma once
 
 // Project includes
@@ -48,13 +78,6 @@ namespace patterns
 		 * @tparam _Prev points to previously created functor
 		 * @tparam return_t type of returned value
 		 * @tparam arg_t optional arguments
-		 * 
-		 * @example
-		 * struct d  o_nothing_1 : public functor<do_nothing begin>;
-		 * struct do_nothing_2 : public functor<do_nothing_1>;
-		 * struct do_nothing_3 : public functor<do_nothing_2>;
-		 * struct do_nothing_4 : public functor<do_nothing_3>;
-		 * using functors = functor_collection_t<do_nothing_4>; // in reality this is: std::variant<do_nothing_begin, do_nothing_1, do_nothing_2, do_nothing_3, do_nothing_4, do_nothing_end>
 		 */
 		template <typename _Prev, typename return_t = void, typename... arg_t>
 		struct functor : public _functor<return_t, arg_t...>
