@@ -67,7 +67,7 @@ IF(${DOXYGEN})
 	file(APPEND ${DOXYFILE_PATH_DEST} "\nINPUT = ${CMAKE_SOURCE_DIR}/libraries \n")
 	file(APPEND ${DOXYFILE_PATH_DEST} "OUTPUT_DIRECTORY = ${CMAKE_BINARY_DIR}/docs \n")
 	
-	# # Theme
+	# Theme
 	set(THEME_SUBMODULE_PATH ${CMAKE_SOURCE_DIR}/gen/docs/doxygen-dark-theme)
 	set(THEME_SUBMODULE_CSS "\"${THEME_SUBMODULE_PATH}/custom.css\" \"${THEME_SUBMODULE_PATH}/custom_dark_theme.css\"")
 
@@ -77,10 +77,10 @@ IF(${DOXYGEN})
 	file(APPEND ${DOXYFILE_PATH_DEST} "PROJECT_LOGO = \"${CMAKE_SOURCE_DIR}/gen/docs/image.png\" \n")
 
 
-	# Executing
-	find_program(DOXYGEN_EXE doxygen HINTS /usr/bin)
-	execute_process(COMMAND ${DOXYGEN_EXE} ${DOXYFILE_PATH_DEST} WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/docs")
-	message("documentation has been generated in: ${CMAKE_BINARY_DIR}/docs")
+	# Adding target
+	find_program(DOXYGEN_BINARY doxygen HINTS /usr/bin)
+	# To run: `make docs`
+	add_custom_target(docs COMMAND ${DOXYGEN_BINARY} ${DOXYFILE_PATH_DEST} WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/docs")
 ENDIF()
 
 # add tests

@@ -4,26 +4,36 @@ enable_testing()
 include("${CUSTOM_CMAKE_SCRIPTS_DIR}/create_library.cmake")
 include("${CUSTOM_CMAKE_SCRIPTS_DIR}/attach_package.cmake")
 
-file(GLOB tests_sources
-	"src/*.cpp"
+file(GLOB tests_headers
+	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/include
+	"include/${CMAKE_PROJECT_NAME}/tests/*.test.h"
 )
 
-message(${CMAKE_SOURCE_DIR})
-# include_directories(${CMAKE_SOURCE_DIR})
-attach_boost(unit_test_framework)
-create_library(testbase logger types)
+find_package(ut REQUIRED)
 
-add_executable(tests ${tests_sources})
-target_include_directories(tests PRIVATE ${Boost_INCLUDE_DIRS} ) # ${testbase_INCLUDE_DIRECTORIES} ) #${logger_INCLUDE_DIRECTORIES})
+set( TEST_HEADERS )
+foreach( val ${tests_headers})
+	list(APPEND TEST_HEADERS "#include <${val}>\n")
+endforeach()
 
+set(OUTPUT_SRC_PATH ${CMAKE_CURRENT_BINARY_DIR}/tests.cpp)
+configure_file(src/tests.cpp.in ${OUTPUT_SRC_PATH})
+
+add_executable( tests ${OUTPUT_SRC_PATH})
 target_link_libraries( tests 
+	PRIVATE 
+	# utlities
+		logger
+		types
+
+	# Testing data
+		demangler
+)
+
+target_include_directories(
+	tests
 	PRIVATE
-
-	${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} 
-	testbase
-	demangler
-
-	logger
+	${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 add_test(NAME all_tests COMMAND tests)
