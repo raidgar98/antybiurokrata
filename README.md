@@ -1,9 +1,9 @@
 # antybiurokrata
 
 Engeener project for Silesian University of Technology. </br>
-Target of this project is to compare diffrent aggregators of scientific publications and print report of missing articles between them
+Goal of this project is to compare diffrent aggregators of scientific publications and print report of missing articles between them
 
-## Target
+## Goals
 ---
 </br>
 
