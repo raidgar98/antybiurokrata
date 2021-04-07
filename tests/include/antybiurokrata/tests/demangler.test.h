@@ -12,32 +12,33 @@
 using ::logger;
 using core::demangler;
 
-// template <typename T>
-// inline const char *cast(const T ptr) { return reinterpret_cast<const char *>(ptr); }
+template <typename T>
+inline const char *cast(const T ptr) { return reinterpret_cast<const char *>(ptr); }
 
-constexpr char msg_01[] = "aaa";
-const char *msg_02 = cast(u8"ąąą");
-constexpr char msg_03[] = "&#261;&#261;&#261;";
-constexpr char msg_04[] = "abba";
-constexpr char msg_05[] = "abbą";
-constexpr char msg_06[] = "abb&#261;";
+namespace demangler_tests_values
+{
+	constexpr char msg_01[] = "aaa";
+	const char *msg_02 = cast(u8"ąąą");
+	constexpr char msg_03[] = "&#261;&#261;&#261;";
+	constexpr char msg_04[] = "abba";
+	constexpr char msg_05[] = "abbą";
+	constexpr char msg_06[] = "abb&#261;";
+}
 
 namespace tests
 {
 	using namespace boost::ut;
 	const suite demangler_tests = [] {
+		using namespace demangler_tests_values;
 		log << "entering `demangler_tests` suite" << logger::endl;
-		"case_01"_test = []{
-			demangler dmg{"aaa"};
+		"case_01"_test = [] {
+			demangler dmg{msg_01};
 			expect(
-				throws< typename core::exceptions::assert_exception >(
-					[&](){ dmg.get(); }
-				)
-			);
+				 throws<typename core::exceptions::assert_exception>(
+					  [&]() { dmg.get(); }));
 		};
 	};
 }
-
 
 /*
 BOOST_AUTO_TEST_SUITE(demangler_tests)

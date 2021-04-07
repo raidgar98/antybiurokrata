@@ -37,3 +37,4 @@ target_include_directories(
 )
 
 add_test(NAME all_tests COMMAND tests)
+add_custom_target(test COMMAND ./tests)
