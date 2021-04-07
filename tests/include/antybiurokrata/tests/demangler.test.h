@@ -15,17 +15,17 @@ using core::demangler;
 // template <typename T>
 // inline const char *cast(const T ptr) { return reinterpret_cast<const char *>(ptr); }
 
-// constexpr char msg_01[] = "aaa";
-// const char *msg_02 = cast(u8"ąąą");
-// constexpr char msg_03[] = "&#261;&#261;&#261;";
-// constexpr char msg_04[] = "abba";
-// constexpr char msg_05[] = "abbą";
-// constexpr char msg_06[] = "abb&#261;";
+constexpr char msg_01[] = "aaa";
+const char *msg_02 = cast(u8"ąąą");
+constexpr char msg_03[] = "&#261;&#261;&#261;";
+constexpr char msg_04[] = "abba";
+constexpr char msg_05[] = "abbą";
+constexpr char msg_06[] = "abb&#261;";
 
 namespace tests
 {
 	using namespace boost::ut;
-	suite demangler_tests = [] {
+	const suite demangler_tests = [] {
 		log << "entering `demangler_tests` suite" << logger::endl;
 		"case_01"_test = []{
 			demangler dmg{"aaa"};

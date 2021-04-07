@@ -3,7 +3,54 @@
 Engeener project for Silesian University of Technology. </br>
 Target of this project is to compare diffrent aggregators of scientific publications and print report of missing articles between them
 
-## setup
+## Target
+---
+</br>
+
+### Code
+
+- sticks to C++ 20 standard
+- is cross-platform
+- is macro-free
+- is well documented with DOXYGEN
+
+### Program
+
+- connects to multiple sites and download required data
+- provides comprasion between theese sites
+- prints report of missing publications
+
+</br>
+
+## TODO
+---
+
+- add networking mechanism
+- add more tests
+- add object representation for:
+	- [dorobek](https://www.bg.polsl.pl/expertus/new/bib/)
+	- [BN](https://data.bn.org.pl/bibs)
+	- [ORCID](https://pub.orcid.org/v3.0/)
+	- [Web Of Science](https://developer.clarivate.com/apis/wos)
+	- [Scopus](https://dev.elsevier.com/)
+- design UI
+- implement configs
+
+## Currently done
+---
+
+- depolishing names and surnames of authors
+- added scripts to generate libraries / windowses
+- properly linked all libraries in cmake with DRY methodology
+- added documentation generation
+- added few patterns for future usage
+- added manual on how to install
+- preimplemented data gathering from `dorobek`
+- recognition of `ORCID` usage
+- implemented assertion and exception mechanism
+
+
+## Setup
 ---
 </br>
 This setup was tested for Manjaro Linux (arch-based)
@@ -12,7 +59,7 @@ Most likely it will be working for most of linux distros
 </br>
 
 ---
-### Qt
+### 1. Qt
 </br>
 
 The best way of installing all required libraries and headers is to use [this installer](https://www.qt.io/download-qt-installer?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4). Unfortunatelly it requires logging in.
@@ -22,7 +69,7 @@ The best way of installing all required libraries and headers is to use [this in
 </br>
 
 ---
-### Boost
+### 2. Boost
 </br>
 
 This project uses boost 1.75, which is avaible [here](https://www.boost.org/users/history/version_1_75_0.html)
@@ -40,7 +87,7 @@ sudo ln -s $BOOST_ROOT/boost /usr/include/boost
 sudo ln -s $BOOST_ROOT/stage/lib /usr/lib/boost
 ```
 ---
-### [Rang](https://github.com/agauniyal/rang) - collors for terrminal
+### 3. [rang](https://github.com/agauniyal/rang) - collors for terrminal
 </br>
 
 ```
@@ -53,7 +100,7 @@ sudo ln -s $PWD /usr/include/rang
 popd && popd
 ```
 ---
-### [Dragon](https://github.com/an-tao/drogon) - network library for modern c++
+### 4. [Dragon](https://github.com/an-tao/drogon) - network library for modern c++
 </br>
 
 ```
@@ -70,7 +117,7 @@ sudo make install
 popd && popd
 ```
 ---
-### [ut](https://github.com/boost-ext/ut) -  macro-less testing framework
+### 5. [boost-ex/ut](https://github.com/boost-ext/ut) -  macro-free testing framework
 
 ```
 sudo mkdir /opt/ut
@@ -91,3 +138,4 @@ In my case i've had to create symlink:
 ```
 ln -s /usr/local/include/ut-*/include/boost/ut.hpp /usr/include/boost/ut.hpp
 ```	
+---
