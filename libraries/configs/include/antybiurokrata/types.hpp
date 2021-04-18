@@ -120,7 +120,7 @@ namespace core
 				else [[unlikely]]
 				{
 					get_logger().error("Failed on check");
-					get_logger() << msg << logger::endl;
+					get_logger() << msg;
 					get_logger().print_stacktrace();
 					throw _ExceptionType(msg, std::forward<ExceptionArgs>(argv)...);
 				}

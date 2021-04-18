@@ -75,6 +75,26 @@ void logger::error(const std::string & msg) const
 	print_out( get_preambula(2) + msg, erro_format );
 }
 
+logger::logger_piper logger::dbg() const
+{
+	return _config_logger_piper();
+}
+
+logger::logger_piper logger::info() const
+{
+	return _config_logger_piper(logger::info_format);
+}
+
+logger::logger_piper logger::warn() const
+{
+	return _config_logger_piper(logger::warn_format);
+}
+
+logger::logger_piper logger::error() const
+{
+	return _config_logger_piper(logger::erro_format);
+}
+
 bool logger::set_dump_file( const std::string& file )
 {
 	logger logg = logger::_get_logger<logger>("logger");

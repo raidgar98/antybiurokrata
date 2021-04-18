@@ -28,70 +28,71 @@ namespace core
 		 */
 		enum conversion_t
 		{
-			/** @brief this will just replace polish 'ąśćźżółę' to 'asczzole' */
-			ENG = 0,
-
-			/** @brief this will replace polish letters to html codes (sanitizing) */
-			HTML = 1
+			ENG = 0, /** @brief this will just replace polish 'ąśćźżółę' to 'asczzole' */
+			HTML = 1, /** @brief this will replace polish letters to html codes (sanitizing) */
+			URL = 2 /**  @brief this will replace polish letters to unicode in UTF-8 transformation */
 		};
 
 		/** @brief type used in internal map in letter_converter as key */
-		using translation_key_t = wchar_t;
+		using translation_key_t = char16_t;
 
 		/** @brief type used in internal map in letter_converter as value */
 		struct translation_value_t
 		{
-			const str eng;
+			const char_t eng;
 			const str html;
+			const str url;
 
-			translation_value_t(const char_t c, const str &s) : eng{1, c}, html{s} {};
+			translation_value_t(const char_t c, const str &s, const str& u) : eng{c}, html{s}, url{u} {};
 
 			/** @brief optimalized accessor */
 			template <conversion_t type>
-			str_v get() const
+			auto get() const
 			{
-				if constexpr (conversion_t::ENG == type)
-					return eng;
-				else
-					return html;
+				if 		constexpr (conversion_t::ENG == type ) return eng;
+				else if constexpr ( conversion_t::HTML == type ) return html;
+				else if constexpr ( conversion_t::URL == type ) return url;
+
+				core::dassert{ false, "invalid decision path" };
+				return decltype(get<type>()){};
 			}
 		};
 
 		/**
 		 * @brief provides polish -> international translation
 		*/
-		struct depolonizator
+		struct depolonizator : Log<depolonizator>
 		{
 			using translation_map_t = std::map<translation_key_t, translation_value_t>;
 			using kv_type = std::pair<const translation_key_t, translation_value_t>;
 			using iterator_t = decltype(((translation_map_t *)(nullptr))->cbegin());
 			/** @brief source of encies http://taat.pl/en/narzedzia/utf-8/#tab18 */
-			inline const static translation_map_t translation{std::initializer_list<kv_type>{
-				kv_type{L'ą', translation_value_t{'a', "&#261;"}},
+			inline static const translation_map_t translation{std::initializer_list<kv_type>{
 				
 				 	// polish chars
-					{L'ć', {'c', "&#263;"}},
-					{L'ę', {'e', "&#281;"}},
-					{L'ł', {'l', "&#322;"}},
-					{L'ń', {'n', "&#324;"}},
-					{L'ś', {'s', "&#347;"}},
-					{L'ó', {'o', "&#243;"}},
-					{L'ź', {'z', "&#378;"}},
-					{L'ż', {'z', "&#380;"}},
-					{L'Ą', {'A', "&#260;"}},
-					{L'Ć', {'C', "&#262;"}},
-					{L'Ę', {'E', "&#280;"}},
-					{L'Ł', {'L', "&#321;"}},
-					{L'Ń', {'N', "&#323;"}},
-					{L'Ś', {'S', "&#346;"}},
-					{L'Ó', {'O', "&#211;"}},
-					{L'Ź', {'Z', "&#377;"}},
-					{L'Ż', {'Z', "&#379;"}},
+			kv_type{u'ą', translation_value_t{'a', "&#261;", "#C4#85"}},
+					{u'ć', {'c', "&#263;", "#C4#87"}},
+					{u'ę', {'e', "&#281;", "#C4#99"}},
+					{u'ł', {'l', "&#322;", "#C5#82"}},
+					{u'ń', {'n', "&#324;", "#C5#84"}},
+					{u'ś', {'s', "&#347;", "#C5#9B"}},
+					{u'ó', {'o', "&#243;", "#C3#B3"}},
+					{u'ź', {'z', "&#378;", "#C5#BC"}},
+					{u'ż', {'z', "&#380;", "#C5#BA"}},
+					{u'Ą', {'A', "&#260;", "#C4#84"}},
+					{u'Ć', {'C', "&#262;", "#C4#86"}},
+					{u'Ę', {'E', "&#280;", "#C4#98"}},
+					{u'Ł', {'L', "&#321;", "#C5#81"}},
+					{u'Ń', {'N', "&#323;", "#C5#83"}},
+					{u'Ś', {'S', "&#346;", "#C5#9A"}},
+					{u'Ó', {'O', "&#211;", "#C3#93"}},
+					{u'Ź', {'Z', "&#377;", "#C5#BB"}},
+					{u'Ż', {'Z', "&#379;", "#C5#B9"}},
 
 					// special chars
-					{L'_', {'_', "&#95;"}},
-					{L' ', {' ', "&#32;"}},
-					{L'-', {'-', "&#45;"}}
+					{u'_', {'_', "&#95;", "_"}},
+					{u' ', {' ', "&#32;", "+"}},
+					{u'-', {'-', "&#45;", "-"}}
 				}
 			};
 
@@ -104,6 +105,14 @@ namespace core
 			/** @brief optimalized accessor */
 			template <conversion_t type>
 			static str_v get(translation_key_t letter) { return translation.at(letter).get<type>(); }
+
+			template<conversion_t type>
+			static char16_t reverse_get(const str_v& tag)
+			{
+				for(const auto& kv : translation) if( kv.second.get<type>() == tag ) return kv.first;
+				get_logger().warn() << "tag `" << tag << "` not found" << logger::endl;
+				return u'\0';
+			}
 		};
 	}
 
@@ -164,6 +173,36 @@ namespace core
 			return str_v{data};
 		}
 
+		/**
+		 * @brief returns the conversion engine object
+		 * 
+		 * @return std::wstring_convert
+		 */
+		static auto get_conversion_engine()
+		{
+			return std::wstring_convert<
+
+				deletable_facet<
+					std::codecvt<
+						char16_t, 
+						char_t, 
+						std::mbstate_t
+					>
+				>, 
+				char16_t
+
+			>{"Error", u"Error"};
+		}
+
+		/**
+		 * @brief do oposite job to demangle, works only for HTML
+		 * 
+		 * @tparam type format of replacement
+		 * @param out input and output
+		 */
+		template<conv_t type>
+		static void mangle(str& out) {}
+
 	private:
 
 		/** 
@@ -183,20 +222,20 @@ namespace core
 		 * 
 		 * @tparam type format of replacement
 		 * @param out input and output
-		 * @param fun additional processing of each letter 
+		 * @param fun additional processing of each letter
 		 */
 		template <conv_t type>
 		static void demangle(str &out, const modify_fun_t fun)
 		{
 			if (out.size() == 0) return;
 
-			std::wstring_convert<deletable_facet<std::codecvt<wchar_t, char_t, std::mbstate_t>>> conv{"Error", L"Error"};
-			std::wstring wout{conv.from_bytes(out)};
+			auto conv = get_conversion_engine();
+			std::u16string wout{conv.from_bytes(out)};
 			std::string output{};
 			if constexpr (conv_t::HTML == type) output.reserve(4 * wout.size());
 			else output.reserve(wout.size());
 
-			for (const wchar_t c : wout)
+			for (const auto c : wout)
 			{
 				if
 				(
@@ -204,7 +243,7 @@ namespace core
 					c <= std::numeric_limits<char_t>::max() and 
 					(
 						conv_t::ENG == type or 
-						( L'_' != c and L' ' != c and L'-' != c )
+						( u'_' != c and u' ' != c and u'-' != c )
 					)
 				) [[ likely ]] // in polish language most of letters are in <0;255> ASCII range
 				{
@@ -228,5 +267,6 @@ namespace core
 			out = std::move(output);
 		}
 	};
-
 }
+
+template<> void core::demangler::mangle<core::demangler::conv_t::HTML>(core::str &out);

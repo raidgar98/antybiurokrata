@@ -11,6 +11,7 @@
 
 // STL
 #include <iostream>
+#include <memory>
 #include <functional>
 #include <sstream>
 #include <cctype>
@@ -66,19 +67,25 @@ public:
 	 */
 	struct logger_piper
 	{
-		/** used as stringinizer */ 
-		std::stringstream ss; 
-		
-		/** restores stream to given settings */
-		const format_function& _do_reset;  
+		using ss_t = std::stringstream;
 
-		/**
-		 * @brief always resets stream to defaults and put data into stream
-		 */
-		~logger_piper()
+		/** restores stream to given settings */
+		format_function _do_reset;  
+
+		/** used as stringinizer */ 
+		std::shared_ptr<ss_t> ss; 
+
+		logger_piper(ss_t&& xss, const format_function& ff) : _do_reset{ff} 
 		{
-			std::cout << ss.str();
-			_do_reset(std::cout);
+			ss = std::shared_ptr<ss_t>{ new ss_t{ std::move(xss) }, [&](ss_t* ptr)
+			{
+				if(ptr)
+				{
+					std::cout << ptr->str() << std::endl;
+					_do_reset(std::cout);
+					delete ptr;
+				}
+			} };
 		}
 	};
 
@@ -105,24 +112,22 @@ public:
 	/**
 	 * @brief creates interface for stream usage
 	 * 
-	 * @tparam T make avaiable for any type
-	 * @param obj any object
 	 * @return logger_piper& struct that takes care about flush collected data
 	*/
-	template <typename T>
-	logger_piper start_stream(const T &obj) const
+	logger_piper start_stream() const
 	{
-		std::stringstream ss;
-		debug_format(ss);
-		ss << get_preambula(3);
-		ss << obj;
-		return logger_piper{ std::move(ss), reset_color_scheme };
+		return _config_logger_piper();
 	}
 
 	void dbg(const std::string &) const; 
 	void info(const std::string &) const;
 	void warn(const std::string &) const;
 	void error(const std::string &) const;
+
+	logger_piper dbg() const; 
+	logger_piper info() const;
+	logger_piper warn() const;
+	logger_piper error() const;
 
 	/**
 	 * @brief prints stacktrace
@@ -145,21 +150,15 @@ private:
 	std::string get_preambula(const uint16_t depth) const; 
 	logger(const std::string &preambula);
 	void print_out(const std::string &, const format_function &_format = logger::reset_color_scheme) const;
-};
 
-/**
- * @brief proxy function to inner operator
- * 
- * @tparam T any object
- * @param out self
- * @param obj any object
- * @return logger::logger_piper& self
- */
-template<typename T>
-inline typename logger::logger_piper operator<<(logger& out, const T& obj)
-{
-	return out.start_stream(obj);
-}
+	logger_piper _config_logger_piper(const format_function& fun = debug_format) const
+	{
+		std::stringstream ss;
+		fun(ss);
+		ss << get_preambula(4);
+		return logger_piper{ std::move(ss), reset_color_scheme };
+	}
+};
 
 /**
  * @brief This is interface that can be derived by any class. Thanks to CRTP mechanism customization is automatic
@@ -190,6 +189,19 @@ public:
  * @param v any object
  * @return logger::logger_piper&  returning self
  */
-template<typename T> inline typename logger::logger_piper& operator<<(logger::logger_piper&& src, const T& v) { src.ss << v; return src; }
-template<typename T> inline typename logger::logger_piper& operator<<(logger::logger_piper& src, const T& v) { src.ss << v; return src; }
+template<typename T> inline typename logger::logger_piper&& operator<<(logger::logger_piper&& src, const T& v) { *src.ss << v; return std::move(src); }
+// template<typename T> inline typename logger::logger_piper& operator<<(logger::logger_piper& src, const T& v) { src.ss << v; return src; }
 
+/**
+ * @brief proxy function to inner operator
+ * 
+ * @tparam T any object
+ * @param out self
+ * @param obj any object
+ * @return logger::logger_piper& self
+ */
+template<typename T>
+inline typename logger::logger_piper operator<<(logger& out, const T& obj)
+{
+	return out.start_stream() << obj;
+}

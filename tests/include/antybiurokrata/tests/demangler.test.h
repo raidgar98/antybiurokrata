@@ -11,78 +11,87 @@
 // using namespace core;core::
 using ::logger;
 using core::demangler;
+using typename core::str_v;
 
 template <typename T>
 inline const char *cast(const T ptr) { return reinterpret_cast<const char *>(ptr); }
 
 namespace demangler_tests_values
 {
-	constexpr char msg_01[] = "aaa";
-	const char *msg_02 = cast(u8"ąąą");
-	constexpr char msg_03[] = "&#261;&#261;&#261;";
-	constexpr char msg_04[] = "abba";
-	constexpr char msg_05[] = "abbą";
-	constexpr char msg_06[] = "abb&#261;";
+	constexpr str_v msg_01{"aaa"};
+	constexpr str_v msg_02{"ąąą"};
+	constexpr str_v msg_03{"&#261;&#261;&#261;"};
+	constexpr str_v msg_04{"abba"};
+	constexpr str_v msg_05{"abbą"};
+	constexpr str_v msg_06{"abb&#261;"};
+	constexpr str_v msg_07{"&#261;&#261;&xxx;"};
+	constexpr str_v msg_08{"&#261;&&&&&#261;"};
+	constexpr str_v msg_09{"&#261;&#&#&#&#261;"};
+	constexpr str_v msg_10{"&&&&&&&#261;&#&#&#&#261;"};
+	constexpr str_v msg_11{"ąą&xxx;"};
+	constexpr str_v msg_12{"ą&&&&ą"};
+	constexpr str_v msg_13{"ą&#&#&#ą"};
+	constexpr str_v msg_14{"&&&&&&ą&#&#&#ą"};
 }
 
 namespace tests
 {
 	using namespace boost::ut;
-	const suite demangler_tests = [] {
+	namespace ut = boost::ut;
+
+	const ut::suite demangler_tests = [] {
 		using namespace demangler_tests_values;
 		log << "entering `demangler_tests` suite" << logger::endl;
 		"case_01"_test = [] {
 			demangler dmg{msg_01};
-			expect(
-				 throws<typename core::exceptions::assert_exception>(
-					  [&]() { dmg.get(); }));
+			ut::expect(
+				ut::throws<typename core::exceptions::assert_exception>(
+					[&]() { dmg.get(); }));
+		};
+
+		"case_02"_test = [] {
+			const auto dmg = demangler{msg_01}();
+			ut::expect(ut::eq(dmg.get(), msg_01));
+		};
+
+		"cast_03"_test = [] {
+			const auto dmg = demangler{msg_02}();
+			ut::expect(ut::eq(dmg.get(), msg_01));
+		};
+
+		"cast_04"_test = [] {
+			const auto dmg = demangler{msg_02}.process<core::demangler::conv_t::HTML>();
+			ut::expect(ut::eq(dmg.get(), msg_03));
+		};
+
+		"cast_05"_test = [] {
+			const auto dmg = demangler{msg_05}();
+			ut::expect(ut::eq(dmg.get(), msg_04));
+		};
+
+		"cast_06"_test = [] {
+			const auto dmg = demangler{msg_05}.process<core::demangler::conv_t::HTML>();
+			ut::expect(ut::eq(dmg.get(), msg_06));
+		};
+
+		"cast_07"_test = [] {
+			core::str result{ msg_03 };
+			demangler::mangle<core::demangler::conv_t::HTML>(result);
+			ut::expect( ut::eq( result, msg_02 ) );
+		};
+
+		"cast_08"_test = []{
+			auto check = [](const str_v& in, const str_v& exp) -> void
+			{
+				core::str result{ in };
+				demangler::mangle<core::demangler::conv_t::HTML>(result);
+				ut::expect( ut::eq(exp, result) );
+			};
+
+			check( msg_07, msg_11 );
+			check( msg_08, msg_12 );
+			check( msg_09, msg_13 );
+			check( msg_10, msg_14 );
 		};
 	};
 }
-
-/*
-BOOST_AUTO_TEST_SUITE(demangler_tests)
-
-BOOST_AUTO_TEST_CASE(test_case_01)
-{
-	demangler dmg{msg_01};
-	check_exception<
-		typename core::exceptions::assert_exception>([&]() {
-		dmg.get();
-	}, "data is not processed yet, run `process` first");
-}
-
-BOOST_AUTO_TEST_CASE(test_case_02)
-{
-	const auto dmg = demangler{msg_01}();
-	test_check{dmg.get() == msg_01, "text should't change"};
-}
-
-BOOST_AUTO_TEST_CASE(test_case_03)
-{
-	const auto dmg = demangler{msg_02}();
-	TestLogger::get_logger() << "test_case_03: " << dmg.get() << "\n";
-	test_check{dmg.get() == msg_01, "text should change to msg_01"};
-}
-
-BOOST_AUTO_TEST_CASE(test_case_04)
-{
-	const auto dmg = demangler{msg_02}.process<core::demangler::conv_t::HTML>();
-	test_check{dmg.get() == msg_03, "text should change to msg_03"};
-}
-
-BOOST_AUTO_TEST_CASE(test_case_05)
-{
-	const auto dmg = demangler{msg_05}();
-	test_check{dmg.get() == msg_04, "text should change to msg_04"};
-}
-
-BOOST_AUTO_TEST_CASE(test_case_06)
-{
-	const auto dmg = demangler{msg_05}.process<core::demangler::conv_t::HTML>();
-	test_check{dmg.get() == msg_06, "text should change to msg_06"};
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-*/
