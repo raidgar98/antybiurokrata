@@ -34,7 +34,7 @@ namespace core
 		};
 
 		/** @brief type used in internal map in letter_converter as key */
-		using translation_key_t = char16_t;
+		using translation_key_t = u16char_t;
 
 		/** @brief type used in internal map in letter_converter as value */
 		struct translation_value_t
@@ -66,6 +66,7 @@ namespace core
 			using translation_map_t = std::map<translation_key_t, translation_value_t>;
 			using kv_type = std::pair<const translation_key_t, translation_value_t>;
 			using iterator_t = decltype(((translation_map_t *)(nullptr))->cbegin());
+
 			/** @brief source of encies http://taat.pl/en/narzedzia/utf-8/#tab18 */
 			inline static const translation_map_t translation{std::initializer_list<kv_type>{
 				
@@ -184,12 +185,12 @@ namespace core
 
 				deletable_facet<
 					std::codecvt<
-						char16_t, 
+						u16char_t, 
 						char_t, 
 						std::mbstate_t
 					>
 				>, 
-				char16_t
+				u16char_t
 
 			>{"Error", u"Error"};
 		}
@@ -230,8 +231,8 @@ namespace core
 			if (out.size() == 0) return;
 
 			auto conv = get_conversion_engine();
-			std::u16string wout{conv.from_bytes(out)};
-			std::string output{};
+			u16str wout{conv.from_bytes(out)};
+			str output{};
 			if constexpr (conv_t::HTML == type) output.reserve(4 * wout.size());
 			else output.reserve(wout.size());
 

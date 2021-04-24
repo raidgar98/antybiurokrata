@@ -12,7 +12,7 @@
  * @example "serialization ~ usage"
  * definig serializable class:
  * ```
- * struct _Example : public SerialHelper
+ * struct _Example : public serial_helper_t
  * {
  * 	ser<&_Example::_, int> a{1};
  * 	ser<&_Example::a, int> b{2};
@@ -73,12 +73,56 @@ namespace patterns
 		/**
 		 * @brief serialization helper. all it does is to append null_t as member (which mean end of serialization)
 		*/
-		struct SerialHelper
+		struct serial_helper_t
 		{
 			___null_t _{};
 		};
 
+		/** @brief this is put to stream as separator for members */
 		constexpr char delimiter{' '};
+
+		/** @brief This class is used by ser to deserialize next members */
+		struct get_from_stream
+		{
+			/**
+			 * @brief specialize this constructor for more complex types if required
+			 * 
+			 * @tparam stream_t any stream
+			 * @tparam Any any value_type
+			 * @param is reference to stream
+			 * @param any reference to object
+			 */
+			template<typename stream_t, typename Any>
+			get_from_stream( stream_t& is, Any& any )
+			{
+				is >> any;
+			}
+		};
+
+		/** @brief This class is used by ser to serialize class members */
+		struct put_to_stream
+		{
+			/**
+			 * @brief Construct specialize this constructor for more complex types if required
+			 * 
+			 * @tparam stream_t any stream
+			 * @tparam Any any value_type
+			 * @param os reference to stream
+			 * @param any const reference to stream
+			 */
+			template<typename stream_t, typename Any>
+			put_to_stream( stream_t& os, const Any& any )
+			{
+				os << any;
+			}
+		};
+
+		template<typename T>
+		concept serializable_req = 
+			std::is_constructible_v<get_from_stream, std::istream, T>
+		and
+			std::is_constructible_v<put_to_stream, std::ostream, T>
+		;
 
 		/**
 		 * @brief SE(rialization) R(ecursive) wrapper for struct/class members 
@@ -99,7 +143,7 @@ namespace patterns
 		 * @tparam Class::*value reference to member in class
 		 * @tparam T type of current member
 		*/
-		template <typename Class, typename Result, Result Class::*value, typename T>
+		template <typename Class, typename Result, Result Class::*value, serializable_req T>
 		struct ser<value, T>
 		{
 
@@ -138,7 +182,7 @@ namespace patterns
 			 * @return ser& return self
 			*/
 			template<typename U>
-			ser& operator=(U&& v) { val = std::move(v); }
+			ser& operator=(U&& v) { val = std::move(v); return *this; }
 
 			/**
 			 * @brief forwards copy assignment operator
@@ -148,7 +192,24 @@ namespace patterns
 			 * @return ser& return self
 			*/
 			template<typename U>
-			ser& operator=(const U& v) { val = v; }
+			ser& operator=(const U& v) { val = v; return *this; }
+
+			/**
+			 * @brief thanks to this operator, this interface is also getter
+			 * 
+			 * @return value_type& modifable reference to wrapped value
+			 */
+			value_type& operator()() { return val; }
+
+			/**
+			 * @brief same as previous, for compilator to decide which use when
+			 * 
+			 * @return const value_type& reference to wrapped value
+			*/
+			const value_type& operator()() const { return val; }
+
+			template<typename U>
+			void operator()(const U& u) { val = u; }
 
 			/**
 			 * @brief copying constructor for others members with same type
@@ -171,7 +232,8 @@ namespace patterns
 			void serialize(stream_t &os, const Class *that) const
 			{
 				(that->*value).serialize(os, that);
-				os << this->val << delimiter;
+				put_to_stream{ os, this->val };
+				os << delimiter;
 			}
 
 			/**
@@ -188,7 +250,8 @@ namespace patterns
 			{
 				if ((that->*value).serialize_coma_separated(os, that))
 					os << ", ";
-				os << this->val;
+
+				put_to_stream{os, this->val};
 				return true;
 			}
 
@@ -203,7 +266,8 @@ namespace patterns
 			void deserialize(stream_t &is, Class *that)
 			{
 				(that->*value).deserialize(is, that);
-				is >> val;
+
+				get_from_stream{is, this->val};
 				is.ignore(1, delimiter);
 			}
 		};

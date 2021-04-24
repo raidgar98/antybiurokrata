@@ -8,8 +8,8 @@ void core::demangler::mangle<core::demangler::conv_t::HTML>(core::str &out)
 		return;
 
 	auto converter = get_conversion_engine();
-	core::str result;
-	const std::string_view view{out};
+	str result;
+	const str_v view{out};
 	const std::ranges::split_view splitted{view, '&'};
 	bool first_it = true;
 
@@ -40,9 +40,9 @@ void core::demangler::mangle<core::demangler::conv_t::HTML>(core::str &out)
 		if(tag[1] != '#') result += tag;
 		else
 		{
-			const char16_t decoded = detail::depolonizator::reverse_get<core::demangler::conv_t::HTML>(tag);	// do lookup for specified tag
-			if(decoded == '\0') result += tag;	// if not found add tag
-			else result += converter.to_bytes(decoded);					// if found add decoded charachter
+			const u16char_t decoded = detail::depolonizator::reverse_get<core::demangler::conv_t::HTML>(tag);	// do lookup for specified tag
+			if(decoded == '\0') result += tag;				// if not found add tag
+			else result += converter.to_bytes(decoded);		// if found add decoded charachter
 		}
 		result += rest;
 	}
