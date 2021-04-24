@@ -41,7 +41,9 @@ namespace tests
 
 	const ut::suite demangler_tests = [] {
 		using namespace demangler_tests_values;
-		log << "entering `demangler_tests` suite" << logger::endl;
+		log.info() << "entering `demangler_tests` suite" << logger::endl;
+		logger::set_current_log_level<logger::log_level::NONE>();
+
 		"case_01"_test = [] {
 			demangler dmg{msg_01};
 			ut::expect(
@@ -93,5 +95,8 @@ namespace tests
 			check( msg_09, msg_13 );
 			check( msg_10, msg_14 );
 		};
+
+
+		logger::set_default_log_level();
 	};
 }

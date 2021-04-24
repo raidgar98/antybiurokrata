@@ -50,49 +50,54 @@ void logger::print_out(const std::string &msg, const format_function &_format) c
 
 void logger::print_stacktrace() const
 {
-	std::stringstream ss{};
-	ss << std::endl << std::endl << boost::stacktrace::stacktrace();
-	print_out( get_preambula(2) + ss.str(), debug_format );
+	// std::stringstream ss{};
+	// ss << std::endl << std::endl << boost::stacktrace::stacktrace();
+	// print_out( get_preambula(2) + ss.str(), debug_format );
+	dbg() << logger::endl << boost::stacktrace::stacktrace();
 }
 
 void logger::dbg(const std::string & msg) const
 {
+	if(!log_on_current_log_level<logger::log_level::DEBUG>()) return;
 	print_out( get_preambula(2) + msg, debug_format );
 }
 
 void logger::info(const std::string & msg) const
 {
+	if(!log_on_current_log_level<logger::log_level::INFO>()) return; 
 	print_out( get_preambula(2) + msg, info_format );
 }
 
 void logger::warn(const std::string & msg) const
 {
+	if(!log_on_current_log_level<logger::log_level::WARN>()) return; 
 	print_out( get_preambula(2) + msg, warn_format );
 }
 
 void logger::error(const std::string & msg) const
 {
+	if(!log_on_current_log_level<logger::log_level::ERROR>()) return; 
 	print_out( get_preambula(2) + msg, erro_format );
 }
 
 logger::logger_piper logger::dbg() const
 {
-	return _config_logger_piper();
+	return _config_logger_piper(log_on_current_log_level<logger::log_level::DEBUG>());
 }
 
 logger::logger_piper logger::info() const
 {
-	return _config_logger_piper(logger::info_format);
+	return _config_logger_piper(log_on_current_log_level<logger::log_level::INFO>(), logger::info_format);
 }
 
 logger::logger_piper logger::warn() const
 {
-	return _config_logger_piper(logger::warn_format);
+	return _config_logger_piper(log_on_current_log_level<logger::log_level::WARN>(), logger::warn_format);
 }
 
 logger::logger_piper logger::error() const
 {
-	return _config_logger_piper(logger::erro_format);
+	return _config_logger_piper(log_on_current_log_level<logger::log_level::ERROR>(), logger::erro_format);
 }
 
 bool logger::set_dump_file( const std::string& file )

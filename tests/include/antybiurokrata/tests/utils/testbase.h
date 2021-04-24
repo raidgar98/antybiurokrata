@@ -12,9 +12,9 @@ namespace core
 {
 	namespace testbase
 	{
-		struct TestLogger : public Log<TestLogger>
+		struct testbase_logger : public Log<testbase_logger>
 		{
-			using Log<TestLogger>::get_logger;
+			using Log<testbase_logger>::get_logger;
 		};
 	} // namespace testbase
 }
@@ -22,5 +22,5 @@ namespace core
 namespace tests
 {
 	using namespace core::testbase;
-	logger& log = core::testbase::TestLogger::get_logger();
+	logger& log = core::testbase::testbase_logger::get_logger();
 }

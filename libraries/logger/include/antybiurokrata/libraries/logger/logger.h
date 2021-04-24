@@ -45,6 +45,32 @@ public:
 
 	inline static const char endl{ '\n' };
 
+	/** @brief describes  */
+	enum class log_level : uint16_t
+	{
+		NONE	= 0,			/** @brief disables logging */
+		ERROR	= 1,			/** @brief prints only error messags */
+		WARN	= 2,			/** @brief prints errors + warnings */
+		INFO	= 3,			/** @brief prints errors + warnings + info */
+
+		/** @brief prints all  */
+		DEBUG	= std::numeric_limits<uint16_t>::max()
+	};
+
+	inline static log_level level{ log_level::DEBUG }; // by default log all
+
+	template<log_level lvl>
+	constexpr static bool log_on_current_log_level()
+	{
+		const uint16_t current = static_cast<uint16_t>(logger::level);
+		const uint16_t incoming = static_cast<uint16_t>(lvl);
+		return incoming <= current;
+	}
+
+	template<log_level lvl>
+	constexpr static void set_current_log_level() { logger::level = lvl; }
+	constexpr static void set_default_log_level() { set_current_log_level<log_level::DEBUG>(); }
+
 	/**
 	 * @brief Returns custom logger for selected class, very simple factory
 	 * 
@@ -73,15 +99,18 @@ public:
 		format_function _do_reset;  
 
 		/** used as stringinizer */ 
-		std::shared_ptr<ss_t> ss; 
+		std::shared_ptr<ss_t> ss;
 
-		logger_piper(ss_t&& xss, const format_function& ff) : _do_reset{ff} 
+		/** specifies whether steream will be flushed tio standard output */
+		bool will_be_printed;
+
+		logger_piper(ss_t&& xss, const bool print_out, const format_function& ff) : _do_reset{ff}, will_be_printed{print_out}
 		{
 			ss = std::shared_ptr<ss_t>{ new ss_t{ std::move(xss) }, [&](ss_t* ptr)
 			{
 				if(ptr)
 				{
-					std::cout << ptr->str() << std::endl;
+					if(will_be_printed) std::cout << ptr->str();
 					_do_reset(std::cout);
 					delete ptr;
 				}
@@ -151,12 +180,12 @@ private:
 	logger(const std::string &preambula);
 	void print_out(const std::string &, const format_function &_format = logger::reset_color_scheme) const;
 
-	logger_piper _config_logger_piper(const format_function& fun = debug_format) const
+	logger_piper _config_logger_piper(const bool print_out = true, const format_function& fun = debug_format) const
 	{
 		std::stringstream ss;
 		fun(ss);
 		ss << get_preambula(4);
-		return logger_piper{ std::move(ss), reset_color_scheme };
+		return logger_piper{ std::move(ss), print_out, reset_color_scheme };
 	}
 };
 

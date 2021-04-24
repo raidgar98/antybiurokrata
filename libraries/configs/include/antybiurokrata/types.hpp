@@ -27,6 +27,15 @@ namespace core
 	/** @brief unifies string view type in whole project */
 	using str_v = std::string_view;
 
+	/** @brief unifies string type for utf-8 */
+	using u16str = std::u16string;
+
+	/** @brief unifies char type for utf-8 */
+	using u16char_t = typename u16str::value_type;
+
+	/** @brief unifies string view type for utf-8 */
+	using u16str_v = std::u16string_view;
+
 	/**
 	 * @brief contains basic defninitions and tools for throwing exceptions
 	 */
@@ -119,8 +128,7 @@ namespace core
 				}
 				else [[unlikely]]
 				{
-					get_logger().error("Failed on check");
-					get_logger() << msg;
+					get_logger().error() << "Failed on check: "  << msg;
 					get_logger().print_stacktrace();
 					throw _ExceptionType(msg, std::forward<ExceptionArgs>(argv)...);
 				}
