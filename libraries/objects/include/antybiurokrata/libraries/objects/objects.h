@@ -54,8 +54,8 @@ namespace core
 
 				ser<&detail_orcid_t::_,	storage_t> identifier;
 
-				explicit detail_orcid_t(___null_t = ___null_t{}) {}
-				explicit detail_orcid_t(___null_t, const str_v& input) : detail_orcid_t{ std::move(from_string(input)) } {}
+				explicit detail_orcid_t() = default;
+				explicit detail_orcid_t(const str_v& input) : detail_orcid_t{ std::move(from_string(input)) } {}
 
 				explicit operator str() const
 				{ 

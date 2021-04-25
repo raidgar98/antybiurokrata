@@ -306,13 +306,24 @@ namespace patterns
 			class_t val;
 
 			/**
+			 * @brief forwards all constructors to wrapped class type and adds ___null_t if required
+			 * 
+			 * @tparam U any types
+			 * @param u any values of types U
+			*/
+			template <typename... U>
+			requires( std::is_constructible_v<class_t, ___null_t, U...> )
+			explicit cser(U &&...u) : val{___null_t{}, std::forward<U>(u)...} {}
+
+			/**
 			 * @brief forwards all constructors to wrapped class type
 			 * 
 			 * @tparam U any types
 			 * @param u any values of types U
 			*/
 			template <typename... U>
-			explicit cser(U &&...u) : val{___null_t{}, std::forward<U>(u)...} {}
+			requires( std::is_constructible_v<class_t, U...> )
+			explicit cser(U &&...u) : val{std::forward<U>(u)...} {}
 
 			/**
 			 * @brief serializes recursively class
