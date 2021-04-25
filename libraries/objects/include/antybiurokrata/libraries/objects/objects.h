@@ -93,23 +93,22 @@ namespace core
 
 			struct detail_string_holder_t : public serial_helper_t
 			{
-				
 				ser<&detail_string_holder_t::_,	u16str> data;
 
 				/** brief default constructor */
 				detail_string_holder_t() = default;
 
-				/** @brief Construct a new detail detail_string_holder_t object from string view*/
-				explicit detail_string_holder_t(const str_v& v);
+				/** @brief 1) Construct a new detail detail_string_holder_t object from string view; forwards to 2 */
+				explicit detail_string_holder_t(const str_v& v) : detail_string_holder_t{ str{v.data()} } {}
 
-				/** @brief Construct a new detail detail_string_holder_t object from string */
-				explicit detail_string_holder_t(const str& v);
+				/** @brief 2) Construct a new detail detail_string_holder_t object from string; forwards to 3 */
+				explicit detail_string_holder_t(const str& v) : detail_string_holder_t{ core::demangler<>::get_conversion_engine().from_bytes(v) } {}
 
-				/** @brief Construct a new detail detail_string_holder_t object from u16string_view */
+				/** @brief 3) Construct a new detail detail_string_holder_t object from u16string_view */
 				explicit detail_string_holder_t(const u16str_v& v);
 
-				/** @brief Construct a new detail detail_string_holder_t object from u16string */
-				explicit detail_string_holder_t(const u16str& v);
+				/** @brief 4) Construct a new detail detail_string_holder_t object from u16string; forwards to 3 */
+				explicit detail_string_holder_t(const u16str& v) : detail_string_holder_t{ u16str_v{v} } {}
 
 				/** @brief provides conversion to string*/
 				explicit operator str() const;
@@ -134,26 +133,41 @@ namespace core
 				*/
 				template<core::detail::conversion_t conv_t>
 				u16str get_as() const { return core::demangler<u16str, u16str_v>{ data() }.process<conv_t>().get_copy(); }
-				
+
+				/** @brief this function should transform string to comparable form, by default it does nothing */
+				virtual void unify() noexcept {}
+
+
 			};
 
 			/** @brief object representation and holder of polish name */
 			struct detail_polish_name_t : public detail_string_holder_t
 			{
-				/** brief default constructor */
+				constexpr static str_v msg_not_valid{ "given string is not valid for polish name" };
+
+				/** @brief default constructor */
 				detail_polish_name_t() = default;
 
-				/** @brief Construct a new detail polish name object from string view*/
-				explicit detail_polish_name_t(const str_v& v);
+				/**
+				 * @brief forward all constructors to parent
+				 * 
+				 * @tparam string_type basically everythink that can construct str or u16str
+				 */
+				template<typename string_type>
+				requires(!std::is_same_v<string_type, ___null_t>)
+				explicit detail_polish_name_t(string_type&& v) : detail_string_holder_t{std::forward<string_type>(v)} { validate(); }
 
-				/** @brief Construct a new detail polish name object from string */
-				explicit detail_polish_name_t(const str& v);
+			protected:
 
-				/** @brief Construct a new detail polish name object from u16string_view */
-				explicit detail_polish_name_t(const u16str_v& v);
+				/** @brief override this if you dervie from this class, it's guaranteed that data is set */
+				[[nodiscard]] virtual bool is_valid() const;
 
-				/** @brief Construct a new detail polish name object from u16string */
-				explicit detail_polish_name_t(const u16str& v);
+				/** 
+				 * @brief if validation fails it's throw assertion
+				 * 
+				 * @throw assert_exception if given string is not valid
+				 */
+				void validate() const { dassert{ is_valid(), msg_not_valid }; }
 			};
 			using polish_name_t = cser<&detail_polish_name_t::data>;
 

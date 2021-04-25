@@ -61,3 +61,18 @@ core::objects::detail::detail_orcid_t core::objects::detail::detail_orcid_t::fro
 
 	return result;
 }
+
+core::objects::detail::detail_string_holder_t::detail_string_holder_t(const core::u16str_v& v)
+{
+	using namespace core;
+	if(v.size() == 0) return;
+
+	const bool has_hashes{ v.find(u'#') != u16str_v::npos };
+	const bool has_ampersands{ v.find(u'&') != u16str_v::npos };
+
+	if(has_hashes)
+	{
+		if(has_ampersands) demangler<>::mangle<conv_t::HTML>(data());
+		else demangler<>::mangle<conv_t::URL>(data());
+	}else data(v);
+}
