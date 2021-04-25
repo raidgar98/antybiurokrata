@@ -200,22 +200,6 @@ namespace core
 		}
 
 		/**
-		 * @brief returns the conversion engine object
-		 * 
-		 * @return std::wstring_convert
-		 */
-		static auto get_conversion_engine()
-		{
-			/** 
-			 * @brief standard library abomination, to bypass deleter 
-			 * @link https://en.cppreference.com/w/cpp/locale/codecvt#Example
-			*/
-			using codecvt_t = std::codecvt<u16char_t, char_t, std::mbstate_t>;
-			struct deletable_codecvt : public codecvt_t { ~deletable_codecvt() {} };
-			return std::wstring_convert<deletable_codecvt, u16char_t>{"Error", u"Error"};
-		}
-
-		/**
 		 * @brief proxy to mangle(u16str&)
 		 * 
 		 * @tparam type format of replacement
@@ -224,7 +208,7 @@ namespace core
 		template <conv_t type>
 		static void mangle(str &out)
 		{
-			auto conv = get_conversion_engine();
+			auto conv = core::get_conversion_engine();
 			u16str tmp{conv.from_bytes(out)};
 			mangle<type>(tmp);
 			out = std::move(conv.to_bytes(tmp));
@@ -313,7 +297,7 @@ private:
 		template <conv_t type>
 		static void demangle(str &out)
 		{
-			auto conv = get_conversion_engine();
+			auto conv = core::get_conversion_engine();
 			u16str tmp{conv.from_bytes(out)};
 			demangle<type>(tmp);
 			out = std::move(conv.to_bytes(tmp));

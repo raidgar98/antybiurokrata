@@ -76,3 +76,24 @@ core::objects::detail::detail_string_holder_t::detail_string_holder_t(const core
 		else demangler<>::mangle<conv_t::URL>(data());
 	}else data(v);
 }
+
+bool core::objects::detail::detail_polish_name_t::is_valid() const
+{
+	std::cout << "BBBBB";
+	if(data().size() < 2) return false;
+	const std::locale pl_loc{ core::polish_locale.data() };
+	for(const u16char_t c : data()) if(!std::isalpha(static_cast<wchar_t>(c), pl_loc)) return false;
+	return true;
+}
+
+void core::objects::detail::detail_polish_name_t::unify() noexcept
+{
+	std::cout << "AAAA";
+	const std::locale pl_loc{ core::polish_locale.data() };
+	for(u16char_t& c : data()) c = static_cast<u16char_t>(std::toupper(static_cast<wchar_t>(c), pl_loc));
+}
+
+core::objects::detail::detail_string_holder_t::operator core::str() const
+{
+	return core::get_conversion_engine().to_bytes(data());
+}

@@ -19,6 +19,7 @@ namespace object_tests_values
 	{
 		constexpr str_v correct_01{"0000-0000-0000-0001"};
 		constexpr str_v correct_02{"0000-0000-0000-0000"};
+
 		constexpr str_v invalid_01{"0000-0000-0000-000"};
 		constexpr str_v invalid_02{"0000-0000-000-0000"};
 		constexpr str_v invalid_03{"0000-000-0000-0000"};
@@ -29,8 +30,29 @@ namespace object_tests_values
 		constexpr str_v invalid_08{"---"};
 	}
 
-	// NAMES
+	namespace names
+	{
+		constexpr str_v correct_pn_01{ "żółć" };
+		constexpr str_v correct_pn_02{ "jan" };
+		constexpr str_v correct_pn_03{ "ZoFia" };
+		constexpr str_v correct_pn_04{ "maryla" };
+		constexpr str_v correct_pn_05{ "krzysztoF" };
+		constexpr str_v correct_pn_06{ "ęąśćż" };
 
+		constexpr str_v invalid_pn_01{ "" };
+		constexpr str_v invalid_pn_02{ " " };
+		constexpr str_v invalid_pn_03{ " aaa" };
+		constexpr str_v invalid_pn_04{ "aaa " };
+		constexpr str_v invalid_pn_05{ "aaa_" };
+		constexpr str_v invalid_pn_06{ "aaa-" };
+		constexpr str_v invalid_pn_07{ "aaa+" };
+		constexpr str_v invalid_pn_08{ "a^aa" };
+		constexpr str_v invalid_pn_09{ "яяя" }; // invalid locale
+		constexpr str_v invalid_pn_10{ "a@a" };
+		constexpr str_v invalid_pn_11{ "a2a" };
+		constexpr str_v invalid_pn_12{ "111" };
+		constexpr str_v invalid_pn_13{ "|" };
+	};
 }
 
 namespace tests
@@ -74,14 +96,38 @@ namespace tests
 		};
 	};
 
-	const ut::suite account_tests = [] {
-		using namespace object_tests_values;
+	const ut::suite polish_name_tests = [] {
 		using namespace core::objects;
-		log.info() << "entering `orcid_tests` suite" << logger::endl;
+		using namespace object_tests_values::names;
+		log.info() << "entering `polish_name` suite" << logger::endl;
 		logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
 		"case_01"_test = [&] {
+			const auto validate_data = [&](const str_v& x) { ut::expect(ut::eq( testbase::to_upper(x), static_cast<str>( polish_name_t{ x }() ))); };
 
+			validate_data( correct_pn_01 );
+			validate_data( correct_pn_02 );
+			validate_data( correct_pn_03 );
+			validate_data( correct_pn_04 );
+			validate_data( correct_pn_05 );
+		};
+
+		"case_02"_test = [&] {
+			const auto expect_assertion = [](const str_v& x) { ut::expect( ut::throws<core::exceptions::assert_exception>( [&]{ polish_name_t{ x }; } ) ); };
+
+			expect_assertion( invalid_pn_01 );
+			expect_assertion( invalid_pn_02 );
+			expect_assertion( invalid_pn_03 );
+			expect_assertion( invalid_pn_04 );
+			expect_assertion( invalid_pn_05 );
+			expect_assertion( invalid_pn_06 );
+			expect_assertion( invalid_pn_07 );
+			expect_assertion( invalid_pn_08 );
+			expect_assertion( invalid_pn_09 );
+			expect_assertion( invalid_pn_10 );
+			expect_assertion( invalid_pn_11 );
+			expect_assertion( invalid_pn_12 );
+			expect_assertion( invalid_pn_13 );
 		};
 	};
 }

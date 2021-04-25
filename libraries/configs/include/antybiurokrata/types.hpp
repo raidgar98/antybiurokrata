@@ -13,6 +13,7 @@
 #include <antybiurokrata/libraries/logger/logger.h>
 
 // STL
+#include <locale>
 #include <concepts>
 #include <stdexcept>
 
@@ -35,6 +36,25 @@ namespace core
 
 	/** @brief unifies string view type for utf-8 */
 	using u16str_v = std::u16string_view;
+
+	/** @brief locale string for polish localization */
+	constexpr str_v polish_locale{ "pl_PL.UTF-8" };
+
+	/**
+	 * @brief returns the conversion engine object
+	 * 
+	 * @return std::wstring_convert
+	 */
+	inline auto get_conversion_engine()
+	{
+		/** 
+		 * @brief standard library abomination, to bypass deleter 
+		 * @link https://en.cppreference.com/w/cpp/locale/codecvt#Example
+		*/
+		using codecvt_t = std::codecvt<u16char_t, char_t, std::mbstate_t>;
+		struct deletable_codecvt : public codecvt_t { ~deletable_codecvt() {} };
+		return std::wstring_convert<deletable_codecvt, u16char_t>{"Error", u"Error"};
+	}
 
 	/**
 	 * @brief contains basic defninitions and tools for throwing exceptions

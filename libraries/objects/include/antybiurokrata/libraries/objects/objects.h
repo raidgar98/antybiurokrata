@@ -102,7 +102,7 @@ namespace core
 				explicit detail_string_holder_t(const str_v& v) : detail_string_holder_t{ str{v.data()} } {}
 
 				/** @brief 2) Construct a new detail detail_string_holder_t object from string; forwards to 3 */
-				explicit detail_string_holder_t(const str& v) : detail_string_holder_t{ core::demangler<>::get_conversion_engine().from_bytes(v) } {}
+				explicit detail_string_holder_t(const str& v) : detail_string_holder_t{ core::get_conversion_engine().from_bytes(v) } {}
 
 				/** @brief 3) Construct a new detail detail_string_holder_t object from u16string_view */
 				explicit detail_string_holder_t(const u16str_v& v);
@@ -133,11 +133,6 @@ namespace core
 				*/
 				template<core::detail::conversion_t conv_t>
 				u16str get_as() const { return core::demangler<u16str, u16str_v>{ data() }.process<conv_t>().get_copy(); }
-
-				/** @brief this function should transform string to comparable form, by default it does nothing */
-				virtual void unify() noexcept {}
-
-
 			};
 
 			/** @brief object representation and holder of polish name */
@@ -146,16 +141,19 @@ namespace core
 				constexpr static str_v msg_not_valid{ "given string is not valid for polish name" };
 
 				/** @brief default constructor */
-				detail_polish_name_t() = default;
+				// detail_polish_name_t() = default;
 
 				/**
-				 * @brief forward all constructors to parent
+				 * @brief forward all to parent constructor
 				 * 
 				 * @tparam string_type basically everythink that can construct str or u16str
 				 */
 				template<typename string_type>
 				requires(!std::is_same_v<string_type, ___null_t>)
-				explicit detail_polish_name_t(string_type&& v) : detail_string_holder_t{std::forward<string_type>(v)} { validate(); }
+				explicit detail_polish_name_t(string_type&& v) : detail_string_holder_t{std::forward<string_type>(v)} { validate(); unify(); }
+
+				/** @brief in this case it's proxy to toupper */
+				void unify() noexcept;
 
 			protected:
 
@@ -181,6 +179,7 @@ namespace core
 		}
 
 		using typename detail::orcid_t;
+		using typename detail::polish_name_t;
 		using typename detail::person_t;
 	}
 }

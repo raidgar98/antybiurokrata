@@ -16,11 +16,13 @@ namespace core
 		{
 			using Log<testbase_logger>::get_logger;
 		};
+
+		str to_upper(const str_v& v);
 	} // namespace testbase
 }
 
 namespace tests
 {
 	using namespace core::testbase;
-	logger& log = core::testbase::testbase_logger::get_logger();
+	extern logger& log;
 }
