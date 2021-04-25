@@ -225,7 +225,6 @@ public:
  * @return logger::logger_piper&  returning self
  */
 template<typename T> inline typename logger::logger_piper&& operator<<(logger::logger_piper&& src, const T& v) { *src.ss << v; return std::move(src); }
-// template<typename T> inline typename logger::logger_piper& operator<<(logger::logger_piper& src, const T& v) { src.ss << v; return src; }
 
 /**
  * @brief proxy function to inner operator

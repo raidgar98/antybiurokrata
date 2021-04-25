@@ -17,7 +17,11 @@
 #include <locale>
 #include <string>
 #include <tuple>
+#include <regex>
 #include <map>
+
+template<> typename logger::logger_piper&& operator<< <>(logger::logger_piper&& src, const core::u16str_v& v);
+template<> typename logger::logger_piper&& operator<< <>(logger::logger_piper&& src, const core::u16str& v);
 
 namespace core
 {
@@ -28,9 +32,9 @@ namespace core
 		 */
 		enum conversion_t
 		{
-			ENG = 0, /** @brief this will just replace polish 'ąśćźżółę' to 'asczzole' */
+			ENG = 0,  /** @brief this will just replace polish 'ąśćźżółę' to 'asczzole' */
 			HTML = 1, /** @brief this will replace polish letters to html codes (sanitizing) */
-			URL = 2 /**  @brief this will replace polish letters to unicode in UTF-8 transformation */
+			URL = 2	  /**  @brief this will replace polish letters to unicode in UTF-8 transformation */
 		};
 
 		/** @brief type used in internal map in letter_converter as key */
@@ -39,21 +43,24 @@ namespace core
 		/** @brief type used in internal map in letter_converter as value */
 		struct translation_value_t
 		{
-			const char_t eng;
-			const str html;
-			const str url;
+			const u16char_t eng;
+			const u16str html;
+			const u16str url;
 
-			translation_value_t(const char_t c, const str &s, const str& u) : eng{c}, html{s}, url{u} {};
+			translation_value_t(const u16char_t c, const u16str &s, const u16str &u) : eng{c}, html{s}, url{u} {};
 
 			/** @brief optimalized accessor */
 			template <conversion_t type>
 			auto get() const
 			{
-				if 		constexpr (conversion_t::ENG == type ) return eng;
-				else if constexpr ( conversion_t::HTML == type ) return html;
-				else if constexpr ( conversion_t::URL == type ) return url;
+				if constexpr (conversion_t::ENG == type)
+					return eng;
+				else if constexpr (conversion_t::HTML == type)
+					return u16str_v{html};
+				else if constexpr (conversion_t::URL == type)
+					return u16str_v{url};
 
-				core::dassert{ false, "invalid decision path" };
+				core::dassert{false, "invalid decision path"};
 				return decltype(get<type>()){};
 			}
 		};
@@ -69,33 +76,31 @@ namespace core
 
 			/** @brief source of encies http://taat.pl/en/narzedzia/utf-8/#tab18 */
 			inline static const translation_map_t translation{std::initializer_list<kv_type>{
-				
-				 	// polish chars
-			kv_type{u'ą', translation_value_t{'a', "&#261;", "#C4#85"}},
-					{u'ć', {'c', "&#263;", "#C4#87"}},
-					{u'ę', {'e', "&#281;", "#C4#99"}},
-					{u'ł', {'l', "&#322;", "#C5#82"}},
-					{u'ń', {'n', "&#324;", "#C5#84"}},
-					{u'ś', {'s', "&#347;", "#C5#9B"}},
-					{u'ó', {'o', "&#243;", "#C3#B3"}},
-					{u'ź', {'z', "&#378;", "#C5#BC"}},
-					{u'ż', {'z', "&#380;", "#C5#BA"}},
-					{u'Ą', {'A', "&#260;", "#C4#84"}},
-					{u'Ć', {'C', "&#262;", "#C4#86"}},
-					{u'Ę', {'E', "&#280;", "#C4#98"}},
-					{u'Ł', {'L', "&#321;", "#C5#81"}},
-					{u'Ń', {'N', "&#323;", "#C5#83"}},
-					{u'Ś', {'S', "&#346;", "#C5#9A"}},
-					{u'Ó', {'O', "&#211;", "#C3#93"}},
-					{u'Ź', {'Z', "&#377;", "#C5#BB"}},
-					{u'Ż', {'Z', "&#379;", "#C5#B9"}},
 
-					// special chars
-					{u'_', {'_', "&#95;", "_"}},
-					{u' ', {' ', "&#32;", "+"}},
-					{u'-', {'-', "&#45;", "-"}}
-				}
-			};
+				// polish chars
+				kv_type{u'ą', translation_value_t{u'a', u"&#261;", u"#C4#85"}},
+				{u'ć', {u'c', u"&#263;", u"#C4#87"}},
+				{u'ę', {u'e', u"&#281;", u"#C4#99"}},
+				{u'ł', {u'l', u"&#322;", u"#C5#82"}},
+				{u'ń', {u'n', u"&#324;", u"#C5#84"}},
+				{u'ś', {u's', u"&#347;", u"#C5#9B"}},
+				{u'ó', {u'o', u"&#243;", u"#C3#B3"}},
+				{u'ź', {u'z', u"&#378;", u"#C5#BC"}},
+				{u'ż', {u'z', u"&#380;", u"#C5#BA"}},
+				{u'Ą', {u'A', u"&#260;", u"#C4#84"}},
+				{u'Ć', {u'C', u"&#262;", u"#C4#86"}},
+				{u'Ę', {u'E', u"&#280;", u"#C4#98"}},
+				{u'Ł', {u'L', u"&#321;", u"#C5#81"}},
+				{u'Ń', {u'N', u"&#323;", u"#C5#83"}},
+				{u'Ś', {u'S', u"&#346;", u"#C5#9A"}},
+				{u'Ó', {u'O', u"&#211;", u"#C3#93"}},
+				{u'Ź', {u'Z', u"&#377;", u"#C5#BB"}},
+				{u'Ż', {u'Z', u"&#379;", u"#C5#B9"}},
+
+				// special chars
+				{u'_', {u'_', u"&#95;", u"_"}},
+				{u' ', {u' ', u"&#32;", u"+"}},
+				{u'-', {u'-', u"&#45;", u"-"}}}};
 
 			static std::tuple<bool, iterator_t> safe_get(translation_key_t letter)
 			{
@@ -107,71 +112,91 @@ namespace core
 			template <conversion_t type>
 			static str_v get(translation_key_t letter) { return translation.at(letter).get<type>(); }
 
-			template<conversion_t type>
-			static char16_t reverse_get(const str_v& tag)
+			template <conversion_t type>
+			static char16_t reverse_get(const u16str_v &tag)
 			{
-				for(const auto& kv : translation) if( kv.second.get<type>() == tag ) return kv.first;
+				for (const auto &kv : translation)
+					if (kv.second.get<type>() == tag)
+						return kv.first;
 				get_logger().warn() << "tag `" << tag << "` not found" << logger::endl;
 				return u'\0';
 			}
 		};
 	}
+	using conv_t = detail::conversion_t;
 
-	class demangler : public Log<demangler>
+	/** @brief this narrows demangler to types used in project, no need to add support for more string types */
+	template <typename string_type>
+	concept acceptable_string_types_req = std::is_same_v<string_type, str> || std::is_same_v<string_type, u16str>;
+
+	/** @brief this narrows demangler to types used in project, no need to add support for more string view types */
+	template <typename string_view_type>
+	concept acceptable_string_view_types_req = std::is_same_v<string_view_type, str_v> || std::is_same_v<string_view_type, u16str_v>;
+
+	template <acceptable_string_types_req string_type = str, acceptable_string_view_types_req string_view_type = str_v>
+	class demangler : public Log<demangler<string_type, string_view_type>>
 	{
 		using Log<demangler>::log;
 
-		str data;
-		bool processed{ false };
+		string_type data;
+		bool processed{false};
 
 	public:
-
-		using conv_t = detail::conversion_t;
 		using modify_fun_t = std::function<char_t(char_t)>;
 		inline static const modify_fun_t default_fun = [](char_t c) { return c; };
 
-		template<typename ... U>
-		explicit demangler(U&& ... u) : data{ std::forward<U>(u)... } {}
+		template <typename... U>
+		explicit demangler(U &&...u) : data{std::forward<U>(u)...} {}
 
 		/**
 		 * @brief performs processing, and guards to not do it twice
 		 * 
 		 * @tparam type format of replacement
-		 * @param fun additional processing of each letter
 		 * @return demangler& self
 		 */
-		template<conv_t type>
-		demangler& process(const modify_fun_t fun = default_fun) 
-		{ 
-			if(!processed)
+		template <conv_t type>
+		demangler &process()
+		{
+			if (!processed)
 			{
-				demangle<type>(data, fun);
+				demangle<type>(data);
 				processed = true;
 			}
-			return *this; 
+			return *this;
 		}
 
 		/**
 		 * @brief proxy to process<>
 		 * 
-		 * @param fun additional processing of each letter
 		 * @return demangler& self
 		 */
-		demangler& operator()(const modify_fun_t fun = default_fun)
-		{ 
-			return process<conv_t::ENG>(fun); 
+		demangler &operator()()
+		{
+			return process<conv_t::ENG>();
 		}
 
 		/**
 		 * @brief gets view on processed data
 		 * 
 		 * @throws assert_exception if data is not processed yet
-		 * @return str_v view of processed data
+		 * @return string_view_type 
 		 */
-		str_v get() const 
+		string_view_type get() const
 		{
-			dassert( processed, "data is not processed yet, run `process` first" );
-			return str_v{data};
+			dassert(processed, "data is not processed yet, run `process` first");
+			return string_view_type{data};
+		}
+
+		/**
+		 * @brief gets copy of processed data
+		 * 
+		 * @throws assert_exception if data is not processed yet
+		 * @return string_type
+		 */
+		string_type get_copy() const
+		{
+			dassert(processed, "data is not processed yet, run `process` first");
+			return data;
 		}
 
 		/**
@@ -181,18 +206,17 @@ namespace core
 		 */
 		static auto get_conversion_engine()
 		{
-			return std::wstring_convert<
+			/** 
+			 * @brief standard library abomination, to bypass deleter 
+			 * @link https://en.cppreference.com/w/cpp/locale/codecvt#Example
+			*/
+			using codecvt_t = std::codecvt<u16char_t, char_t, std::mbstate_t>;
+			struct deletable_codecvt : public codecvt_t
+			{
+				~deletable_codecvt() {}
+			};
 
-				deletable_facet<
-					std::codecvt<
-						u16char_t, 
-						char_t, 
-						std::mbstate_t
-					>
-				>, 
-				u16char_t
-
-			>{"Error", u"Error"};
+			return std::wstring_convert<deletable_codecvt, u16char_t>{"Error", u"Error"};
 		}
 
 		/**
@@ -201,73 +225,134 @@ namespace core
 		 * @tparam type format of replacement
 		 * @param out input and output
 		 */
-		template<conv_t type>
-		static void mangle(str& out) {}
+		template <conv_t type>
+		requires(type == conv_t::HTML) 
+		static void mangle(u16str &out)
+		{
+			static const auto valid_html_tag = [](const u16str_v& view) -> bool
+			{
+				if(view.size() < 4) return false;
+				if(view.at(0) != u'&') return false;
+				if(view.at(1) != u'#') return false;
+				if(view.at(view.size() - 1) != u';') return false;
+				for(size_t i = 2; i < view.size() - 1; i++) if( !std::iswdigit(view.at(i)) ) return false;
+				return true;
+			};
+
+			if (out.size() == 0)
+				return;
+
+			u16str_v view{out};
+			const std::ranges::split_view splitted{view, u'&'};
+			u16str result;
+			bool first_it = true;
+
+			for (const auto & line : splitted)
+			{
+				const long length{std::ranges::distance(line)};
+				if (length == 0)
+				{
+					if (first_it) first_it = false;
+					else result += u'&';
+					continue;
+				}
+
+				u16str tag{u"&"}; tag.reserve(length);
+				u16str rest; rest.reserve(length);
+
+				u16str *save_point = &tag;
+
+				// tag save to one varriable, rest of splitted data to another
+				for (const u16char_t c : line)
+				{
+					*save_point += c;
+					if (c == u';') save_point = &rest;
+				}
+
+				// if given text does not match regex, just add this as whole
+				if (!valid_html_tag(tag)) result += tag;
+				else
+				{
+					const u16char_t decoded = detail::depolonizator::reverse_get<type>(tag); // do lookup for specified tag
+					if (decoded == u'\0') result += tag; // if not found add tag
+					else result += decoded; // if found add decoded charachter
+				}
+				result += rest;
+			}
+
+			result.shrink_to_fit();
+			out = std::move(result);
+		}
+
+		template <conv_t type>
+		static void mangle(str &out)
+		{
+			auto conv = get_conversion_engine();
+			u16str tmp{conv.from_bytes(out)};
+			mangle<type>(tmp);
+			out = std::move(conv.to_bytes(tmp));
+		}
 
 	private:
-
-		/** 
-		 * @brief standard library abomination, to bypass deleter 
-		 * @link https://en.cppreference.com/w/cpp/locale/codecvt#Example
-		 */
-		template<class Facet>
-		struct deletable_facet : Facet
-		{
-			template<class ...Args>
-			deletable_facet(Args&& ...args) : Facet(std::forward<Args>(args)...) {}
-			~deletable_facet() {}
-		};
-
 		/**
 		 * @brief do all job, by replacing polish chars to selected one
 		 * 
 		 * @tparam type format of replacement
-		 * @param out input and output
-		 * @param fun additional processing of each letter
+		 * @param out input and output as u16str
 		 */
 		template <conv_t type>
-		static void demangle(str &out, const modify_fun_t fun)
+		static void demangle(u16str &out)
 		{
-			if (out.size() == 0) return;
+			if (out.size() == 0)
+				return;
 
-			auto conv = get_conversion_engine();
-			u16str wout{conv.from_bytes(out)};
-			str output{};
-			if constexpr (conv_t::HTML == type) output.reserve(4 * wout.size());
-			else output.reserve(wout.size());
+			u16str wout{};
 
-			for (const auto c : wout)
+			if constexpr (conv_t::HTML == type)
+				wout.reserve(4 * wout.size());
+			else
+				wout.reserve(wout.size());
+
+			for (const u16char_t c : out)
 			{
-				if
-				(
+				if (
 					// if it's ENG, just check if it's in ASCII range, otherwise exclude ' _-' chars
-					c <= std::numeric_limits<char_t>::max() and 
-					(
-						conv_t::ENG == type or 
-						( u'_' != c and u' ' != c and u'-' != c )
-					)
-				) [[ likely ]] // in polish language most of letters are in <0;255> ASCII range
+					c <= std::numeric_limits<char_t>::max() and
+					(conv_t::ENG == type or
+					 (u'_' != c and u' ' != c and u'-' != c))) [[likely]] // in polish language most of letters are in <0;255> ASCII range
 				{
-					output += fun(static_cast<char_t>(c));
+					wout += c;
 				}
 				else
 				{
-					auto [found, it] = detail::depolonizator::safe_get(c);
-					str tmp;
-
-					if(found) tmp = it->second.get<type>();
-					else tmp = conv.to_bytes(c);
-
-					if constexpr ( conv_t::ENG == type )
-					{
-						dassert{ tmp.size() == 1, "return should contain only one char" };
-						output += fun(tmp[0]);
-					}else output += tmp;
+					const auto [found, it] = detail::depolonizator::safe_get(c);
+					if (found)
+						wout += it->second.get<type>();
+					else
+						out += c;
 				}
 			}
-			out = std::move(output);
+
+			wout.shrink_to_fit();
+			out = std::move(wout);
+		}
+
+		/**
+		 * @brief proxy to demangle(u16str&)
+		 * 
+		 * @tparam type format of replacement
+		 * @param out input and output as str
+		 */
+		template <conv_t type>
+		static void demangle(str &out)
+		{
+			auto conv = get_conversion_engine();
+			u16str tmp{conv.from_bytes(out)};
+			demangle<type>(tmp);
+			out = std::move(conv.to_bytes(tmp));
 		}
 	};
 }
 
-template<> void core::demangler::mangle<core::demangler::conv_t::HTML>(core::str &out);
+// template <>
+// void core::demangler<>::mangle<core::demangler<>::conv_t::HTML>(core::str &out);

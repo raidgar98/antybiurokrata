@@ -9,17 +9,9 @@
 
 #pragma once
 
-// STL
-#include <ranges>
-#include <regex>
-#include <charconv>
-#include <iomanip>
-
 // Project
-#include <antybiurokrata/libraries/logger/logger.h>
 #include <antybiurokrata/libraries/patterns/seiralizer.hpp>
-#include <antybiurokrata/types.hpp>
-
+#include <antybiurokrata/libraries/demangler/demangler.h>
 
 template<> patterns::serial::put_to_stream::put_to_stream<> (std::ostream& os, const std::array<uint16_t, 4>& data);
 template<> patterns::serial::get_from_stream::get_from_stream<> (std::istream& is, std::array<uint16_t, 4>& data);
@@ -54,51 +46,122 @@ namespace core
 
 				ser<&detail_orcid_t::_,	storage_t> identifier;
 
+				/** @brief default constructor */
 				explicit detail_orcid_t() = default;
+
+				/**
+				 * @brief Construct a new detail orcid t object
+				 * 
+				 * @param input valid orcid as string_view
+				*/
 				explicit detail_orcid_t(const str_v& input) : detail_orcid_t{ std::move(from_string(input)) } {}
 
-				explicit operator str() const
-				{ 
-					std::stringstream result;
-					for(auto it = this->identifier().begin(); it != this->identifier().end(); it++)
-					{
-						if(it != this->identifier().begin()) result << std::setw(1) << '-';
-						result << std::setfill('0') << std::setw(4) << std::to_string(*it);
-					}
-					return result.str();
-				}
+				/**
+				 * @brief provides easy conversion to string
+				 * 
+				 * @return str
+				*/
+				explicit operator str() const { return to_string(*this); }
 
-				static bool is_valid(const str_v& data)
-				{
-					const static std::regex orcid_validator_regex{ "(\\d{4}-){3}\\d{4}" };
-					return std::regex_match( data.data() , orcid_validator_regex );
-				}
+				/**
+				 * @brief implementation of detail_orcid_t -> std::string conversion
+				 * 
+				 * @param orcid object to convert
+				 * @return str
+				 */
+				static str to_string(const detail_orcid_t& orcid);
 
-				static detail_orcid_t from_string(const str_v& data)
-				{
-					dassert{ is_valid(data), "given string is not valid ORCID number" };
-					const std::ranges::split_view splitter{ data, '-' };
-					detail_orcid_t result{};
+				/**
+				 * @brief checks is given string is proper as orcid
+				 * 
+				 * @param data orcid string to check
+				 * @return true if string is valid
+				 * @return false if string is not valid
+				 */
+				static bool is_valid(const str_v& data);
 
-					size_t i = 0;
-					for(const auto& part : splitter)
-					{
-						str x; x.reserve( std::ranges::distance(part) );
-						for(const auto c : part) x += c;
-						result.identifier()[i] = static_cast<uint16_t>( std::stoi(x) );
-						i++;
-					}
-
-					return result;
-				}
+				/**
+				 * @brief implementation of std::string -> detail_orcid_t conversion
+				 * 
+				 * @param data orcid string 
+				 * @return detail_orcid_t 
+				 * @throw assert_exception thrown if string is not valid
+				*/
+				static detail_orcid_t from_string(const str_v& data);
 			};
 			using orcid_t = cser<&detail_orcid_t::identifier>;
 
+			struct detail_string_holder_t : public serial_helper_t
+			{
+				
+				ser<&detail_string_holder_t::_,	u16str> data;
+
+				/** brief default constructor */
+				detail_string_holder_t() = default;
+
+				/** @brief Construct a new detail detail_string_holder_t object from string view*/
+				explicit detail_string_holder_t(const str_v& v);
+
+				/** @brief Construct a new detail detail_string_holder_t object from string */
+				explicit detail_string_holder_t(const str& v);
+
+				/** @brief Construct a new detail detail_string_holder_t object from u16string_view */
+				explicit detail_string_holder_t(const u16str_v& v);
+
+				/** @brief Construct a new detail detail_string_holder_t object from u16string */
+				explicit detail_string_holder_t(const u16str& v);
+
+				/** @brief provides conversion to string*/
+				explicit operator str() const;
+
+				/** @brief provides conversion to u16string_view*/
+				explicit operator u16str_v() const { return u16str_v{ data() }; }
+
+				/**
+				 * @brief provides conversion easy conversion with demangler
+				 * 
+				 * @tparam conv_t type of conversion
+				 * @return str 
+				*/
+				template<core::detail::conversion_t conv_t>
+				str get_as() const { return core::demangler<str, str_v>{ static_cast<str>(*this) }.process<conv_t>().get_copy(); }
+
+				/**
+				 * @brief provides conversion easy conversion with demangler
+				 * 
+				 * @tparam conv_t type of conversion
+				 * @return u16str 
+				*/
+				template<core::detail::conversion_t conv_t>
+				u16str get_as() const { return core::demangler<u16str, u16str_v>{ data() }.process<conv_t>().get_copy(); }
+				
+			};
+
+			/** @brief object representation and holder of polish name */
+			struct detail_polish_name_t : public detail_string_holder_t
+			{
+				/** brief default constructor */
+				detail_polish_name_t() = default;
+
+				/** @brief Construct a new detail polish name object from string view*/
+				explicit detail_polish_name_t(const str_v& v);
+
+				/** @brief Construct a new detail polish name object from string */
+				explicit detail_polish_name_t(const str& v);
+
+				/** @brief Construct a new detail polish name object from u16string_view */
+				explicit detail_polish_name_t(const u16str_v& v);
+
+				/** @brief Construct a new detail polish name object from u16string */
+				explicit detail_polish_name_t(const u16str& v);
+			};
+			using polish_name_t = cser<&detail_polish_name_t::data>;
+
 			struct detail_person_t : public serial_helper_t
 			{
-				ser<&detail_person_t::_,		str>		name;
-				ser<&detail_person_t::name,		str>		surname;
-				ser<&detail_person_t::surname,	orcid_t>	orcid;
+				ser<&detail_person_t::_,		polish_name_t>	name;
+				ser<&detail_person_t::name,		polish_name_t>	surname;
+				ser<&detail_person_t::surname,	orcid_t>		orcid;
 			};
 			using person_t = cser<&detail_person_t::orcid>;
 		}

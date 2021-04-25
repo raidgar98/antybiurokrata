@@ -1,51 +1,13 @@
 #include <antybiurokrata/libraries/demangler/demangler.h>
-#include <ranges>
 
-template <>
-void core::demangler::mangle<core::demangler::conv_t::HTML>(core::str &out)
+template<> typename logger::logger_piper&& operator<< <>(logger::logger_piper&& src, const core::u16str_v& v)
 {
-	if (out.size() == 0)
-		return;
+    const core::u16str ss{ v.data() };
+    return std::move(src) << ss;
+}
 
-	auto converter = get_conversion_engine();
-	str result;
-	const str_v view{out};
-	const std::ranges::split_view splitted{view, '&'};
-	bool first_it = true;
-
-	for (const auto &line : splitted)
-	{
-		const long length{ std::ranges::distance(line) };
-		if(length == 0)
-		{
-			if(first_it) first_it = false;
-			else result += '&';
-			continue;
-		}
-
-		core::str tag{"&"}, rest; 
-		tag.reserve(length);
-		rest.reserve(length);
-
-		core::str* save_point = &tag;
-
-		// tag save to one varriable, rest of splitted data to another
-		for (const auto c : line)
-		{
-			*save_point += c;
-			if(c == ';') save_point = &rest;
-		}
-
-		// if first letter is not #, then it's not HTML tag
-		if(tag[1] != '#') result += tag;
-		else
-		{
-			const u16char_t decoded = detail::depolonizator::reverse_get<core::demangler::conv_t::HTML>(tag);	// do lookup for specified tag
-			if(decoded == '\0') result += tag;				// if not found add tag
-			else result += converter.to_bytes(decoded);		// if found add decoded charachter
-		}
-		result += rest;
-	}
-
-	out = std::move(result);
+template<> typename logger::logger_piper&& operator<< <>(logger::logger_piper&& src, const core::u16str& v)
+{
+    const core::str gen = core::demangler<>::get_conversion_engine().to_bytes(v);
+    return std::move(src) << gen;
 }

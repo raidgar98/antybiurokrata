@@ -49,41 +49,42 @@ namespace tests
 		};
 
 		"case_02"_test = [] {
-			const auto dmg = demangler{msg_01}();
+			const auto dmg = demangler<>{msg_01}();
 			ut::expect(ut::eq(dmg.get(), msg_01));
 		};
 
-		"cast_03"_test = [] {
-			const auto dmg = demangler{msg_02}();
+		"case_03"_test = [] {
+			const auto dmg = demangler<>{msg_02}();
 			ut::expect(ut::eq(dmg.get(), msg_01));
 		};
 
-		"cast_04"_test = [] {
-			const auto dmg = demangler{msg_02}.process<core::demangler::conv_t::HTML>();
+		"case_04"_test = [] {
+			const auto dmg = demangler<>{msg_02}.process<core::conv_t::HTML>();
 			ut::expect(ut::eq(dmg.get(), msg_03));
 		};
 
-		"cast_05"_test = [] {
-			const auto dmg = demangler{msg_05}();
+		"case_05"_test = [] {
+			const auto dmg = demangler<>{msg_05}();
 			ut::expect(ut::eq(dmg.get(), msg_04));
 		};
 
-		"cast_06"_test = [] {
-			const auto dmg = demangler{msg_05}.process<core::demangler::conv_t::HTML>();
+		"case_06"_test = [] {
+			const auto dmg = demangler<>{msg_05}.process<core::conv_t::HTML>();
 			ut::expect(ut::eq(dmg.get(), msg_06));
 		};
 
-		"cast_07"_test = [] {
+		"case_07"_test = [] {
+			logger::set_current_log_level<logger::log_level::DEBUG>();
 			core::str result{ msg_03 };
-			demangler::mangle<core::demangler::conv_t::HTML>(result);
+			demangler<>::mangle<core::conv_t::HTML>(result);
 			ut::expect( ut::eq( result, msg_02 ) );
 		};
 
-		"cast_08"_test = []{
+		"case_08"_test = []{
 			auto check = [](const str_v& in, const str_v& exp) -> void
 			{
 				core::str result{ in };
-				demangler::mangle<core::demangler::conv_t::HTML>(result);
+				demangler<>::mangle<core::conv_t::HTML>(result);
 				ut::expect( ut::eq(exp, result) );
 			};
 
