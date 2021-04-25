@@ -13,9 +13,6 @@ using ::logger;
 using core::demangler;
 using typename core::str_v;
 
-template <typename T>
-inline const char *cast(const T ptr) { return reinterpret_cast<const char *>(ptr); }
-
 namespace demangler_tests_values
 {
 	constexpr str_v msg_01{"aaa"};
@@ -42,7 +39,7 @@ namespace tests
 	const ut::suite demangler_tests = [] {
 		using namespace demangler_tests_values;
 		log.info() << "entering `demangler_tests` suite" << logger::endl;
-		logger::set_current_log_level<logger::log_level::NONE>();
+		logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
 		"case_01"_test = [] {
 			demangler dmg{msg_01};
@@ -95,8 +92,5 @@ namespace tests
 			check( msg_09, msg_13 );
 			check( msg_10, msg_14 );
 		};
-
-
-		logger::set_default_log_level();
 	};
 }

@@ -13,7 +13,7 @@ find_package(ut REQUIRED)
 
 set( TEST_HEADERS )
 foreach( val ${tests_headers})
-	list(APPEND TEST_HEADERS "#include <${val}>\n")
+	set(TEST_HEADERS "${TEST_HEADERS}#include <${val}>\n")
 endforeach()
 
 set(OUTPUT_SRC_PATH ${CMAKE_CURRENT_BINARY_DIR}/tests.cpp)
@@ -28,6 +28,7 @@ target_link_libraries( tests
 
 	# Testing data
 		demangler
+		objects
 )
 
 target_include_directories(

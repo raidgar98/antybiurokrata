@@ -118,11 +118,15 @@ namespace patterns
 		};
 
 		template<typename T>
-		concept serializable_req = 
-			std::is_constructible_v<get_from_stream, std::istream, T>
-		and
-			std::is_constructible_v<put_to_stream, std::ostream, T>
-		;
+		concept serializable_req = requires(T x)
+		{
+			{ put_to_stream{ std::cout, x } };
+			{ get_from_stream{ std::cin, x } };
+		};
+			// std::is_constructible_v<get_from_stream, std::istream, T>
+		// and
+			// std::is_constructible_v<put_to_stream, std::ostream, T>
+		// ;
 
 		/**
 		 * @brief SE(rialization) R(ecursive) wrapper for struct/class members 
@@ -131,9 +135,7 @@ namespace patterns
 		 * @tparam T type of current member
 		 */
 		template <auto value, typename T>
-		struct ser
-		{
-		};
+		struct ser {};
 
 		/**
 		 * @brief ser implementation by specialization
@@ -195,19 +197,25 @@ namespace patterns
 			ser& operator=(const U& v) { val = v; return *this; }
 
 			/**
-			 * @brief thanks to this operator, this interface is also getter
+			 * @brief thanks to this operator, this wrapper is also getter
 			 * 
 			 * @return value_type& modifable reference to wrapped value
 			 */
-			value_type& operator()() { return val; }
+			value_type& operator()(void) { return val; }
 
 			/**
 			 * @brief same as previous, for compilator to decide which use when
 			 * 
 			 * @return const value_type& reference to wrapped value
 			*/
-			const value_type& operator()() const { return val; }
+			const value_type& operator()(void) const { return val; }
 
+			/**
+			 * @brief thanks to this operator, this wrapper is also setter
+			 * 
+			 * @tparam U Any value convertible to value_type
+			 * @param u data to set
+			 */
 			template<typename U>
 			void operator()(const U& u) { val = u; }
 
@@ -341,6 +349,29 @@ namespace patterns
 			{
 				(val.*last).serialize_coma_separated(os, &val);
 			}
+
+			/**
+			 * @brief thanks to this operator, this wrapper is also getter
+			 * 
+			 * @return class_t& modifable reference to wrapped value
+			 */
+			class_t& operator()(void) { return val; }
+
+			/**
+			 * @brief same as previous, for compilator to decide which use when
+			 * 
+			 * @return const class_t& reference to wrapped value
+			*/
+			const class_t& operator()(void) const { return val; }
+
+			/**
+			 * @brief thanks to this operator, this wrapper is also setter
+			 * 
+			 * @tparam U Any value convertible to value_type
+			 * @param u data to set
+			 */
+			template<typename U>
+			void operator()(const U& u) { val = u; }
 		};
 
 		/**

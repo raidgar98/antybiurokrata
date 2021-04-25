@@ -70,6 +70,12 @@ public:
 	template<log_level lvl>
 	constexpr static void set_current_log_level() { logger::level = lvl; }
 	constexpr static void set_default_log_level() { set_current_log_level<log_level::DEBUG>(); }
+	template<log_level lvl>
+	struct switch_log_level_keeper
+	{
+		explicit switch_log_level_keeper() { set_current_log_level<lvl>(); }
+		~switch_log_level_keeper() { set_default_log_level(); }
+	};
 
 	/**
 	 * @brief Returns custom logger for selected class, very simple factory
