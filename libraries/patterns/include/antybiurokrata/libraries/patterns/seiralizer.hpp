@@ -66,9 +66,14 @@ namespace patterns
 		 */
 		struct ___null_t
 		{
-			void serialize(std::ostream &, const void *) const {}
-			bool serialize_coma_separated(std::ostream &, const void *) const { return false; }
-			void deserialize(std::istream &, const void *) const {}
+			template<typename stream_t>
+			void serialize(stream_t &, const void *) const {}
+			template<typename stream_t>
+			bool serialize_coma_separated(stream_t &, const void *) const { return false; }
+			template<typename stream_t>
+			void deserialize(stream_t &, const void *) const {}
+			template<typename ... X>
+			void construct(X&& ...) const {}
 		};
 
 		/**
@@ -77,6 +82,7 @@ namespace patterns
 		struct serial_helper_t
 		{
 			___null_t _{};
+			explicit serial_helper_t(___null_t = ___null_t{}) {}
 		};
 
 		/** @brief this is put to stream as separator for members */
@@ -293,6 +299,13 @@ namespace patterns
 			 * @return false if not
 			 */
 			friend inline bool operator==(const ser& s1, const ser& s2) { return s1() == s2(); }
+
+			// template<typename Any, typename ... U>
+			// void construct(Class *that, Any&& v, U&& ... u)
+			// {
+			// 	(that->*value).construct(that, std::forward<U>(u)...);
+			// 	val = value_type{std::move(v)}; // move
+			// }
 		};
 
 		/**
@@ -320,6 +333,14 @@ namespace patterns
 			/** wrapped value */
 			class_t val{};
 
+			// template<typename ... U>
+			// static class_t construct(U&& ... u)
+			// {
+			// 	class_t result{};
+			// 	(result.*last).construct(&result, std::forward<U>(u)...);
+			// 	return result;
+			// }
+
 			/**
 			 * @brief forwards all constructors to wrapped class type and adds ___null_t if required
 			 * 
@@ -327,8 +348,44 @@ namespace patterns
 			 * @param u any values of types U
 			*/
 			template <typename... U>
-			// requires( std::is_constructible_v<class_t, ___null_t, U...> )
-			cser(U &&...u) : val{___null_t{}, std::forward<U>(u)...} {}
+			requires( 
+				std::derived_from<class_t, serial_helper_t> and
+				( std::is_trivially_default_constructible_v<class_t> or
+					std::is_trivially_constructible_v<class_t, ___null_t, U...> or
+					std::is_constructible_v<class_t, ___null_t, U...> )
+				// ( 
+				// 	!std::is_trivially_constructible_v<class_t, U...> and 
+				// 	!std::is_constructible_v<class_t, U...> 
+				// ) and ( 
+				// )
+			)
+			explicit cser(U &&...u) : val{___null_t{}, std::forward<U>(u)...} {}
+
+			/**
+			 * @brief same as above, but this is wildcard
+			 * 
+			 * @tparam U any types
+			 * @param u any values
+			 */
+			// template <typename... U>
+			// cser(U &&...u) : val{___null_t{}, std::forward<U>(u)...} {}
+
+			/**
+			 * @brief universal copy constructor
+			 * 
+			 * @tparam other_cser incoming 
+			 * @tparam any 
+			 */
+			template<auto any>
+			cser(const cser<any>& x) : val{ x() } {}
+
+
+			template<auto any>
+			cser(cser<any>&& x) : val{ std::move(x()) } {}
+
+			// template<template<auto a_n_y> typename other_cser, auto any>
+			// requires( std::is_same_v<cser<last>, other_cser<last>> )
+			// cser(other_cser<any>&& x) : val{ x() } {}
 
 			/**
 			 * @brief forwards all constructors to wrapped class type
@@ -337,8 +394,11 @@ namespace patterns
 			 * @param u any values of types U
 			*/
 			template <typename... U>
-			requires( std::is_constructible_v<class_t, U...> )
-			cser(U &&...u) : val{std::forward<U>(u)...} {}
+			// requires(
+			// 	std::is_trivially_constructible_v<class_t, U...> or
+			// 	std::is_constructible_v<class_t, U...> 
+			// )
+			explicit cser(U &&...u) : val{std::forward<U>(u)...} {}
 
 			/**
 			 * @brief serializes recursively class

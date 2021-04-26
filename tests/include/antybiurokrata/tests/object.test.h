@@ -140,7 +140,7 @@ namespace tests
 		"case_01"_test = [] {
 			const auto check_serialization = [] (const str_v& name, const str_v& surname, const str_v& orcid) {
 				person_t p_out{};
-				person_t p{ name, surname, orcid_t::class_t::from_string(orcid) };
+				person_t p{name, surname, orcid_t::class_t::from_string(orcid) };
 				std::stringstream for_object, for_raw;
 				for_object << p;
 				for_object >> p_out;
