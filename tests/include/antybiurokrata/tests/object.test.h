@@ -47,7 +47,7 @@ namespace object_tests_values
 		constexpr str_v invalid_pn_06{ "aaa-" };
 		constexpr str_v invalid_pn_07{ "aaa+" };
 		constexpr str_v invalid_pn_08{ "a^aa" };
-		constexpr str_v invalid_pn_09{ "яяя" }; // invalid locale
+		constexpr str_v invalid_pn_09{ "   " };
 		constexpr str_v invalid_pn_10{ "a@a" };
 		constexpr str_v invalid_pn_11{ "a2a" };
 		constexpr str_v invalid_pn_12{ "111" };
@@ -102,7 +102,7 @@ namespace tests
 		log.info() << "entering `polish_name` suite" << logger::endl;
 		logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
-		"case_01"_test = [&] {
+		"case_01"_test = [] {
 			const auto validate_data = [&](const str_v& x) { ut::expect(ut::eq( testbase::to_upper(x), static_cast<str>( polish_name_t{ x }() ))); };
 
 			validate_data( correct_pn_01 );
@@ -112,7 +112,7 @@ namespace tests
 			validate_data( correct_pn_05 );
 		};
 
-		"case_02"_test = [&] {
+		"case_02"_test = [] {
 			const auto expect_assertion = [](const str_v& x) { ut::expect( ut::throws<core::exceptions::assert_exception>( [&]{ polish_name_t{ x }; } ) ); };
 
 			expect_assertion( invalid_pn_01 );
@@ -128,6 +128,26 @@ namespace tests
 			expect_assertion( invalid_pn_11 );
 			expect_assertion( invalid_pn_12 );
 			expect_assertion( invalid_pn_13 );
+		};
+	};
+
+	const ut::suite person_tests = [] {
+		using namespace core::objects;
+		using namespace object_tests_values;
+		log.info() << "entering `person_tests` suite" << logger::endl;
+		logger::switch_log_level_keeper<logger::log_level::NONE> _;
+
+		"case_01"_test = [] {
+			const auto check_serialization = [] (const str_v& name, const str_v& surname, const str_v& orcid) {
+				person_t p_out{};
+				person_t p{ name, surname, orcid_t::class_t::from_string(orcid) };
+				std::stringstream for_object, for_raw;
+				for_object << p;
+				for_object >> p_out;
+				ut::expect( ut::eq( p_out, p ) );
+			};
+
+			check_serialization(names::correct_pn_01, names::correct_pn_02, orcid::correct_01);
 		};
 	};
 }

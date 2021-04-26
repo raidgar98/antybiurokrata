@@ -11,6 +11,7 @@
 
 // Project includes
 #include <antybiurokrata/libraries/logger/logger.h>
+#include <antybiurokrata/libraries/patterns/seiralizer.hpp>
 
 // STL
 #include <locale>
@@ -40,6 +41,15 @@ namespace core
 	/** @brief locale string for polish localization */
 	constexpr str_v polish_locale{ "pl_PL.UTF-8" };
 
+	struct u16str_serial;
+	struct u16str_deserial;
+
+	/** @brief handy type for wide type */
+	template<auto X> using u16ser = patterns::serial::ser<X, u16str, u16str_serial, u16str_deserial>;
+
+	/** @brief handy type for wide view type. view is read-only, so it's impossible to deserialize*/
+	template<auto X> using u16vser = u16ser<X>;
+
 	/**
 	 * @brief returns the conversion engine object
 	 * 
@@ -55,6 +65,36 @@ namespace core
 		struct deletable_codecvt : public codecvt_t { ~deletable_codecvt() {} };
 		return std::wstring_convert<deletable_codecvt, u16char_t>{"Error", u"Error"};
 	}
+
+	struct u16str_serial
+	{
+		template<typename stream_type>
+		u16str_serial(stream_type& os, const u16str_v& view)
+		{
+			using patterns::serial::delimiter;
+			os << view.size() << delimiter;
+			for(const auto c : view) os << static_cast<int>(c) << delimiter;
+		}
+	};
+
+	struct u16str_deserial
+	{
+		template<typename stream_type>
+		u16str_deserial(stream_type& is, u16str& out)
+		{
+			using patterns::serial::delimiter;
+			size_t size;
+			is >> size;
+			if(size == 0) return;
+			else out.reserve(size);
+			for(size_t i = 0; i < size; ++i)
+			{
+				int c;
+				is >> c;
+				out += static_cast<u16char_t>(c);
+			}
+		}
+	};
 
 	/**
 	 * @brief contains basic defninitions and tools for throwing exceptions
@@ -148,7 +188,7 @@ namespace core
 				}
 				else [[unlikely]]
 				{
-					get_logger().error() << "Failed on check: "  << msg;
+					get_logger().error() << "Failed on check: "  << msg << logger::endl;
 					get_logger().print_stacktrace();
 					throw _ExceptionType(msg, std::forward<ExceptionArgs>(argv)...);
 				}
@@ -167,4 +207,7 @@ namespace core
 	
 	/** [ d(efault) asssert ] */
 	using dassert = cassert<>; 
+
+	/** [ v(erbouse) d(efault) asssert ] */
+	using vdassert = exceptions::require<typename exceptions::assert_exception, true>; 
 } // namespace core

@@ -51,6 +51,7 @@
  * 	return 0; 
  * }
  * ```*/
+#pragma once
 
 #include <tuple>
 #include <iostream>
@@ -120,8 +121,8 @@ namespace patterns
 		template<typename T>
 		concept serializable_req = requires(T x)
 		{
-			{ put_to_stream{ std::cout, x } };
-			{ get_from_stream{ std::cin, x } };
+			{ put_to_stream( std::cout, x ) };
+			{ get_from_stream( std::cin, x ) };
 		};
 			// std::is_constructible_v<get_from_stream, std::istream, T>
 		// and
@@ -134,8 +135,12 @@ namespace patterns
 		 * @tparam value reference to previous struct/class member (Ex.: &MyClass::member_0)
 		 * @tparam T type of current member
 		 */
-		template <auto value, typename T>
+		template <auto value, typename T, class serial_methode, class deserial_methode>
 		struct ser {};
+
+		/** @brief d[efault] ser */
+		template<auto value, typename T>
+		using dser = ser<value, T, put_to_stream, get_from_stream>;
 
 		/**
 		 * @brief ser implementation by specialization
@@ -145,8 +150,8 @@ namespace patterns
 		 * @tparam Class::*value reference to member in class
 		 * @tparam T type of current member
 		*/
-		template <typename Class, typename Result, Result Class::*value, serializable_req T>
-		struct ser<value, T>
+		template <typename Class, typename Result, Result Class::*value, serializable_req T, typename serial_methode, typename deserial_methode>
+		struct ser<value, T, serial_methode, deserial_methode>
 		{
 
 			using value_type = T;
@@ -160,7 +165,7 @@ namespace patterns
 			 * @param u any values of (any) types U required by wrapped type T
 			 */
 			template <typename... U>
-			explicit ser(U &&...u) : val{std::forward<U>(u)...} {}
+			ser(U &&...u) : val{std::forward<U>(u)...} {}
 
 			/**
 			 * @brief forwarding move constructor for T type
@@ -226,8 +231,8 @@ namespace patterns
 			 * @tparam _T any other (or same) type convertible to T
 			 * @param v any wrapper
 			 */
-			template <auto U, typename _T>
-			explicit ser(const ser<U, _T> &v) : val{v.val} {};
+			template <auto ... U>
+			explicit ser(const ser<U...> &v) : val{v.val} {};
 
 			/**
 			 * @brief serializes current member and forward serialization to next member 
@@ -240,7 +245,7 @@ namespace patterns
 			void serialize(stream_t &os, const Class *that) const
 			{
 				(that->*value).serialize(os, that);
-				put_to_stream{ os, this->val };
+				serial_methode( os, this->val );
 				os << delimiter;
 			}
 
@@ -259,7 +264,7 @@ namespace patterns
 				if ((that->*value).serialize_coma_separated(os, that))
 					os << ", ";
 
-				put_to_stream{os, this->val};
+				serial_methode(os, this->val);
 				return true;
 			}
 
@@ -275,9 +280,19 @@ namespace patterns
 			{
 				(that->*value).deserialize(is, that);
 
-				get_from_stream{is, this->val};
+				deserial_methode(is, this->val);
 				is.ignore(1, delimiter);
 			}
+
+			/**
+			 * @brief equal operator for lazy people
+			 * 
+			 * @param s1 left part
+			 * @param s2 right part
+			 * @return true if same
+			 * @return false if not
+			 */
+			friend inline bool operator==(const ser& s1, const ser& s2) { return s1() == s2(); }
 		};
 
 		/**
@@ -303,7 +318,7 @@ namespace patterns
 			using class_t = Class;
 
 			/** wrapped value */
-			class_t val;
+			class_t val{};
 
 			/**
 			 * @brief forwards all constructors to wrapped class type and adds ___null_t if required
@@ -312,8 +327,8 @@ namespace patterns
 			 * @param u any values of types U
 			*/
 			template <typename... U>
-			requires( std::is_constructible_v<class_t, ___null_t, U...> )
-			explicit cser(U &&...u) : val{___null_t{}, std::forward<U>(u)...} {}
+			// requires( std::is_constructible_v<class_t, ___null_t, U...> )
+			cser(U &&...u) : val{___null_t{}, std::forward<U>(u)...} {}
 
 			/**
 			 * @brief forwards all constructors to wrapped class type
@@ -323,7 +338,7 @@ namespace patterns
 			*/
 			template <typename... U>
 			requires( std::is_constructible_v<class_t, U...> )
-			explicit cser(U &&...u) : val{std::forward<U>(u)...} {}
+			cser(U &&...u) : val{std::forward<U>(u)...} {}
 
 			/**
 			 * @brief serializes recursively class
@@ -383,6 +398,16 @@ namespace patterns
 			 */
 			template<typename U>
 			void operator()(const U& u) { val = u; }
+
+			/**
+			 * @brief equal operator for lazy peoples
+			 * 
+			 * @param c1 left operand
+			 * @param c2 right operand
+			 * @return true if both are same
+			 * @return false if diffrent
+			 */
+			inline friend bool operator==(const cser& c1, const cser& c2) { return c1() == c2(); }
 		};
 
 		/**

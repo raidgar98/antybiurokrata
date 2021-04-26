@@ -7,22 +7,6 @@
 // Project
 #include <antybiurokrata/libraries/objects/objects.h>
 
-template <>
-patterns::serial::get_from_stream::get_from_stream<>(std::istream &is, typename core::objects::detail::detail_orcid_t::storage_t &data)
-{
-	for (size_t i = 0; i < core::objects::detail::detail_orcid_t::words_in_orcid_num; i++)
-	{
-		is >> data[i];
-		is.ignore(1, patterns::serial::delimiter);
-	}
-}
-
-template <>
-patterns::serial::put_to_stream::put_to_stream<>(std::ostream &os, const typename core::objects::detail::detail_orcid_t::storage_t &data)
-{
-	for (size_t i = 0; i < core::objects::detail::detail_orcid_t::words_in_orcid_num; i++)
-		os << data[i] << patterns::serial::delimiter;
-}
 
 core::str core::objects::detail::detail_orcid_t::to_string(const core::objects::detail::detail_orcid_t &orcid)
 {
@@ -79,18 +63,16 @@ core::objects::detail::detail_string_holder_t::detail_string_holder_t(const core
 
 bool core::objects::detail::detail_polish_name_t::is_valid() const
 {
-	std::cout << "BBBBB";
-	if(data().size() < 2) return false;
+	if(data()().data().size() < 2) return false;
 	const std::locale pl_loc{ core::polish_locale.data() };
-	for(const u16char_t c : data()) if(!std::isalpha(static_cast<wchar_t>(c), pl_loc)) return false;
+	for(const u16char_t c : data()().data()) if(!std::isalpha(static_cast<wchar_t>(c), pl_loc)) return false;
 	return true;
 }
 
 void core::objects::detail::detail_polish_name_t::unify() noexcept
 {
-	std::cout << "AAAA";
 	const std::locale pl_loc{ core::polish_locale.data() };
-	for(u16char_t& c : data()) c = static_cast<u16char_t>(std::toupper(static_cast<wchar_t>(c), pl_loc));
+	for(u16char_t& c : data()().data()) c = static_cast<u16char_t>(std::toupper(static_cast<wchar_t>(c), pl_loc));
 }
 
 core::objects::detail::detail_string_holder_t::operator core::str() const
