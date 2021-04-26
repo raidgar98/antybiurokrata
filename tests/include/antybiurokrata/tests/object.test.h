@@ -144,7 +144,7 @@ namespace tests
 				std::stringstream for_object, for_raw;
 				for_object << p;
 				for_object >> p_out;
-				ut::expect( ut::eq( p_out, p ) );
+				ut::expect( p_out == p );
 			};
 
 			check_serialization(names::correct_pn_01, names::correct_pn_02, orcid::correct_01);
