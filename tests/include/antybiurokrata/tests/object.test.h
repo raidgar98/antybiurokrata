@@ -138,16 +138,8 @@ namespace tests
 		logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
 		"case_01"_test = [] {
-			const auto check_serialization = [] (const str_v& name, const str_v& surname, const str_v& orcid) {
-				person_t p_out{};
-				person_t p{ name, surname, orcid_t::class_t::from_string(orcid) };
-				std::stringstream for_object, for_raw;
-				for_object << p;
-				for_object >> p_out;
-				ut::expect( p_out == p );
-			};
-
-			check_serialization(names::correct_pn_01, names::correct_pn_02, orcid::correct_01);
+			ut::expect( testbase::check_serialization<person_t>() );
+			ut::expect( testbase::check_serialization<person_t>(names::correct_pn_01, names::correct_pn_02, orcid::correct_01) );
 		};
 	};
 }
