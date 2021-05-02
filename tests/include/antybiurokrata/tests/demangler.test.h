@@ -34,22 +34,22 @@ namespace demangler_tests_values
 	constexpr str_v msg_15{"#261;"};
 
 	// URL
-	constexpr str_v msg_16{"#C4#85"}; // ą
-	constexpr str_v msg_17{"#C4#85#C4#85#C4#85"}; // ąąą
-	constexpr str_v msg_18{"C4#85"};
-	constexpr str_v msg_19{"aaaaaaC4#85"};
-	constexpr str_v msg_20{"aaaaaa#C4#85"}; // aaaaaaą
-	constexpr str_v msg_21{"#######C4##85"};
-	constexpr str_v msg_22{"#######C#85"};
+	constexpr str_v msg_16{"%C4%85"}; // ą
+	constexpr str_v msg_17{"%C4%85%C4%85%C4%85"}; // ąąą
+	constexpr str_v msg_18{"C4%85"};
+	constexpr str_v msg_19{"aaaaaaC4%85"};
+	constexpr str_v msg_20{"aaaaaa%C4%85"}; // aaaaaaą
+	constexpr str_v msg_21{"%%%%%%%C4%%85"};
+	constexpr str_v msg_22{"%%%%%%%C%85"};
 	constexpr str_v msg_23{"ą"};
 	constexpr str_v msg_24{"aaaaaaą"};
-	constexpr str_v msg_25{"#4#85"};
-	constexpr str_v msg_26{"#C#85"};
-	constexpr str_v msg_27{"#C4#5"};
-	constexpr str_v msg_28{"#C4#8"};
-	constexpr str_v msg_29{"#C#5"};
-	constexpr str_v msg_30{"#C44#85"};
-	constexpr str_v msg_31{"#C4#851"};
+	constexpr str_v msg_25{"%4%85"};
+	constexpr str_v msg_26{"%C%85"};
+	constexpr str_v msg_27{"%C4%5"};
+	constexpr str_v msg_28{"%C4%8"};
+	constexpr str_v msg_29{"%C%5"};
+	constexpr str_v msg_30{"%C44%85"};
+	constexpr str_v msg_31{"%C4%851"};
 	constexpr str_v msg_32{"ą1"};
 }
 

@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 	// w.show();
 	core::network::bgpolsl_adapter adapter{};
 	auto result = adapter.get_person("ADRIAN", "SMAGÓR");
-	std::cout << core::get_conversion_engine().to_bytes(result->begin()->doi) << std::endl;
+	result->begin()->print();
 	return 0;
 	// return a.exec();
 }

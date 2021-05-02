@@ -93,9 +93,9 @@ template<> void core::demangler<>::mangle_url(core::u16str &out)
 		constexpr u16str_v hex_charachters{u"0123456789ABCDEF"};
 		if (view.size() != 6)
 			return false;
-		if (view.at(0) != u'#')
+		if (view.at(0) != u'%')
 			return false;
-		if (view.at(3) != u'#')
+		if (view.at(3) != u'%')
 			return false;
 		for (size_t i = 1; i < view.size(); ++i)
 			if (i == 3)
@@ -108,7 +108,7 @@ template<> void core::demangler<>::mangle_url(core::u16str &out)
 	if (out.size() == 0)
 		return;
 
-	constexpr u16char_t hash{u'#'};
+	constexpr u16char_t hash{u'%'};
 	u16str_v view{out};
 	const std::ranges::split_view splitted{view, hash};
 	u16str result;

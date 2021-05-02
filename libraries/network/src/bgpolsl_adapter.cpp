@@ -2,6 +2,7 @@
 #include <antybiurokrata/libraries/bgpolsl_adapter/bgpolsl_adapter.h>
 #include <antybiurokrata/libraries/html_scalpel/html_scalpel.h>
 #include <antybiurokrata/libraries/demangler/demangler.h>
+#include <antybiurokrata/libraries/objects/objects.h>
 
 // STL
 #include <map>
@@ -13,8 +14,24 @@ namespace core
 	{
 		namespace detail
 		{
+			void bgpolsl_repr_t::print() const
+			{
+				const auto trival_conv = [](auto ss) { return core::get_conversion_engine().to_bytes(ss); };
+				log << "idt: " << trival_conv(idt) << logger::endl;
+				log << "year: " << trival_conv(year) << logger::endl;
+				log << "authors: " << trival_conv(authors) << logger::endl;
+				log << "org_title: " << trival_conv(org_title) << logger::endl;
+				log << "whole_title: " << trival_conv(whole_title) << logger::endl;
+				log << "e_doc: " << trival_conv(e_doc) << logger::endl;
+				log << "p_issn: " << trival_conv(p_issn) << logger::endl;
+				log << "doi: " << trival_conv(doi) << logger::endl;
+				log << "e_issn: " << trival_conv(e_issn) << logger::endl;
+				log << "affiliation: " << trival_conv(affiliation) << logger::endl;
+			}
+
 			bgpolsl_repr_t::bgpolsl_repr_t(const std::vector<u16str> & words)
 			{
+				log << "words count: " << words.size() << logger::endl;
 				const std::map<u16str, u16str*> keywords{{std::pair<u16str, u16str*>
 					{u"IDT", &idt}, {u"Rok", &year}, {u"Autorzy", &authors},
 					{u"Tytuł oryginału", &org_title},{u"Tytuł całości", &whole_title},
@@ -29,6 +46,7 @@ namespace core
 					const size_t pos = pair.first.find(u' ');
 					if(pos != u16str::npos) /* if found */ double_keywords[u16str_v{ pair.first.c_str(), pos}] = false;
 				}
+				log << "double keywords count: " << double_keywords.size() << logger::endl;
 
 				bool complex_active = false;
 				u16str *savepoint = nullptr;
@@ -72,25 +90,31 @@ namespace core
 		drogon::HttpRequestPtr core::network::bgpolsl_adapter::prepare_request(const core::str_v &querried_name)
 		{
 			const std::map<std::string, std::string> headers{{std::pair<std::string, std::string>
-				{"User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:87.0) Gecko/20100101 Firefox/87.0"},
+				{"User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0"},
 				{"Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"},
 				{"Accept-Language", "en-US,en;q=0.5"},
 				{"Content-Type", "application/x-www-form-urlencoded"},
 				{"Origin", "https://www.bg.polsl.pl"},
 				{"DNT", "1"},
+				{"Cookie", "NULL"},
 				{"Connection", "keep-alive"},
 				{"Referer", "https://www.bg.polsl.pl/expertus/new/bib/expwww.html"},
 				{"Upgrade-Insecure-Requests", "1"}}
 			};
+
 			drogon::HttpRequestPtr req = drogon::HttpRequest::newHttpRequest();
 			req->setMethod(drogon::Post);
 			req->setPath("/expertusbin/expertus4.cgi");
 			for (const auto &kv : headers) req->addHeader(kv.first, kv.second);
 			req->setContentTypeCode(drogon::ContentType::CT_APPLICATION_X_FORM);
 			req->setPathEncode(true);
+
+			// generating body for request
 			str body{"KAT=%2Fvar%2Fwww%2Fbibgl%2Fexpertusdata%2Fnew%2Fpar%2F&FST=data.fst&F_00=02&V_00="};
 			body += querried_name;
 			body += "&F_01=04&V_01=&F_02=07&V_02=&cond=AND&FDT=data98.fdt&fldset=&sort=-1%2C100a%2C150a%2C200a%2C250a%2C303a%2C350a%2C400a%2C450a%2C700a%2C750a&X_0=1&R_0=1000&plainform=0&ESF=01&ESF=02&ESF=07&ESF=08&ESS=stat.htm&STPL=ANALYSIS&ESK=1&sumpos=%7Bsumpos%7D&year00=0&ZA=&F_07=00&V_07=&F_31=94&V_31=&F_28=86&V_28=&F_23=98&V_23=&F_18=22&F_08=17&B_01=033&C_01=3&D_01=&F_21=41&F_14=21&F_04=16&B_00=015&C_00=3&D_00=&F_10=41&F_11=19&V_11=&F_05=40&V_05=&F_12=54&V_12=&F_32=91&V_32=&F_29=49&V_29=&F_09=53&V_09=&F_20=78&V_20=&F_16=57&F_06=25&F_22=88&F_30=88&V_30=&F_24=79&F_25=14&F_33=36&V_33=&F_15=55&V_15=&F_19=74&V_19=&F_13=26&druk=0&cfsect=&mask=1&ekran=ISO&I_XX=a";
+
+			req->setBody(body);
 
 			return req;
 		}
@@ -104,6 +128,17 @@ namespace core
 			full_name += ' ';
 			full_name += name;
 
+			// log << "XXXX" << logger::endl;
+			// drogon::HttpRequestPtr req = drogon::HttpRequest::newHttpRequest();
+			// log << "XXXX" << logger::endl;
+			// req->setMethod(drogon::Get);
+			// log << "XXXX" << logger::endl;
+			// // req->setPath("expertus/new/bib");
+			// log << "XXXX" << logger::endl;
+			// const auto xxx = send_request(req);
+			// log << "XXXX" << logger::endl;
+			// log << xxx.second->cookies().size() << logger::endl;
+
 			const connection_handler::raw_response_t response = send_request(
 				prepare_request(
 					core::demangler<>{full_name}
@@ -111,6 +146,7 @@ namespace core
 						.get()
 				)
 			);
+
 
 			dassert{response.first == drogon::ReqResult::Ok, "expected 200 response code"};
 			log.info() << "successfully got response from `bg.polsl.pl`" << logger::endl;

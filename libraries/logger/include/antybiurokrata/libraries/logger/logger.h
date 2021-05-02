@@ -117,7 +117,7 @@ public:
 				if(ptr)
 				{
 					if(will_be_printed) std::cout << ptr->str();
-					_do_reset(std::cout);
+					if(_do_reset) _do_reset(std::cout);
 					delete ptr;
 				}
 			} };

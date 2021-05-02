@@ -19,7 +19,7 @@ namespace core
     {
         namespace detail
         {
-            struct bgpolsl_repr_t
+            struct bgpolsl_repr_t : Log<bgpolsl_repr_t>
             {
                 u16str idt;
                 u16str year;
@@ -33,6 +33,7 @@ namespace core
                 u16str affiliation;
 
                 explicit bgpolsl_repr_t(const std::vector<u16str>&);
+                void print() const;
             };
         }
 
