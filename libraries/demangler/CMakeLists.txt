@@ -5,3 +5,4 @@ include("${CUSTOM_CMAKE_SCRIPTS_DIR}/attach_package.cmake")
 
 attach_boost()
 create_library( demangler logger types )
+create_library( html_scalpel logger types )

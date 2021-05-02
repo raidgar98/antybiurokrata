@@ -59,7 +59,7 @@ namespace patterns
 	/**
 	 * @brief avaiable priorities for signals
 	 */
-	enum Priority : uint8_t
+	enum class Priority : uint8_t
 	{
 		HIGH = 3,
 		MEDIUM = 2,
@@ -92,7 +92,8 @@ namespace patterns
 		 */
 		connection register_slot(const slot_function_t &function, const Priority &p = Priority::MEDIUM)
 		{
-			return __signal.connect(p, function);
+			return __signal.connect(function, static_cast<uint8_t>(p));
+			// return __signal.connect(p, function);
 		}
 
 	protected:
@@ -109,7 +110,7 @@ namespace patterns
 
 	private:
 		/** signal holder */
-		signal<void(arg_type), Priority, uint8_t> __signal; 
+		signal<void(arg_type)> __signal; 
 	};
 
 	/**

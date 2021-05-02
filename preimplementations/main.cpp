@@ -24,15 +24,7 @@
 
 // )";
 
-const std::map<std::string, std::string> headers{{std::pair<std::string, std::string>{"User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:87.0) Gecko/20100101 Firefox/87.0"},
-												  {"Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"},
-												  {"Accept-Language", "en-US,en;q=0.5"},
-												  {"Content-Type", "application/x-www-form-urlencoded"},
-												  {"Origin", "https://www.bg.polsl.pl"},
-												  {"DNT", "1"},
-												  {"Connection", "keep-alive"},
-												  {"Referer", "https://www.bg.polsl.pl/expertus/new/bib/expwww.html"},
-												  {"Upgrade-Insecure-Requests", "1"}}};
+
 
 template <class Facet>
 struct deletable_facet : Facet
@@ -58,46 +50,7 @@ struct dorobek_repr_t
 	str affiliation;
 
 	explicit dorobek_repr_t(const std::string &data)
-	{
-		const std::map<str, str *> keywords{{std::pair<std::string, str *>{"IDT", &idt},
-			{"Rok", &year}, {"Autorzy", &authors}, {"Tytuł oryginału", &org_title},{"Tytuł całości", &whole_title},
-			{"Dokument elektroniczny", &e_doc}, {"Czasopismo", nullptr}, {"Szczegóły", nullptr}, {"p-ISSN", &p_issn},
-			{"DOI", &doi}, {"e-ISSN", &e_issn}, {"Adres", nullptr}, {"Afiliacja", &affiliation}, 
-			{"Punktacja", nullptr}, {"Pobierz", nullptr}, {"Dyscypliny", nullptr}, {"Uwaga", nullptr}}};
-
-		const std::string_view view{data};
-		const std::ranges::split_view splitted{view, ' '};
-
-		bool is_title = false;
-		bool is_doc = false;
-		str* savepoint = nullptr;
-		for(const auto& part : splitted)
-		{
-			const long distance{ std::ranges::distance(part) };
-			if(distance <= 1) continue;
-			std::string word;
-
-			if(is_title)
-			{
-				word = "Tytuł ";
-				is_title = false;
-			}else if(is_doc)
-			{
-				word = "Dokument ";
-				is_doc = false;
-			}
-
-
-			word.reserve(distance);
-			for (const auto c : part) word += c;
-
-			if(word == "Tytuł") { is_title = true; continue; }
-			else if(word == "Dokument") { is_doc = true; continue; }
-			auto found = keywords.find(word);
-			if(found == keywords.end()){ if(savepoint != nullptr) {*savepoint += word; *savepoint += " ";} }
-			else savepoint = found->second;
-		}
-	}
+	
 
 	void print(std::ostream &os)
 	{
@@ -161,9 +114,7 @@ int main()
 	std::cout << "pushing...\n";
 	queue.wait_push(value_t(sub_value_t{req, [&](drogon::ReqResult, const drogon::HttpResponsePtr &res) { responses.push(std::string{res->getBody()}); }}));
 	queue.wait_push(value_t{});
-	constexpr std::string_view match_expresion{R"(<span class="field_id"><br/><span class="label" name="label_id">IDT:)"};
 
-	std::list<std::string> lines;
 
 	{
 		std::string result;

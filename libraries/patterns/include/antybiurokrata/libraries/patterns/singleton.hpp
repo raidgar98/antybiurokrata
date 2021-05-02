@@ -246,7 +246,7 @@ namespace patterns
 				using wrapper_is_empty_base<std::atomic<T>>::wrapper_is_empty_base;
 
 			protected:
-				virtual bool empty(std::atomic<T> &ptr) const override
+				virtual bool empty(const std::atomic<T> &ptr) const override
 				{
 					return ptr.load().get() == nullptr;
 				}
