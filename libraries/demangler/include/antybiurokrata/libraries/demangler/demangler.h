@@ -20,9 +20,6 @@
 #include <regex>
 #include <map>
 
-template <> typename logger::logger_piper &&operator<<<>(logger::logger_piper &&src, const core::u16str_v &v);
-template <> typename logger::logger_piper &&operator<<<>(logger::logger_piper &&src, const core::u16str &v);
-
 namespace core
 {
 	namespace detail
@@ -78,29 +75,29 @@ namespace core
 			inline static const translation_map_t translation{std::initializer_list<kv_type>{
 
 				// polish chars
-				kv_type{u'ą', translation_value_t{u'a', u"&#261;", u"%C4%85"}},
-				{u'ć', {u'c', u"&#263;", u"%C4%87"}},
-				{u'ę', {u'e', u"&#281;", u"%C4%99"}},
-				{u'ł', {u'l', u"&#322;", u"%C5%82"}},
-				{u'ń', {u'n', u"&#324;", u"%C5%84"}},
-				{u'ś', {u's', u"&#347;", u"%C5%9B"}},
-				{u'ó', {u'o', u"&#243;", u"%C3%B3"}},
-				{u'ź', {u'z', u"&#378;", u"%C5%BC"}},
-				{u'ż', {u'z', u"&#380;", u"%C5%BA"}},
-				{u'Ą', {u'A', u"&#260;", u"%C4%84"}},
-				{u'Ć', {u'C', u"&#262;", u"%C4%86"}},
-				{u'Ę', {u'E', u"&#280;", u"%C4%98"}},
-				{u'Ł', {u'L', u"&#321;", u"%C5%81"}},
-				{u'Ń', {u'N', u"&#323;", u"%C5%83"}},
-				{u'Ś', {u'S', u"&#346;", u"%C5%9A"}},
-				{u'Ó', {u'O', u"&#211;", u"%C3%93"}},
-				{u'Ź', {u'Z', u"&#377;", u"%C5%BB"}},
-				{u'Ż', {u'Z', u"&#379;", u"%C5%B9"}},
+				kv_type{u'ą', translation_value_t{u'a', u"&#0261", u"%C4%85"}},
+				{u'ć', {u'c', u"&#0263", u"%C4%87"}},
+				{u'ę', {u'e', u"&#0281", u"%C4%99"}},
+				{u'ł', {u'l', u"&#0322", u"%C5%82"}},
+				{u'ń', {u'n', u"&#0324", u"%C5%84"}},
+				{u'ś', {u's', u"&#0347", u"%C5%9B"}},
+				{u'ó', {u'o', u"&#0243", u"%C3%B3"}},
+				{u'ź', {u'z', u"&#0378", u"%C5%BC"}},
+				{u'ż', {u'z', u"&#0380", u"%C5%BA"}},
+				{u'Ą', {u'A', u"&#0260", u"%C4%84"}},
+				{u'Ć', {u'C', u"&#0262", u"%C4%86"}},
+				{u'Ę', {u'E', u"&#0280", u"%C4%98"}},
+				{u'Ł', {u'L', u"&#0321", u"%C5%81"}},
+				{u'Ń', {u'N', u"&#0323", u"%C5%83"}},
+				{u'Ś', {u'S', u"&#0346", u"%C5%9A"}},
+				{u'Ó', {u'O', u"&#0211", u"%C3%93"}},
+				{u'Ź', {u'Z', u"&#0377", u"%C5%BB"}},
+				{u'Ż', {u'Z', u"&#0379", u"%C5%B9"}},
 
 				// special chars
-				{u'_', {u'_', u"&#95;", u"_"}},
-				{u' ', {u' ', u"&#32;", u"+"}},
-				{u'-', {u'-', u"&#45;", u"-"}}}};
+				{u'_', {u'_', u"&#0095", u"_"}},
+				{u' ', {u' ', u"&#0032", u"+"}},
+				{u'-', {u'-', u"&#0045", u"-"}}}};
 
 			static std::tuple<bool, iterator_t> safe_get(translation_key_t letter)
 			{
@@ -229,8 +226,6 @@ namespace core
 			else core::dassert(false, "invalid decision path");
 		}
 
-private:
-
 		/**
 		 * @brief implementation of mangle for HTML convertion tag
 		 * 
@@ -244,6 +239,8 @@ private:
 		 * @param out input and output
 		 */
 		static void mangle_url(u16str & out);
+
+private:
 
 		/**
 		 * @brief do all job, by replacing polish chars to selected one

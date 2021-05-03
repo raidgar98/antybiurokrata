@@ -19,14 +19,14 @@ namespace demangler_tests_values
 	constexpr str_v msg_02{"ąąą"};
 
 	// HTML
-	constexpr str_v msg_03{"&#261;&#261;&#261;"};
+	constexpr str_v msg_03{"&#0261&#0261&#0261"};
 	constexpr str_v msg_04{"abba"};
 	constexpr str_v msg_05{"abbą"};
-	constexpr str_v msg_06{"abb&#261;"};
-	constexpr str_v msg_07{"&#261;&#261;&xxx;"};
-	constexpr str_v msg_08{"&#261;&&&&&#261;"};
-	constexpr str_v msg_09{"&#261;&#&#&#&#261;"};
-	constexpr str_v msg_10{"&&&&&&&#261;&#&#&#&#261;"};
+	constexpr str_v msg_06{"abb&#0261"};
+	constexpr str_v msg_07{"&#0261&#0261&xxx;"};
+	constexpr str_v msg_08{"&#0261&&&&&#0261"};
+	constexpr str_v msg_09{"&#0261&#&#&#&#0261"};
+	constexpr str_v msg_10{"&&&&&&&#0261&#&#&#&#0261"};
 	constexpr str_v msg_11{"ąą&xxx;"};
 	constexpr str_v msg_12{"ą&&&&ą"};
 	constexpr str_v msg_13{"ą&#&#&#ą"};

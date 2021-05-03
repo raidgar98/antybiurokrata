@@ -21,16 +21,16 @@ namespace core
         {
             struct bgpolsl_repr_t : Log<bgpolsl_repr_t>
             {
-                u16str idt;
-                u16str year;
-                u16str authors;
-                u16str org_title;
-                u16str whole_title;
-                u16str e_doc;
-                u16str p_issn;
-                u16str doi;
-                u16str e_issn;
-                u16str affiliation;
+                u16str idt{};
+                u16str year{};
+                u16str authors{};
+                u16str org_title{};
+                u16str whole_title{};
+                u16str e_doc{};
+                u16str p_issn{};
+                u16str doi{};
+                u16str e_issn{};
+                u16str affiliation{};
 
                 explicit bgpolsl_repr_t(const std::vector<u16str>&);
                 void print() const;

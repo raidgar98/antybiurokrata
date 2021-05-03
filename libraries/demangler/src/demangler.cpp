@@ -1,33 +1,12 @@
 #include <antybiurokrata/libraries/demangler/demangler.h>
 
-template <>
-typename logger::logger_piper &&operator<<<>(logger::logger_piper &&src, const core::u16str_v &v)
-{
-	const core::u16str ss{v.data()};
-	return std::move(src) << ss;
-}
-
-template <>
-typename logger::logger_piper &&operator<<<>(logger::logger_piper &&src, const core::u16str &v)
-{
-	const core::str gen = core::get_conversion_engine().to_bytes(v);
-	return std::move(src) << gen;
-}
-
 template<> void core::demangler<>::mangle_html(core::u16str &out)
 {
 	static const auto valid_html_tag = [](const u16str_v &view) -> bool {
-		if (view.size() < 4)
-			return false;
-		if (view.at(0) != u'&')
-			return false;
-		if (view.at(1) != u'#')
-			return false;
-		if (view.at(view.size() - 1) != u';')
-			return false;
-		for (size_t i = 2; i < view.size() - 1; ++i)
-			if (!std::iswdigit(view.at(i)))
-				return false;
+		if (view.size() < 6) return false;
+		if (view.at(0) != u'&') return false;
+		if (view.at(1) != u'#') return false;
+		for (size_t i = 2; i < view.size(); ++i) if (!std::iswdigit(view.at(i))) return false;
 		return true;
 	};
 
@@ -65,7 +44,7 @@ template<> void core::demangler<>::mangle_html(core::u16str &out)
 		for (const u16char_t c : line)
 		{
 			*save_point += c;
-			if (c == u';')
+			if (c == u';' || save_point->size() >= 6)
 				save_point = &rest;
 		}
 

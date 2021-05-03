@@ -211,3 +211,6 @@ namespace core
 	/** [ v(erbouse) d(efault) asssert ] */
 	using vdassert = exceptions::require<typename exceptions::assert_exception, true>; 
 } // namespace core
+
+template <> typename logger::logger_piper &&operator<<<>(logger::logger_piper &&src, const core::u16str_v &v);
+template <> typename logger::logger_piper &&operator<<<>(logger::logger_piper &&src, const core::u16str &v);

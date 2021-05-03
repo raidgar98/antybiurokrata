@@ -16,22 +16,21 @@ namespace core
 		{
 			void bgpolsl_repr_t::print() const
 			{
-				const auto trival_conv = [](auto ss) { return core::get_conversion_engine().to_bytes(ss); };
-				log << "idt: " << trival_conv(idt) << logger::endl;
-				log << "year: " << trival_conv(year) << logger::endl;
-				log << "authors: " << trival_conv(authors) << logger::endl;
-				log << "org_title: " << trival_conv(org_title) << logger::endl;
-				log << "whole_title: " << trival_conv(whole_title) << logger::endl;
-				log << "e_doc: " << trival_conv(e_doc) << logger::endl;
-				log << "p_issn: " << trival_conv(p_issn) << logger::endl;
-				log << "doi: " << trival_conv(doi) << logger::endl;
-				log << "e_issn: " << trival_conv(e_issn) << logger::endl;
-				log << "affiliation: " << trival_conv(affiliation) << logger::endl;
+				// const auto trival_conv = [](auto ss) -> str { return core::get_conversion_engine().to_bytes(ss); };
+				log.info() << "idt: " << idt << logger::endl;
+				log.info() << "year: " << year << logger::endl;
+				log.info() << "authors: " << authors << logger::endl;
+				log.info() << "org_title: " << org_title << logger::endl;
+				log.info() << "whole_title: " << whole_title << logger::endl;
+				log.info() << "e_doc: " << e_doc << logger::endl;
+				log.info() << "p_issn: " << p_issn << logger::endl;
+				log.info() << "doi: " << doi << logger::endl;
+				log.info() << "e_issn: " << e_issn << logger::endl;
+				log.info() << "affiliation: " << affiliation << logger::endl;
 			}
 
 			bgpolsl_repr_t::bgpolsl_repr_t(const std::vector<u16str> & words)
 			{
-				log << "words count: " << words.size() << logger::endl;
 				const std::map<u16str, u16str*> keywords{{std::pair<u16str, u16str*>
 					{u"IDT", &idt}, {u"Rok", &year}, {u"Autorzy", &authors},
 					{u"Tytuł oryginału", &org_title},{u"Tytuł całości", &whole_title},
@@ -40,49 +39,28 @@ namespace core
 					{u"e-ISSN", &e_issn}, {u"Adres", nullptr}, {u"Afiliacja", &affiliation},
 					{u"Punktacja", nullptr}, {u"Pobierz", nullptr}, {u"Dyscypliny", nullptr},
 					{u"Uwaga", nullptr}}};
-				std::map<u16str_v, bool> double_keywords;
-				for(const auto& pair : keywords)
-				{
-					const size_t pos = pair.first.find(u' ');
-					if(pos != u16str::npos) /* if found */ double_keywords[u16str_v{ pair.first.c_str(), pos}] = false;
-				}
-				log << "double keywords count: " << double_keywords.size() << logger::endl;
 
-				bool complex_active = false;
 				u16str *savepoint = nullptr;
-				u16str word;
-				for (const u16str &i_word : words)
+				for (const u16str &word : words)
 				{
-					if (i_word.size() <= 1) continue;
-
-					if (complex_active) for(auto& pair : double_keywords) if(pair.second)
+					u16str save_range;
+					for(const auto& kv : keywords)
 					{
-						word = pair.first;
-						pair.second = false;
-						complex_active = false;
-						break;
-					}
-
-					const auto it = double_keywords.find(i_word);
-					if (it != double_keywords.end())
-					{
-						it->second = true;
-						complex_active = true;
-						continue;
-					}
-
-					const u16str* search_point{ word.size() > 0 ? &word : &i_word };
-					auto found = keywords.find(*search_point);
-					if (found == keywords.end()) // if not found
-					{
-						if (savepoint != nullptr)
+						const size_t pos = word.find(kv.first);
+						if(pos != u16str::npos) /* if found */
 						{
-							*savepoint += *search_point;
-							*savepoint += u' ';
-						}
+							savepoint = kv.second;
+							save_range = u16str_v{ word.c_str() + pos + 1ul + kv.first.size() };
+							break;
+						}else save_range = word;
 					}
-					else /* if found */ savepoint = found->second;
-					word.clear();
+
+					if(savepoint)
+					{
+						if(savepoint->size() > 0) *savepoint += u' ';
+						core::demangler<u16str, u16str_v>::mangle<conv_t::HTML>(save_range);
+						*savepoint += save_range;
+					}
 				}
 			}
 		}
@@ -112,7 +90,7 @@ namespace core
 			// generating body for request
 			str body{"KAT=%2Fvar%2Fwww%2Fbibgl%2Fexpertusdata%2Fnew%2Fpar%2F&FST=data.fst&F_00=02&V_00="};
 			body += querried_name;
-			body += "&F_01=04&V_01=&F_02=07&V_02=&cond=AND&FDT=data98.fdt&fldset=&sort=-1%2C100a%2C150a%2C200a%2C250a%2C303a%2C350a%2C400a%2C450a%2C700a%2C750a&X_0=1&R_0=1000&plainform=0&ESF=01&ESF=02&ESF=07&ESF=08&ESS=stat.htm&STPL=ANALYSIS&ESK=1&sumpos=%7Bsumpos%7D&year00=0&ZA=&F_07=00&V_07=&F_31=94&V_31=&F_28=86&V_28=&F_23=98&V_23=&F_18=22&F_08=17&B_01=033&C_01=3&D_01=&F_21=41&F_14=21&F_04=16&B_00=015&C_00=3&D_00=&F_10=41&F_11=19&V_11=&F_05=40&V_05=&F_12=54&V_12=&F_32=91&V_32=&F_29=49&V_29=&F_09=53&V_09=&F_20=78&V_20=&F_16=57&F_06=25&F_22=88&F_30=88&V_30=&F_24=79&F_25=14&F_33=36&V_33=&F_15=55&V_15=&F_19=74&V_19=&F_13=26&druk=0&cfsect=&mask=1&ekran=ISO&I_XX=a";
+			body += "&F_01=04&V_01=&F_02=07&V_02=&cond=AND&FDT=data98.fdt&fldset=&sort=-1%2C100a%2C150a%2C200a%2C250a%2C303a%2C350a%2C400a%2C450a%2C700a%2C750a&X_0=1&R_0=5000&plainform=0&ESF=01&ESF=02&ESF=07&ESF=08&ESS=stat.htm&STPL=ANALYSIS&ESK=1&sumpos=%7Bsumpos%7D&year00=0&ZA=&F_07=00&V_07=&F_31=94&V_31=&F_28=86&V_28=&F_23=98&V_23=&F_18=22&F_08=17&B_01=033&C_01=3&D_01=&F_21=41&F_14=21&F_04=16&B_00=015&C_00=3&D_00=&F_10=41&F_11=19&V_11=&F_05=40&V_05=&F_12=54&V_12=&F_32=91&V_32=&F_29=49&V_29=&F_09=53&V_09=&F_20=78&V_20=&F_16=57&F_06=25&F_22=88&F_30=88&V_30=&F_24=79&F_25=14&F_33=36&V_33=&F_15=55&V_15=&F_19=74&V_19=&F_13=26&druk=0&cfsect=&mask=1&ekran=ISO&I_XX=a";
 
 			req->setBody(body);
 
