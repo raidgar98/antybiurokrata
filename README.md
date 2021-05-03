@@ -25,14 +25,13 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 ## TODO
 ---
 
-- add networking mechanism
 - add more tests
-- add object representation for:
-	- [dorobek](https://www.bg.polsl.pl/expertus/new/bib/)
+- added object representation for:
 	- [BN](https://data.bn.org.pl/bibs)
 	- [ORCID](https://pub.orcid.org/v3.0/)
 	- [Web Of Science](https://developer.clarivate.com/apis/wos)
 	- [Scopus](https://dev.elsevier.com/)
+- add conversion between object representation to comparable objects (objects with higher abstraction)
 - design UI
 - implement configs
 
@@ -48,6 +47,10 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 - preimplemented data gathering from `dorobek`
 - recognition of `ORCID` usage
 - implemented assertion and exception mechanism
+- added networking mechanism
+- added object representation for:
+	- [dorobek](https://www.bg.polsl.pl/expertus/new/bib/)
+
 
 
 ## Setup
