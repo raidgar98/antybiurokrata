@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
 	core::orm::persons_extractor_t visitor{};
 	// auto result = adapter.get_person("ADRIAN", "SMAGÓR");
 	auto res = adapter.get_person(argv[1], argv[2]);
-	res->begin()->accept(&visitor);
-	// for(const auto& x : *res) x.print();
+	for(auto& x : *res) x.accept(&visitor);
+	for(const auto& p : visitor.persons) global_logger.info() << patterns::serial::pretty_print{p} << logger::endl;
 	//0000124934
 	return 0;
 	// return a.exec();

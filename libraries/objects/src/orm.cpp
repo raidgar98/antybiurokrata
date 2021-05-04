@@ -29,7 +29,6 @@ namespace core
 						if(orcid_t::class_t::is_valid(v))
 						{
 							(*person)().orcid(orcid_t::class_t::from_string(v));
-							std::cout << patterns::serial::pretty_print{*person} << std::endl;
 							this->persons.emplace(std::move(*person));
 						} else ticker = -1;
 						person.reset(new person_t{});

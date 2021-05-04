@@ -238,7 +238,6 @@ namespace core
 				dser<&detail_person_t::name,	polish_name_t>	surname;
 				dser<&detail_person_t::surname,	orcid_t>		orcid;
 
-				// TODO put it outside
 				friend inline bool operator==(const detail_person_t& p1, const detail_person_t& p2) 
 				{
 					if(p1.orcid() == p2.orcid()) return true;
@@ -249,7 +248,7 @@ namespace core
 				{
 					// TODO: add hashing (maybe in ser and cser)
 					// return std::hash<detail_person_t>{}(p1) < std::hash<detail_person_t>{}(p2);
-					return static_cast<str>(p1.surname()()) < static_cast<str>(p2.surname()());
+					return static_cast<u16str_v>(p1.surname()()) < static_cast<u16str_v>(p2.surname()());
 				}
 			};
 			using person_t = cser<&detail_person_t::orcid>;

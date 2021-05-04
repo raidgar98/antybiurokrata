@@ -55,7 +55,11 @@
 
 #include <tuple>
 #include <iostream>
+#include <concepts>
 #include <boost/type_index.hpp>
+
+struct logger;
+struct logger_piper;
 
 namespace patterns
 {
@@ -429,7 +433,7 @@ namespace patterns
 			void operator()(U&& ... u) { val(std::forward<U>(u)...); }
 
 			/**
-			 * @brief equal operator for lazy peoples
+			 * @brief forward of equal operator
 			 * 
 			 * @param c1 left operand
 			 * @param c2 right operand
@@ -437,7 +441,23 @@ namespace patterns
 			 * @return false if diffrent
 			 */
 			inline friend bool operator==(const cser& c1, const cser& c2) { return c1() == c2(); }
+
+			/**
+			 * @brief forward of less operator
+			 * 
+			 * @param c1 left operand
+			 * @param c2 right operand
+			 * @return true if c1 is lesser than c2
+			 * @return false if diffrent
+			 */
+			inline friend bool operator<(const cser& c1, const cser& c2) { return c1() < c2(); }
 		};
+
+		template<typename stream_t>
+		concept allowed_stream_req = 
+			std::is_same_v<stream_t, logger> 
+			|| std::is_same_v<stream_t, logger_piper> 
+			|| std::derived_from<stream_t, std::ostream>;
 
 		/**
 		 * @brief helper functor to easly print wrapped class
@@ -451,12 +471,13 @@ namespace patterns
 			const wrap_t &ref;
 			explicit pretty_print(const wrap_t &obj) : ref{obj} {}
 
-			template<typename stream_type>
+			template<allowed_stream_req stream_type>
 			inline friend stream_type &operator<<(stream_type &os, const pretty_print<T> &obj)
 			{
 				os << boost::typeindex::type_id<typename wrap_t::class_t>() << "[ ";
 				obj.ref.serialize_coma_separated(os);
-				return os << " ]";
+				os << " ]";
+				return os;
 			}
 		};
 
