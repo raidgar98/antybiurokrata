@@ -17,17 +17,17 @@ namespace object_tests_values
 	using namespace core;
 	namespace orcid
 	{
-		constexpr str_v correct_01{"0000-0000-0000-0001"};
-		constexpr str_v correct_02{"0000-0000-0000-0000"};
+		constexpr u16str_v correct_01{u"0000-0000-0000-0001"};
+		constexpr u16str_v correct_02{u"0000-0000-0000-0000"};
 
-		constexpr str_v invalid_01{"0000-0000-0000-000"};
-		constexpr str_v invalid_02{"0000-0000-000-0000"};
-		constexpr str_v invalid_03{"0000-000-0000-0000"};
-		constexpr str_v invalid_04{"000-0000-0000-0000"};
-		constexpr str_v invalid_05{"0000--0000-0000"};
-		constexpr str_v invalid_06{"0000-0000-0000"};
-		constexpr str_v invalid_07{"000000000000000"};
-		constexpr str_v invalid_08{"---"};
+		constexpr u16str_v invalid_01{u"0000-0000-0000-000"};
+		constexpr u16str_v invalid_02{u"0000-0000-000-0000"};
+		constexpr u16str_v invalid_03{u"0000-000-0000-0000"};
+		constexpr u16str_v invalid_04{u"000-0000-0000-0000"};
+		constexpr u16str_v invalid_05{u"0000--0000-0000"};
+		constexpr u16str_v invalid_06{u"0000-0000-0000"};
+		constexpr u16str_v invalid_07{u"000000000000000"};
+		constexpr u16str_v invalid_08{u"---"};
 	}
 
 	namespace names
@@ -67,8 +67,8 @@ namespace tests
 		log.info() << "entering `orcid_tests` suite" << logger::endl;
 		logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
-		const auto validation_success = [](const str_v &v) { ut::expect(ut::eq(true, orcid_t::class_t::is_valid(v))); };
-		const auto validation_fail = [](const str_v &v) { ut::expect(ut::eq(false, orcid_t::class_t::is_valid(v))); };
+		const auto validation_success = [](const u16str_v &v) { ut::expect(ut::eq(true, orcid_t::class_t::is_valid(v))); };
+		const auto validation_fail = [](const u16str_v &v) { ut::expect(ut::eq(false, orcid_t::class_t::is_valid(v))); };
 
 		"case_01"_test = [&] {
 			validation_success(correct_01);
@@ -86,7 +86,7 @@ namespace tests
 
 		"case_02"_test = [&] {
 			orcid_t orcid{correct_01};
-			ut::expect(ut::eq(static_cast<str>(orcid()), correct_01));
+			ut::expect(ut::eq(static_cast<str>(orcid()), get_conversion_engine().to_bytes(correct_01.data())));
 		};
 
 		"case_03"_test = [&] {
@@ -103,7 +103,9 @@ namespace tests
 		logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
 		"case_01"_test = [] {
-			const auto validate_data = [&](const str_v& x) { ut::expect(ut::eq( testbase::to_upper(x), static_cast<str>( polish_name_t{ x }() ))); };
+			const auto validate_data = [&](const str_v& x) { 
+				ut::expect(ut::eq( testbase::to_upper(x), static_cast<str>( polish_name_t{ x }() ))); 
+			};
 
 			validate_data( correct_pn_01 );
 			validate_data( correct_pn_02 );

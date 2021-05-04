@@ -16,7 +16,6 @@ namespace core
 		{
 			void bgpolsl_repr_t::print() const
 			{
-				// const auto trival_conv = [](auto ss) -> str { return core::get_conversion_engine().to_bytes(ss); };
 				log.info() << "idt: " << idt << logger::endl;
 				log.info() << "year: " << year << logger::endl;
 				log.info() << "authors: " << authors << logger::endl;

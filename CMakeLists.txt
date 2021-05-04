@@ -37,7 +37,7 @@ attach_qt()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compiler_flags("-fcoroutines")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 # setup threads
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -51,7 +51,7 @@ get_directory_property(WINDOW_LIBS DIRECTORY ${WINDOWS_DIR} DEFINITION WINDOWSES
 # create executable
 add_executable( antybiurokrata main.cpp )
 target_link_libraries(antybiurokrata PRIVATE Qt5::Widgets PUBLIC ${WINDOW_LIBS} )
-target_link_libraries( antybiurokrata PRIVATE types bgpolsl_adapter )
+target_link_libraries( antybiurokrata PRIVATE types bgpolsl_adapter orm )
 
 # doxygen
 option(DOXYGEN "determines to generate docs or not" ON)

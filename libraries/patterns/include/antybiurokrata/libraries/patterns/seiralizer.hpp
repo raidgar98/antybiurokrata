@@ -82,6 +82,14 @@ namespace patterns
 		/** @brief this is put to stream as separator for members */
 		constexpr char delimiter{' '};
 
+		/**
+		 * @brief C(lass) SE(rialization) R(ecursive); use this on class, that needs to be serialized
+		 * 
+		 * @tparam LastItemRef put here reference to last serialized member in class (Ex. &MyClass::member_n)
+		 */
+		template <auto LastItemRef>
+		struct cser {};
+
 		/** @brief This class is used by ser to deserialize next members */
 		struct get_from_stream
 		{
@@ -118,6 +126,31 @@ namespace patterns
 			}
 		};
 
+		/** @brief This class is used by ser to serialize class members in pretty way */
+		struct pretty_put_to_stream
+		{
+			template<typename stream_t, auto Any>
+			pretty_put_to_stream( stream_t& os, const cser<Any>& any )
+			{
+				any.serialize_coma_separated(os);
+				// os << any;
+			}
+
+			/**
+			 * @brief Construct specialize this constructor for more complex types if required
+			 * 
+			 * @tparam stream_t any stream
+			 * @tparam Any any value_type
+			 * @param os reference to stream
+			 * @param any const reference to stream
+			 */
+			template<typename stream_t, typename Any>
+			pretty_put_to_stream( stream_t& os, const Any& any )
+			{
+				os << any;
+			}
+		};
+
 		template<typename T>
 		concept serializable_req = requires(T x)
 		{
@@ -135,12 +168,12 @@ namespace patterns
 		 * @tparam value reference to previous struct/class member (Ex.: &MyClass::member_0)
 		 * @tparam T type of current member
 		 */
-		template <auto value, typename T, class serial_methode, class deserial_methode>
+		template <auto value, typename T, class serial_methode, class deserial_methode, typename pretty_print_methode = pretty_put_to_stream>
 		struct ser {};
 
 		/** @brief d[efault] ser */
 		template<auto value, typename T>
-		using dser = ser<value, T, put_to_stream, get_from_stream>;
+		using dser = ser<value, T, put_to_stream, get_from_stream, pretty_put_to_stream>;
 
 		/**
 		 * @brief ser implementation by specialization
@@ -150,8 +183,8 @@ namespace patterns
 		 * @tparam Class::*value reference to member in class
 		 * @tparam T type of current member
 		*/
-		template <typename Class, typename Result, Result Class::*value, serializable_req T, typename serial_methode, typename deserial_methode>
-		struct ser<value, T, serial_methode, deserial_methode>
+		template <typename Class, typename Result, Result Class::*value, serializable_req T, typename serial_methode, typename deserial_methode, typename pretty_print_methode>
+		struct ser<value, T, serial_methode, deserial_methode, pretty_print_methode>
 		{
 
 			using value_type = T;
@@ -264,7 +297,7 @@ namespace patterns
 				if ((that->*value).serialize_coma_separated(os, that))
 					os << ", ";
 
-				serial_methode(os, this->val);
+				pretty_print_methode(os, this->val);
 				return true;
 			}
 
@@ -296,16 +329,6 @@ namespace patterns
 		};
 
 		/**
-		 * @brief C(lass) SE(rialization) R(ecursive); use this on class, that needs to be serialized
-		 * 
-		 * @tparam LastItemRef put here reference to last serialized member in class (Ex. &MyClass::member_n)
-		 */
-		template <auto LastItemRef>
-		struct cser
-		{
-		};
-
-		/**
 		 * @brief ser implementation by specialization
 		 * 
 		 * @tparam Class type of serialized class
@@ -319,6 +342,9 @@ namespace patterns
 
 			/** wrapped value */
 			class_t val{};
+
+			cser(cser&&) = default;
+			cser(const cser&) = default;
 
 			/**
 			 * @brief forwards all constructors to wrapped class type and adds ___null_t if required
@@ -339,6 +365,9 @@ namespace patterns
 			template <typename... U>
 			requires( std::is_constructible_v<class_t, U...> )
 			cser(U &&...u) : val{std::forward<U>(u)...} {}
+
+			template<typename U>
+			cser& operator=(U&& u) { val = std::forward<U>(u); return *this; }
 
 			/**
 			 * @brief serializes recursively class
@@ -396,8 +425,8 @@ namespace patterns
 			 * @tparam U Any value convertible to value_type
 			 * @param u data to set
 			 */
-			template<typename U>
-			void operator()(const U& u) { val = u; }
+			template<typename ... U>
+			void operator()(U&& ... u) { val(std::forward<U>(u)...); }
 
 			/**
 			 * @brief equal operator for lazy peoples
@@ -421,7 +450,9 @@ namespace patterns
 			using wrap_t = typename serial::cser<T>;
 			const wrap_t &ref;
 			explicit pretty_print(const wrap_t &obj) : ref{obj} {}
-			inline friend std::ostream &operator<<(std::ostream &os, const pretty_print<T> &obj)
+
+			template<typename stream_type>
+			inline friend stream_type &operator<<(stream_type &os, const pretty_print<T> &obj)
 			{
 				os << boost::typeindex::type_id<typename wrap_t::class_t>() << "[ ";
 				obj.ref.serialize_coma_separated(os);

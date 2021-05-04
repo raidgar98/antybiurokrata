@@ -8,12 +8,11 @@ namespace core
 		constexpr size_t word_prereserve_size{ 20ul };
 		auto converter = get_conversion_engine();
 		const u16str wide_html{converter.from_bytes(input_html.data())};
-		const std::locale plPL{core::polish_locale.data()};
 
 		// implicit conversion to wchar_t is required, because std does not suppert u16 for isaplha and isdigit :(
-		const auto is_correct = [&plPL](const wchar_t c) -> bool {
+		const auto is_correct = [](const wchar_t c) -> bool {
 			constexpr std::wstring_view accepted{L"-_ \t&#+/."};
-			return	std::isalpha(c, plPL) || std::isdigit(c, plPL) ||
+			return	std::isalpha(c, plPL()) || std::isdigit(c, plPL()) ||
 						accepted.find(c) != std::wstring_view::npos;
 		};
 

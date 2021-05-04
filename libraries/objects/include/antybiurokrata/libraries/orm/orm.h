@@ -15,7 +15,7 @@ namespace core
 			public patterns::visits<bgpolsl_repr_t>
 		{
 			using Log<persons_extractor_t>::log;
-			std::vector<person_t> persons;
+			std::set<person_t> persons;
 
 			virtual bool visit(bgpolsl_repr_t* ptr) override;
 		};

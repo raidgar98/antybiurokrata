@@ -15,6 +15,7 @@
 #include <functional>
 #include <sstream>
 #include <cctype>
+#include <thread>
 
 // submodules
 #include <rang/rang.hpp>
@@ -115,23 +116,19 @@ public:
 	{
 		using ss_t = std::stringstream;
 
-		/** restores stream to given settings */
-		format_function _do_reset;  
-
 		/** used as stringinizer */ 
 		std::shared_ptr<ss_t> ss;
 
 		/** specifies whether steream will be flushed tio standard output */
 		bool will_be_printed;
 
-		logger_piper(ss_t&& xss, const bool print_out, const format_function& ff) : _do_reset{ff}, will_be_printed{print_out}
+		logger_piper(ss_t&& xss, const bool print_out) : will_be_printed{print_out}
 		{
 			ss = std::shared_ptr<ss_t>{ new ss_t{ std::move(xss) }, [&](ss_t* ptr)
 			{
 				if(ptr)
 				{
 					if(will_be_printed) std::cout << ptr->str();
-					if(_do_reset) _do_reset(std::cout);
 					delete ptr;
 				}
 			} };
@@ -205,7 +202,7 @@ private:
 		std::stringstream ss;
 		fun(ss);
 		ss << get_preambula(4);
-		return logger_piper{ std::move(ss), print_out, reset_color_scheme };
+		return logger_piper{ std::move(ss), print_out };
 	}
 };
 
@@ -238,7 +235,7 @@ public:
  * @param v any object
  * @return logger::logger_piper&  returning self
  */
-template<typename T> inline typename logger::logger_piper&& operator<<(logger::logger_piper&& src, const T& v) { *src.ss << v; return std::move(src); }
+template<typename T> inline typename logger::logger_piper operator<<(logger::logger_piper src, const T& v) { *src.ss << v; return src; }
 
 /**
  * @brief proxy function to inner operator

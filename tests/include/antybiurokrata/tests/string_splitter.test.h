@@ -22,6 +22,7 @@ namespace string_splitter_tests_values
 		constexpr str_v words_03{ u"w1w2w3" };
 		constexpr str_v words_04{ u"" };
 		constexpr str_v words_05{ u"w" };
+		constexpr str_v words_06{ u"Barglik Jerzy 0000-0002-1994-3266 912576 054 RM" };
 	}
 
 	namespace simple_string_names
@@ -112,6 +113,20 @@ namespace tests
 			u16str res{};
 			for(auto v : split_words<u16str_v>{words_05, u' '}) res += v;
 			ut::expect(res == words_05);
+		};
+
+		"case_09"_test = [&]{
+			using namespace string_splitter_tests_values::wide_string_names;
+		// constexpr str_v words_06{ u"Barglik Jerzy 0000-0002-1994-3266 912576 054 RM" };
+			split_words<u16str_v> splitter{words_06, u' '};
+			auto it = splitter.begin();
+			const auto check_next = [&it](const u16str_v& valid) { ut::expect(*it ==  valid); it++; };
+			check_next(u"Barglik");
+			check_next(u"Jerzy");
+			check_next(u"0000-0002-1994-3266");
+			check_next(u"912576");
+			check_next(u"054");
+			check_next(u"RM");
 		};
 	};
 }

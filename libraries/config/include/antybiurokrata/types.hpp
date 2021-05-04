@@ -41,12 +41,16 @@ namespace core
 	/** @brief locale string for polish localization */
 	constexpr str_v polish_locale{"pl_PL.UTF-8"};
 
+	/** @brief polish locale object */
+	inline std::locale plPL() { static const std::locale loc{polish_locale.data()}; return loc; };
+
 	struct u16str_serial;
 	struct u16str_deserial;
+	struct u16str_pretty_serial;
 
 	/** @brief handy type for wide type */
 	template <auto X>
-	using u16ser = patterns::serial::ser<X, u16str, u16str_serial, u16str_deserial>;
+	using u16ser = patterns::serial::ser<X, u16str, u16str_serial, u16str_deserial, u16str_pretty_serial>;
 
 	/** @brief handy type for wide view type. view is read-only, so it's impossible to deserialize*/
 	template <auto X>
@@ -101,6 +105,16 @@ namespace core
 				is >> c;
 				out += static_cast<u16char_t>(c);
 			}
+		}
+	};
+
+	struct u16str_pretty_serial
+	{
+		template <typename stream_type>
+		u16str_pretty_serial(stream_type &os, const u16str_v &view)
+		{
+			using patterns::serial::delimiter;
+			os << get_conversion_engine().to_bytes(view.data());
 		}
 	};
 
@@ -420,6 +434,9 @@ namespace core
 } // namespace core
 
 template <>
-typename logger::logger_piper &&operator<<<>(logger::logger_piper &&src, const core::u16str_v &v);
+typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str_v &v);
 template <>
-typename logger::logger_piper &&operator<<<>(logger::logger_piper &&src, const core::u16str &v);
+typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str &v);
+
+core::u16str operator"" _u16(const char* str, const size_t);
+core::str operator"" _u8(const char16_t* str, const size_t);

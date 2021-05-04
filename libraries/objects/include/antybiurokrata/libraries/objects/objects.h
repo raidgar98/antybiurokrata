@@ -19,16 +19,6 @@ namespace core
 {
 	namespace objects
 	{
-		template<typename X>
-		concept iterable_req = requires(X x)
-		{
-			{ x.begin() };
-			{ x.end() };
-			// { x.capacity() } -> std::same_as<size_t>;s
-			{ x.begin()++ };
-			{ *(x.begin()) };
-		};
-
 		namespace detail
 		{
 			using namespace patterns::serial;
@@ -61,6 +51,20 @@ namespace core
 				}
 			};
 
+			template<typename T, size_t N>
+			struct array_pretty_serial
+			{
+				template<typename stream_type>
+				array_pretty_serial(stream_type& os, const std::array<T, N>& data)
+				{
+					using patterns::serial::delimiter;
+					os << '[';
+					for (size_t i = 0; i < N; i++)
+						os << ","[i == 0] << ' ' << data[i];
+					os << " ]";
+				}
+			};
+
 			/** @brief object representation of ORCID number */
 			struct detail_orcid_t : public serial_helper_t
 			{
@@ -70,7 +74,7 @@ namespace core
 				using n_storage_t = std::array<uint16_t, words_in_orcid_num>;
 				using storage_t = n_storage_t<words_in_orcid_num>;
 
-				ser<&detail_orcid_t::_,	storage_t, array_serial<uint16_t, words_in_orcid_num>, array_deserial<uint16_t, words_in_orcid_num>> identifier;
+				ser<&detail_orcid_t::_,	storage_t, array_serial<uint16_t, words_in_orcid_num>, array_deserial<uint16_t, words_in_orcid_num>, array_pretty_serial<uint16_t, words_in_orcid_num>> identifier;
 
 				/** @brief default constructor */
 				explicit detail_orcid_t() = default;
@@ -80,7 +84,14 @@ namespace core
 				 * 
 				 * @param input valid orcid as string_view
 				*/
-				explicit detail_orcid_t(const str_v& input) : detail_orcid_t{ std::move(from_string(input)) } {}
+				explicit detail_orcid_t(const u16str_v& input) : detail_orcid_t{ std::move(from_string(input)) } {}
+
+				/**
+				 * @brief provides easy conversion to u16str
+				 * 
+				 * @return u16str
+				*/
+				explicit operator u16str() const { return get_conversion_engine().from_bytes(to_string(*this)); }
 
 				/**
 				 * @brief provides easy conversion to string
@@ -101,10 +112,11 @@ namespace core
 				 * @brief checks is given string is proper as orcid
 				 * 
 				 * @param data orcid string to check
+				 * @param conversion_output [ = nullptr ] during validation, conversion is performed, it you need it further, conversion output will be saved here
 				 * @return true if string is valid
 				 * @return false if string is not valid
 				 */
-				static bool is_valid(const str_v& data);
+				static bool is_valid(const u16str_v& data, str* conversion_output = nullptr);
 
 				/**
 				 * @brief implementation of std::string -> detail_orcid_t conversion
@@ -113,7 +125,7 @@ namespace core
 				 * @return detail_orcid_t 
 				 * @throw assert_exception thrown if string is not valid
 				*/
-				static detail_orcid_t from_string(const str_v& data);
+				static detail_orcid_t from_string(const u16str_v& data);
 
 				friend inline bool operator==(const detail_orcid_t& o1, const detail_orcid_t& o2) { return o1.identifier() == o2.identifier(); }
 			};
@@ -142,6 +154,9 @@ namespace core
 				/** @brief 4) Construct a new detail detail_string_holder_t object from u16string; forwards to 3 */
 				explicit detail_string_holder_t(const u16str& v) : detail_string_holder_t{ u16str_v{v} } 
 				{}
+
+				template<typename U>
+				detail_string_holder_t& operator=(U&& u) { detail_string_holder_t x{u}; this->data(x.data()); return *this; }
 
 				/** @brief provides conversion to string*/
 				explicit operator str() const;
@@ -172,7 +187,6 @@ namespace core
 			/** @brief object representation and holder of polish name */
 			struct detail_polish_name_t : public serial_helper_t
 			{
-				constexpr static str_v msg_not_valid{ "given string is not valid for polish name" };
 				dser<&detail_polish_name_t::_, string_holder_t> data;
 
 				/** @brief default constructor */
@@ -186,6 +200,9 @@ namespace core
 				template<typename ... U>
 				// requires(!std::is_same_v< std::tuple_element_t<0, std::tuple<U...>>, ___null_t>)
 				detail_polish_name_t(U&& ... v) : data{std::forward<U>(v)...} { validate(); unify(); }
+
+				template<typename U>
+				detail_polish_name_t& operator=(U&& u) { detail_polish_name_t x(std::forward<U>(u)); data()().data() = x.data()().data(); return *this; }
 
 				/** @brief in this case it's proxy to toupper */
 				void unify() noexcept;
@@ -210,7 +227,7 @@ namespace core
 				 * 
 				 * @throw assert_exception if given string is not valid
 				 */
-				void validate() const { dassert{ is_valid(), msg_not_valid}; }
+				void validate() const { dassert{ is_valid(), static_cast<str>(data()()) + ": is not valid for polish name"}; }
 
 			};
 			using polish_name_t = cser<&detail_polish_name_t::data>;
@@ -221,10 +238,18 @@ namespace core
 				dser<&detail_person_t::name,	polish_name_t>	surname;
 				dser<&detail_person_t::surname,	orcid_t>		orcid;
 
+				// TODO put it outside
 				friend inline bool operator==(const detail_person_t& p1, const detail_person_t& p2) 
 				{
 					if(p1.orcid() == p2.orcid()) return true;
 					else return ( p1.name() == p2.name() ) && ( p1.surname() == p2.surname() );
+				}
+
+				friend inline bool operator<(const detail_person_t& p1, const detail_person_t& p2)
+				{
+					// TODO: add hashing (maybe in ser and cser)
+					// return std::hash<detail_person_t>{}(p1) < std::hash<detail_person_t>{}(p2);
+					return static_cast<str>(p1.surname()()) < static_cast<str>(p2.surname()());
 				}
 			};
 			using person_t = cser<&detail_person_t::orcid>;
@@ -235,31 +260,3 @@ namespace core
 		using typename detail::person_t;
 	}
 }
-
-
-
-// template<core::objects::iterable_req Iterable>
-// requires // exclude strings
-// (
-// 	!std::is_same_v<Iterable, core::str> and
-// 	!std::is_same_v<Iterable, core::u16str>
-// )
-// inline std::ostream& operator<<(std::ostream& os, const Iterable& iterable)
-// {
-// 	for(const auto& x : iterable) os << x << patterns::serial::delimiter;
-// 	return os;
-// }
-
-// template<core::objects::iterable_req Iterable>
-// requires // exclude strings
-// (
-// 	!std::is_same_v<Iterable, core::str> and
-// 	!std::is_same_v<Iterable, core::u16str>
-// )
-// inline std::istream& operator<<(std::istream& is, const Iterable& iterable)
-// {
-// 	const size_t cap = iterable.capacity();
-// 	for(size_t i = 0; i < cap; ++i) is >> iterable;
-// 	return is;
-// }
-

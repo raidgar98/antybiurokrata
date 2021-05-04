@@ -20,7 +20,7 @@ namespace core
     {
         namespace detail
         {
-            struct bgpolsl_repr_t : Log<bgpolsl_repr_t>, public patterns::visits<bgpolsl_repr_t>
+            struct bgpolsl_repr_t : Log<bgpolsl_repr_t>, public patterns::visitable<bgpolsl_repr_t>
             {
                 using Log<bgpolsl_repr_t>::log;
 
