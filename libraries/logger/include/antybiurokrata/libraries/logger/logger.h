@@ -78,6 +78,13 @@ public:
 	};
 
 	/**
+	 * @brief logs using global varriabble - global_logger
+	 * 
+	 * @param msg message to log
+	 */
+	static void log_with_global_logger(const std::string& msg);
+
+	/**
 	 * @brief Returns custom logger for selected class, very simple factory
 	 * 
 	 * @tparam T owner class for logger
@@ -85,12 +92,19 @@ public:
 	 * @return logger logger instance
 	 */
 	template <class T>
-	inline static logger _get_logger(const char * alternative = "unknown")
+	static logger _get_logger(const char * alternative = "unknown")
 	{
-		const std::string name = get_class_name<T>();
+		std::string name, orig_name = get_class_name<T>();
+		const size_t pos{ orig_name.find_last_of(':') };
+		if(pos != std::string::npos && orig_name.find('<') == std::string::npos) name = orig_name.substr(pos + 1ul);
+		else name = orig_name;
+		constexpr std::string_view allowed_chars{ "<>::_, " };
 		for(const char c : name)
-			if( std::isalnum(c) == 0 and c != '_')
+			if( std::isalnum(c) == 0 && allowed_chars.find(c) == std::string_view::npos)
+			{
+				log_with_global_logger("unknown class name: " + orig_name + " -> " + name + logger::endl);
 				return logger(alternative);
+			}
 		return logger( name );
 	}
 
@@ -239,3 +253,5 @@ inline typename logger::logger_piper operator<<(logger& out, const T& obj)
 {
 	return out.start_stream() << obj;
 }
+
+extern logger global_logger;

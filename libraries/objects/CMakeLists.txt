@@ -5,3 +5,4 @@ include("${CUSTOM_CMAKE_SCRIPTS_DIR}/attach_package.cmake")
 
 attach_boost()
 create_library( objects logger types serializer demangler )
+create_library( orm logger types visitor objects bgpolsl_adapter )

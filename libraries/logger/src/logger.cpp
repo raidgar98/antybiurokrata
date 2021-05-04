@@ -8,6 +8,14 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem/operations.hpp>
 
+namespace ___dummmy { struct global_logger{}; };
+logger global_logger{ logger::_get_logger<___dummmy::global_logger>() };
+
+void logger::log_with_global_logger(const std::string &msg)
+{
+	global_logger << msg;
+}
+
 logger::logger(const std::string &preambula)
 	: preambula{preambula} {}
 

@@ -46,9 +46,9 @@ namespace patterns
 	 * @tparam T CRTP - pass here child class type
 	 */
 	template <class T>
-	class Visitable : private Log<Visitable<T>>
+	class visitable : private Log<visitable<T>>
 	{
-		using Log<Visitable<T>>::get_logger;
+		using Log<visitable<T>>::get_logger;
 
 	public:
 		/**

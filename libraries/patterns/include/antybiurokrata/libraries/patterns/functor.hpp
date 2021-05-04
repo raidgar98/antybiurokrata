@@ -55,7 +55,7 @@ namespace patterns
 	 */
 	namespace functors
 	{
-		using patterns::Visitable;
+		using patterns::visitable;
 
 		/**
 		 * @brief provides basic interface for defining functor
@@ -64,7 +64,7 @@ namespace patterns
 		 * @tparam arg_t variadic type of arguments
 		 */
 		template <typename return_t = void, typename... arg_t>
-		struct _functor : public Visitable<_functor<return_t, arg_t...>>
+		struct _functor : public visitable<_functor<return_t, arg_t...>>
 		{
 			/**
 			 * @brief This should be overrided in definition

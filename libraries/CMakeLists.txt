@@ -3,7 +3,7 @@ include( "${CUSTOM_CMAKE_SCRIPTS_DIR}/get_all_directories.cmake" )
 include( "${CUSTOM_CMAKE_SCRIPTS_DIR}/add_include_directories.cmake" )
 
 set(LOGGER_DIR "logger")
-set(CONFIG_DIR "configs")
+set(CONFIG_DIR "config")
 
 # first add logger
 add_subdirectory(${LOGGER_DIR})
