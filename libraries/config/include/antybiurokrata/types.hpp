@@ -355,7 +355,7 @@ namespace core
 				}
 			};
 
-			iterator begin() const { return iterator{this->view, 0ul, this->separator}; }
+			iterator begin() const { return iterator{this->view, ( this->view.size() == 0 ? svt::npos : 0ul ), this->separator}; }
 			iterator end() const { return iterator{this->view, svt::npos, this->separator}; }
 		};
 
@@ -412,7 +412,7 @@ namespace core
 				}
 			};
 
-			iterator begin() const { return iterator{this->view, this->view.size(), this->separator}; }
+			iterator begin() const { return iterator{this->view, ( this->view.size() == 0 ? svt::npos : this->view.size() ), this->separator}; }
 			iterator end() const { return iterator{this->view, svt::npos, this->separator}; }
 		};
 	}

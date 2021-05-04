@@ -13,6 +13,8 @@
 #include <antybiurokrata/libraries/patterns/seiralizer.hpp>
 #include <antybiurokrata/libraries/demangler/demangler.h>
 
+#pragma todo "refactor to u16str_v and u16str!!!"
+
 namespace core
 {
 	namespace objects
@@ -195,6 +197,8 @@ namespace core
 				explicit operator u16str_v() const { return data()().operator u16str_v(); }
 
 				friend inline bool operator==(const detail_polish_name_t& pn1, const detail_polish_name_t& pn2) { return pn1.data()().data() == pn2.data()().data(); }
+
+				[[nodiscard]] static bool basic_validation(u16str_v input);
 
 			protected:
 

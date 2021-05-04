@@ -1,7 +1,7 @@
 /**
  * @file demangler_test.cpp
  * @author Krzysztof Mochocki (raidgar98@onet.pl)
- * @brief theese tests checks demangler
+ * @brief theese tests checks objects
 */
 
 // Project includes

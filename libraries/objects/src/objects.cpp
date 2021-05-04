@@ -61,12 +61,19 @@ core::objects::detail::detail_string_holder_t::detail_string_holder_t(const core
 	}else data(v);
 }
 
+bool core::objects::detail::detail_polish_name_t::basic_validation(core::u16str_v input)
+{
+	constexpr u16str_v allowed{ u"-" }; // '-' for doubled surname
+	if(input.size() < 2) return false;
+	const std::locale pl_loc{ core::polish_locale.data() };
+	for(const u16char_t c : input) if(!std::isalpha(static_cast<wchar_t>(c), pl_loc) || allowed.find(c) == u16str_v::npos ) return false;
+	return true;
+}
+
+
 bool core::objects::detail::detail_polish_name_t::is_valid() const
 {
-	if(data()().data().size() < 2) return false;
-	const std::locale pl_loc{ core::polish_locale.data() };
-	for(const u16char_t c : data()().data()) if(!std::isalpha(static_cast<wchar_t>(c), pl_loc)) return false;
-	return true;
+	return basic_validation(data()().data());
 }
 
 void core::objects::detail::detail_polish_name_t::unify() noexcept

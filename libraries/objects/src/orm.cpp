@@ -1,4 +1,5 @@
 #include <antybiurokrata/libraries/orm/orm.h>
+
 #include <antybiurokrata/types.hpp>
 
 namespace core
@@ -9,7 +10,31 @@ namespace core
 		{
 			dassert(ptr, "pointer cannot be nullptr!");
 
-			const u16str_v affiliation{ ptr->affiliation };
+			u16str_v affiliation{ ptr->affiliation };
+			int ticker{ 0 };
+			person_t person{};
+			for(u16str_v v : string_utils::split_words<u16str_v>{affiliation, u' '})
+			{
+				switch(ticker)
+				{
+					case 0: /* surname */
+						if(polish_name_t::class_t::basic_validation(v)) person().surname = v;
+						else ticker = -1;
+						break;
+					case 1: /* name */
+						if(polish_name_t::class_t::basic_validation(v)) person().name = v;
+						else ticker = -1;
+						break;
+					case 2: /* orcid */
+						if(orcid_t::class_t::is_valid(v)) person().orcid = orcid_t::class_t::from_string(v);
+						else ticker = -1;
+						this->persons.emplace_back(person);
+						person = person_t{};
+						break;
+					default: continue;
+				};
+				ticker++;
+			}
 
 			return true;
 		}
