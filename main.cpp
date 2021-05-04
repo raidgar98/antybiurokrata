@@ -16,7 +16,6 @@ void my_signal_handler(int signum) {
     ::raise(SIGABRT);
 }
 
-
 int main(int argc, char *argv[])
 {
 	::signal(SIGSEGV, &my_signal_handler);

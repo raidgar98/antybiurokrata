@@ -10,10 +10,8 @@
 #pragma once
 
 // Project
-#include <antybiurokrata/libraries/patterns/seiralizer.hpp>
 #include <antybiurokrata/libraries/demangler/demangler.h>
-
-#pragma todo "refactor to u16str_v and u16str!!!"
+#include <antybiurokrata/libraries/objects/serialization_definitions.hpp>
 
 namespace core
 {
@@ -21,60 +19,14 @@ namespace core
 	{
 		namespace detail
 		{
-			using namespace patterns::serial;
-			using patterns::serial::serial_helper_t;
-
-			template<typename T, size_t N>
-			struct array_serial
-			{
-				template<typename stream_type>
-				array_serial(stream_type& os, const std::array<T, N>& data)
-				{
-					using patterns::serial::delimiter;
-					for (size_t i = 0; i < N; i++)
-						os << data[i] << delimiter;
-				}
-			};
-
-			template<typename T, size_t N>
-			struct array_deserial
-			{
-				template<typename stream_type>
-				array_deserial(stream_type& is, std::array<T, N>& data)
-				{
-					using patterns::serial::delimiter;
-					for (size_t i = 0; i < N; i++)
-					{
-						is >> data[i];
-						is.ignore(1, delimiter);
-					}
-				}
-			};
-
-			template<typename T, size_t N>
-			struct array_pretty_serial
-			{
-				template<typename stream_type>
-				array_pretty_serial(stream_type& os, const std::array<T, N>& data)
-				{
-					using patterns::serial::delimiter;
-					os << '[';
-					for (size_t i = 0; i < N; i++)
-						os << ","[i == 0] << ' ' << data[i];
-					os << " ]";
-				}
-			};
+			using namespace serial_definitions;
 
 			/** @brief object representation of ORCID number */
 			struct detail_orcid_t : public serial_helper_t
 			{
 				constexpr static size_t words_in_orcid_num{ 4ul };
-				template<size_t N>
-				requires serializable_req<std::array<uint16_t, N>>
-				using n_storage_t = std::array<uint16_t, words_in_orcid_num>;
-				using storage_t = n_storage_t<words_in_orcid_num>;
 
-				ser<&detail_orcid_t::_,	storage_t, array_serial<uint16_t, words_in_orcid_num>, array_deserial<uint16_t, words_in_orcid_num>, array_pretty_serial<uint16_t, words_in_orcid_num>> identifier;
+				array_ser<&detail_orcid_t::_, uint16_t, words_in_orcid_num> identifier;
 
 				/** @brief default constructor */
 				explicit detail_orcid_t() = default;
@@ -232,11 +184,22 @@ namespace core
 			};
 			using polish_name_t = cser<&detail_polish_name_t::data>;
 
+			/** @brief object representation of publication */
+			struct detail_publication_t : public serial_helper_t
+			{
+				u16ser<&detail_publication_t::_>						title;
+				u16ser<&detail_publication_t::title>					polish_title;
+				dser<&detail_publication_t::polish_title, uint16_t>		year;
+			};
+			using publication_t = cser<&detail_publication_t::year>;
+
+			/** @brief object representation of person (author) */
 			struct detail_person_t : public serial_helper_t
 			{
-				dser<&detail_person_t::_,		polish_name_t>	name;
-				dser<&detail_person_t::name,	polish_name_t>	surname;
-				dser<&detail_person_t::surname,	orcid_t>		orcid;
+				dser<&detail_person_t::_,			polish_name_t>				name;
+				dser<&detail_person_t::name,		polish_name_t>				surname;
+				dser<&detail_person_t::surname,		orcid_t>					orcid;
+				svec_ser<&detail_person_t::orcid,	publication_t>				publictions{};
 
 				friend inline bool operator==(const detail_person_t& p1, const detail_person_t& p2) 
 				{
@@ -246,16 +209,15 @@ namespace core
 
 				friend inline bool operator<(const detail_person_t& p1, const detail_person_t& p2)
 				{
-					// TODO: add hashing (maybe in ser and cser)
-					// return std::hash<detail_person_t>{}(p1) < std::hash<detail_person_t>{}(p2);
 					return static_cast<u16str_v>(p1.surname()()) < static_cast<u16str_v>(p2.surname()());
 				}
 			};
-			using person_t = cser<&detail_person_t::orcid>;
+			using person_t = cser<&detail_person_t::publictions>;
 		}
 
 		using typename detail::orcid_t;
 		using typename detail::polish_name_t;
+		using typename detail::publication_t;
 		using typename detail::person_t;
 	}
 }
