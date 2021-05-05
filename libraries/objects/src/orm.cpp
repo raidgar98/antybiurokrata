@@ -109,6 +109,9 @@ namespace core
 				}
 			}
 
+			demangler<>::sanitize(pub().title());
+			demangler<>::sanitize(pub().polish_title());
+
 			publications.push_back(spub);
 			person_visitor.current_publication = spub;
 			person_visitor.visit(ptr);

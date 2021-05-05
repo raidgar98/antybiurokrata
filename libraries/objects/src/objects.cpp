@@ -110,16 +110,5 @@ namespace core
 			return (me.year == that.year) && (me.title == that.title);
 		}
 
-		void detail::detail_publication_t::normalize_title(u16str& output)
-		{
-			if(output.empty()) return;
-			u16str ret;
-			ret.reserve(output.size());
-
-			for(const u16char_t c : output)
-			{
-
-			}
-		}
 	}
 }

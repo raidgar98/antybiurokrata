@@ -268,7 +268,7 @@ namespace core
 			u16str_v preprocessed = dmg.process<conv_t::ENG>().get();
 
 			const std::locale loc{ plPL() };
-			for(const u16char_t c : preprocessed) if( std::isalnum<wchar_t>(static_cast<wchar_t>(c), loc) || u' ' == c) 
+			for(const u16char_t c : preprocessed) if( std::isalnum<wchar_t>(static_cast<wchar_t>(c), loc) /* || u' ' == c */ )  // possiblility of problem with diffrence in double space
 				ret += static_cast<u16char_t>( std::toupper<wchar_t>( static_cast<wchar_t>(c), loc ) );
 
 			out = std::move(ret);

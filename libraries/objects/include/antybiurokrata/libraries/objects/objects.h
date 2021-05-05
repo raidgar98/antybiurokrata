@@ -225,15 +225,6 @@ namespace core
 				bool compare(const detail_publication_t&) const;
 				inline friend bool operator==(const detail_publication_t& me, const detail_publication_t& other) { return me.compare(other); }
 				inline friend bool operator!=(const detail_publication_t& me, const detail_publication_t& other) { return !(me == other); }
-
-			private:
-
-				/**
-				 * @brief normalizes given string to make it comparable accrocc others
-				 * 
-				 * @param output input and output
-				 */
-				static void normalize_title(u16str& output);
 			};
 			using publication_t = cser<&detail_publication_t::ids>;
 
