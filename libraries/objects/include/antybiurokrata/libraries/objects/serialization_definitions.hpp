@@ -234,7 +234,7 @@ namespace core
 				const enum_t& x;
 
 				template<typename stream_t>
-				inline friend stream_t& operator<<(stream_t& os, const enum_printer& obj) { return os << static_cast<cast_type>(obj.x); }
+				inline friend stream_t& operator<<(stream_t& os, const enum_printer& obj) { return os << cast_type(obj.x); }
 			};
 
 			/**

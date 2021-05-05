@@ -255,6 +255,26 @@ namespace core
 		}
 
 		/**
+		 * @brief unifies given string to comparable format accross whole project
+		 * 
+		 * @param out input and output
+		 */
+		static void sanitize(u16str& out)
+		{
+			if(out.empty()) return;
+			u16str ret; ret.reserve(out.size());
+
+			demangler<u16str, u16str_v> dmg{out};
+			u16str_v preprocessed = dmg.process<conv_t::ENG>().get();
+
+			const std::locale loc{ plPL() };
+			for(const u16char_t c : preprocessed) if( std::isalnum<wchar_t>(static_cast<wchar_t>(c), loc) || u' ' == c) 
+				ret += static_cast<u16char_t>( std::toupper<wchar_t>( static_cast<wchar_t>(c), loc ) );
+
+			out = std::move(ret);
+		}
+
+		/**
 		 * @brief do all job, by replacing polish chars to selected one
 		 * 
 		 * @tparam type format of replacement

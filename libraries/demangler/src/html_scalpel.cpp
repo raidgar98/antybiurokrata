@@ -11,7 +11,7 @@ namespace core
 
 		// implicit conversion to wchar_t is required, because std does not suppert u16 for isaplha and isdigit :(
 		const auto is_correct = [](const wchar_t c) -> bool {
-			constexpr std::wstring_view accepted{L"-_ \t&#+/."};
+			constexpr std::wstring_view accepted{L"-_ \t&#+/.,"};
 			return	std::isalpha(c, plPL()) || std::isdigit(c, plPL()) ||
 						accepted.find(c) != std::wstring_view::npos;
 		};
@@ -44,13 +44,15 @@ namespace core
 			}
 			else if (!in_tag && is_correct(c))
 			{
-				if (is_double_spaced && u'.' == c)		continue;
+				if (is_double_spaced && u'.' == c )		continue;
 				if ( u' ' == c || u'\t' == c )
 				{
 					if (is_double_spaced)	continue;
-					else							is_double_spaced = true;
+					else is_double_spaced = true;
 				}
-				else												is_double_spaced = false;
+				else is_double_spaced = false;
+
+				if(u',' == c) is_double_spaced = true;
 
 				word += c;
 			}

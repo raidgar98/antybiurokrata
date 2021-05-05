@@ -195,6 +195,23 @@ namespace core
 				PISSN = 3
 			};
 
+			struct id_type_stringinizer
+			{
+				const id_type id;
+
+				template<typename stream_t>
+				inline friend stream_t& operator<<(stream_t& os, const id_type_stringinizer& x) 
+				{
+					if(x.id == id_type::IDT) os << "IDT";
+					else if(x.id == id_type::DOI) os << "DOI";
+					else if(x.id == id_type::EISSN) os << "EISSN";
+					else if(x.id == id_type::PISSN) os << "PISSN";
+					else dassert(false, "undefined id_type");
+
+					return os;
+				}
+			};
+
 			/** @brief object representation of publication */
 			struct detail_publication_t : public serial_helper_t
 			{
@@ -202,12 +219,21 @@ namespace core
 				u16ser<		&detail_publication_t::title>							polish_title;
 				dser<		&detail_publication_t::polish_title, uint16_t>			year;
 
-				using ids_map_t = map_ser<	&detail_publication_t::year, id_type, string_holder_t, enum_printer<id_type> >;
+				using ids_map_t = map_ser<	&detail_publication_t::year, id_type, string_holder_t, enum_printer<id_type, id_type_stringinizer> >;
 				ids_map_t 															ids;
 
 				bool compare(const detail_publication_t&) const;
 				inline friend bool operator==(const detail_publication_t& me, const detail_publication_t& other) { return me.compare(other); }
 				inline friend bool operator!=(const detail_publication_t& me, const detail_publication_t& other) { return !(me == other); }
+
+			private:
+
+				/**
+				 * @brief normalizes given string to make it comparable accrocc others
+				 * 
+				 * @param output input and output
+				 */
+				static void normalize_title(u16str& output);
 			};
 			using publication_t = cser<&detail_publication_t::ids>;
 

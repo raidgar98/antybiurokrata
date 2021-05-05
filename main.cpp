@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	// auto result = adapter.get_person("ADRIAN", "SMAGÓR");
 	auto res = adapter.get_person(argv[1], argv[2]);
 	for(auto& x : *res) x.accept(&visitor);
-	for(const auto& p : person_visitor.persons) global_logger.info() << patterns::serial::pretty_print{p} << logger::endl;
+	for(const auto& p : person_visitor.persons) global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p} << logger::endl;
 	return 0;
 	// return a.exec();
 }

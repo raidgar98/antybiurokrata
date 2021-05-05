@@ -64,15 +64,18 @@ namespace core
 		bool detail::detail_polish_name_t::basic_validation(u16str_v input)
 		{
 			constexpr u16str_v allowed{u"-"}; // '-' for doubled surname
-			if (input.size() < 2)
-				return false;
+			if (input.size() <= 2) return false;
+			bool bad_last = false;	// '-' cannot be at the end of surname
 			for (const u16char_t c : input)
 			{
 				const bool is_letter{ std::isalpha(static_cast<wchar_t>(c), plPL()) };
 				const bool is_allowed_char{ allowed.find(c) != u16str_v::npos };
-				if (!is_letter || is_allowed_char) return false;
+				if(is_allowed_char) bad_last = true;
+				else bad_last = false;
+
+				if (!is_letter && !is_allowed_char) return false;
 			}
-			return true;
+			return !bad_last;
 		}
 
 		bool detail::detail_polish_name_t::is_valid() const
@@ -105,6 +108,18 @@ namespace core
 
 			// worst case
 			return (me.year == that.year) && (me.title == that.title);
+		}
+
+		void detail::detail_publication_t::normalize_title(u16str& output)
+		{
+			if(output.empty()) return;
+			u16str ret;
+			ret.reserve(output.size());
+
+			for(const u16char_t c : output)
+			{
+
+			}
 		}
 	}
 }

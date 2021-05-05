@@ -38,6 +38,7 @@ namespace object_tests_values
 		constexpr str_v correct_pn_04{ "maryla" };
 		constexpr str_v correct_pn_05{ "krzysztoF" };
 		constexpr str_v correct_pn_06{ "ęąśćż" };
+		constexpr str_v correct_pn_07{ "żółtą-sząsą" };
 
 		constexpr str_v invalid_pn_01{ "" };
 		constexpr str_v invalid_pn_02{ " " };
@@ -112,10 +113,12 @@ namespace tests
 			validate_data( correct_pn_03 );
 			validate_data( correct_pn_04 );
 			validate_data( correct_pn_05 );
+			validate_data( correct_pn_06 );
+			validate_data( correct_pn_07 );
 		};
 
 		"case_02"_test = [] {
-			const auto expect_assertion = [](const str_v& x) { ut::expect( ut::throws<core::exceptions::assert_exception>( [&]{ polish_name_t{ x }; } ) ); };
+			const auto expect_assertion = [](const str_v& x) { ut::expect( ut::throws<core::exceptions::assert_exception>( [&]{ polish_name_t{ x }; log << "not failed: " << x << logger::endl; } ) ); };
 
 			expect_assertion( invalid_pn_01 );
 			expect_assertion( invalid_pn_02 );
