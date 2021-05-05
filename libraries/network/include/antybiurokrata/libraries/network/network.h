@@ -39,12 +39,20 @@ namespace core
 					thread = std::make_unique<std::jthread>(
 						[&] {
 							handle = std::make_unique<event_loop_t>();
-							log.info() << "checking is loop in current thread" << logger::endl;
-							if(!handle->isInLoopThread()) handle->moveToCurrentThread();
-							log.info() << "running loop" << logger::endl;
+							log.info("checking is loop in current thread");
+							if(!handle->isInLoopThread())
+							{
+								log.info("moving to current thread");
+								handle->moveToCurrentThread();
+							}
+							log.info("running loop");
 							handle->loop();
 						}
 					);
+
+					// await for thread to start and start looping
+					while(handle.get() == nullptr || !handle->isRunning()) std::this_thread::yield();
+					log.info("loop thread created");
 				}
 
 				~loop_holder_t() 

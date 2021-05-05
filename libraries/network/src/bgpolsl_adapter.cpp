@@ -113,17 +113,14 @@ namespace core
 
 
 			dassert{response.first == drogon::ReqResult::Ok, "expected 200 response code"};
-			log.info() << "successfully got response from `bg.polsl.pl`" << logger::endl;
+			log.info() << "successfully got response from `https://www.bg.polsl.pl`" << logger::endl;
 
 			const str_v view{response.second->getBody()};
-			const std::ranges::split_view splitted{view, '\n'};
-			for (const auto &line : splitted)
+			for (str_v line : string_utils::split_words<str_v>{view, '\n'})
 			{
-				str tmp;
-				tmp.reserve(std::ranges::distance(line));
-				for (const auto c : line) tmp += c;		// very very bad, potential optimalization point
-				if (tmp.find(match_expresion) != std::string::npos)
+				if (line.find(match_expresion) != std::string::npos)
 				{
+					str tmp{ line };
 					std::vector<u16str> words;
 					html_scalpel(tmp, words);
 					result->emplace_back( words );	// bgpolsl_repr_t{}

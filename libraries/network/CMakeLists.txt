@@ -7,4 +7,5 @@ find_package(Drogon CONFIG REQUIRED)
 
 attach_boost()
 create_library( network logger types Drogon::Drogon )
-create_library( bgpolsl_adapter logger objects network html_scalpel visitor)
+create_library( bgpolsl_adapter logger objects network html_scalpel visitor )
+create_library( orcid_adapter logger objects network visitor Drogon::Drogon )

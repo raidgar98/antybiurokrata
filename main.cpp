@@ -1,6 +1,7 @@
 #include <QApplication>
 // #include <antybiurokrata/types.hpp>
 #include <antybiurokrata/libraries/bgpolsl_adapter/bgpolsl_adapter.h>
+#include <antybiurokrata/libraries/orcid_adapter/orcid_adapter.h>
 #include <antybiurokrata/libraries/orm/orm.h>
 // #include <antybiurokrata/windows/mainwindow/mainwindow.h>
 
@@ -25,10 +26,12 @@ int main(int argc, char *argv[])
 	// QApplication a(argc, argv);
 	// MainWindow w;
 	// w.show();
+	core::network::orcid_adapter oadapter{};
+	oadapter.get_person("0000-0003-0957-1291");
 	core::network::bgpolsl_adapter adapter{};
 	core::orm::persons_extractor_t person_visitor{};
 	core::orm::publications_extractor_t visitor{person_visitor};
-	// auto result = adapter.get_person("ADRIAN", "SMAGÓR");
+	auto xxxxx = adapter.get_person("ADRIAN", "SMAGÓR");
 	auto res = adapter.get_person(argv[1], argv[2]);
 	for(auto& x : *res) x.accept(&visitor);
 	for(const auto& p : person_visitor.persons) global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p} << logger::endl;
