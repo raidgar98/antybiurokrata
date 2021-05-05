@@ -31,7 +31,6 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 	- [ORCID](https://pub.orcid.org/v3.0/)
 	- [Web Of Science](https://developer.clarivate.com/apis/wos)
 	- [Scopus](https://dev.elsevier.com/)
-- add conversion between object representation to comparable objects (objects with higher abstraction)
 - design UI
 - implement configs
 
@@ -48,6 +47,7 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 - recognition of `ORCID` usage
 - implemented assertion and exception mechanism
 - added networking mechanism
+- add conversion between object representation to comparable objects (objects with higher abstraction)
 - added object representation for:
 	- [dorobek](https://www.bg.polsl.pl/expertus/new/bib/)
 
