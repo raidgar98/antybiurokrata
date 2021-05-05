@@ -29,8 +29,8 @@ namespace core
 						if(orcid_t::class_t::is_valid(v))
 						{
 							(*person)().orcid(orcid_t::class_t::from_string(v));
-							if(current_publication) (*person)().publictions().push_back(current_publication);
-							this->persons.emplace(std::move(*person));
+							auto pair = this->persons.emplace(std::move(*person));
+							if(current_publication) pair.first->val.publictions().push_back(current_publication);
 						} else ticker = -1;
 						person.reset(new person_t{});
 						break;

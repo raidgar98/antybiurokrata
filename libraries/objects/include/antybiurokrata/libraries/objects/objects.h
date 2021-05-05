@@ -214,10 +214,10 @@ namespace core
 			/** @brief object representation of person (author) */
 			struct detail_person_t : public serial_helper_t
 			{
-				dser<		&detail_person_t::_,		polish_name_t>				name;
-				dser<		&detail_person_t::name,		polish_name_t>				surname;
-				dser<		&detail_person_t::surname,	orcid_t>					orcid;
-				svec_ser<	&detail_person_t::orcid,	publication_t>				publictions{};
+						dser<		&detail_person_t::_,		polish_name_t>				name;
+						dser<		&detail_person_t::name,		polish_name_t>				surname;
+						dser<		&detail_person_t::surname,	orcid_t>					orcid;
+				mutable svec_ser<	&detail_person_t::orcid,	publication_t>				publictions{};
 
 				friend inline bool operator==(const detail_person_t& p1, const detail_person_t& p2) 
 				{

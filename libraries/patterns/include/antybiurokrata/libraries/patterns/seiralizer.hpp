@@ -473,7 +473,10 @@ namespace patterns
 			template<allowed_stream_req stream_type>
 			inline friend stream_type &operator<<(stream_type &os, const pretty_print<T> &obj)
 			{
-				os << boost::typeindex::type_id<typename wrap_t::class_t>() << "[ ";
+				const std::string type_name = boost::typeindex::type_id<typename wrap_t::class_t>().pretty_name();
+				const size_t shevron = type_name.find('<');
+				const size_t double_dot_pos = type_name.find_last_of(':', shevron);
+				os << type_name.substr(double_dot_pos + 1) <<  "[ ";
 				obj.ref.serialize_coma_separated(os);
 				os << " ]";
 				return os;

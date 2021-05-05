@@ -32,7 +32,6 @@ int main(int argc, char *argv[])
 	auto res = adapter.get_person(argv[1], argv[2]);
 	for(auto& x : *res) x.accept(&visitor);
 	for(const auto& p : person_visitor.persons) global_logger.info() << patterns::serial::pretty_print{p} << logger::endl;
-	//0000124934
 	return 0;
 	// return a.exec();
 }
