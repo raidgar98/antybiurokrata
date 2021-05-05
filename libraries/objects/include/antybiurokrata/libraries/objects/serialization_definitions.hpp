@@ -156,7 +156,7 @@ namespace core
 					os << '[';
 					for (size_t i = 0; i < data.size(); ++i)
 						if (data[i].get())
-							os << ","[i == 0] << ' ' << *(data[i]);
+							os << ","[i == 0] << ' ' << patterns::serial::pretty_print{*(data[i])};
 					os << " ]";
 				}
 			};
@@ -199,7 +199,7 @@ namespace core
 						is.ignore(1, delimiter);
 						Value val; is >> val;
 						is.ignore(1, delimiter);
-						data[key] = val;
+						data.emplace(key, std::move(val) );
 					}
 				}
 			};
@@ -209,7 +209,7 @@ namespace core
 			 * 
 			 * @tparam T any type
 			 */
-			template <typename Key, typename Value>
+			template <typename Key, typename Value, typename key_pretty_printer>
 			struct map_pretty_serial
 			{
 				template <typename stream_type>
@@ -217,9 +217,24 @@ namespace core
 				{
 					os << '[';
 					for(auto it = data.begin(); it != data.end(); it++) 
-						os << ","[it==data.begin()] << " ( \"" << it->first << "\": " << it->second << " )";
+						os << ","[it==data.begin()] << " ( " << key_pretty_printer{it->first} << " : " << patterns::serial::pretty_print{it->second} << " )";
 					os << " ]";
 				}
+			};
+
+			/**
+			 * @brief universal printer for enums
+			 * 
+			 * @tparam enum_t anny enum type
+			 * @tparam cast_type type to cast
+			 */
+			template<typename enum_t, typename cast_type = int>
+			struct enum_printer
+			{
+				const enum_t& x;
+
+				template<typename stream_t>
+				inline friend stream_t& operator<<(stream_t& os, const enum_printer& obj) { return os << static_cast<cast_type>(obj.x); }
 			};
 
 			/**
@@ -247,8 +262,8 @@ namespace core
 			 * @tparam X reference to previous member
 			 * @tparam T type in shared vector
 			 */
-			template <auto X, typename Key, typename Value>
-			using map_ser = ser<X, std::map<Key, Value>, map_serial<Key, Value>, map_deserial<Key, Value>, map_pretty_serial<Key, Value>>;
+			template <auto X, typename Key, typename Value, typename key_pretty_printer>
+			using map_ser = ser<X, std::map<Key, Value>, map_serial<Key, Value>, map_deserial<Key, Value>, map_pretty_serial<Key, Value, key_pretty_printer>>;
 		}
 	}
 }

@@ -21,7 +21,6 @@ namespace core
 				log.info() << "authors: " << authors << logger::endl;
 				log.info() << "org_title: " << org_title << logger::endl;
 				log.info() << "whole_title: " << whole_title << logger::endl;
-				log.info() << "e_doc: " << e_doc << logger::endl;
 				log.info() << "p_issn: " << p_issn << logger::endl;
 				log.info() << "doi: " << doi << logger::endl;
 				log.info() << "e_issn: " << e_issn << logger::endl;
@@ -33,11 +32,10 @@ namespace core
 				const std::map<u16str, u16str*> keywords{{std::pair<u16str, u16str*>
 					{u"IDT", &idt}, {u"Rok", &year}, {u"Autorzy", &authors},
 					{u"Tytuł oryginału", &org_title},{u"Tytuł całości", &whole_title},
-					{u"Dokument elektroniczny", &e_doc}, {u"Czasopismo", nullptr},
-					{u"Szczegóły", nullptr}, {u"p-ISSN", &p_issn}, {u"DOI", &doi},
-					{u"e-ISSN", &e_issn}, {u"Adres", nullptr}, {u"Afiliacja", &affiliation},
-					{u"Punktacja", nullptr}, {u"Pobierz", nullptr}, {u"Dyscypliny", nullptr},
-					{u"Uwaga", nullptr}}};
+					{u"Czasopismo", nullptr}, {u"Szczegóły", nullptr}, {u"p-ISSN", &p_issn}, 
+					{u"DOI", &doi}, {u"e-ISSN", &e_issn}, {u"Adres", nullptr}, 
+					{u"Afiliacja", &affiliation}, {u"Punktacja", nullptr}, {u"Pobierz", nullptr}, 
+					{u"Dyscypliny", nullptr}, {u"Uwaga", nullptr}}};
 
 				u16str *savepoint = nullptr;
 				for (const u16str &word : words)
@@ -104,17 +102,6 @@ namespace core
 			str full_name{surname};
 			full_name += ' ';
 			full_name += name;
-
-			// log << "XXXX" << logger::endl;
-			// drogon::HttpRequestPtr req = drogon::HttpRequest::newHttpRequest();
-			// log << "XXXX" << logger::endl;
-			// req->setMethod(drogon::Get);
-			// log << "XXXX" << logger::endl;
-			// // req->setPath("expertus/new/bib");
-			// log << "XXXX" << logger::endl;
-			// const auto xxx = send_request(req);
-			// log << "XXXX" << logger::endl;
-			// log << xxx.second->cookies().size() << logger::endl;
 
 			const connection_handler::raw_response_t response = send_request(
 				prepare_request(

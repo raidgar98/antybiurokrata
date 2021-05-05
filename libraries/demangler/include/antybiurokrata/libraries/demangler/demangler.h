@@ -240,7 +240,19 @@ namespace core
 		 */
 		static void mangle_url(u16str & out);
 
-private:
+		/**
+		 * @brief trivially way of gussing is string is in polish lang? It demangles to english, and returns comprasion between them
+		 * 
+		 * @param view string to check is polish
+		 * @return true if given string is in polish language
+		 * @return false otherwise
+		 */
+		static bool is_polish(u16str_v view)
+		{
+			demangler<u16str, u16str_v> dmg{view};
+			dmg.process<conv_t::ENG>();
+			return dmg.get() == view;
+		}
 
 		/**
 		 * @brief do all job, by replacing polish chars to selected one

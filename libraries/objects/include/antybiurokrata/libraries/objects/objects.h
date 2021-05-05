@@ -133,6 +133,9 @@ namespace core
 				*/
 				template<core::detail::conversion_t conv_t>
 				u16str get_as() const { return core::demangler<u16str, u16str_v>{ data() }.process<conv_t>().get_copy(); }
+
+				inline friend bool operator==(const detail_string_holder_t& s1, const detail_string_holder_t& s2) { return s1.data() == s2.data(); }
+				inline friend bool operator!=(const detail_string_holder_t& s1, const detail_string_holder_t& s2) { return !(s1 == s2); }
 			};
 			using string_holder_t = cser<&detail_string_holder_t::data>;
 
@@ -184,22 +187,37 @@ namespace core
 			};
 			using polish_name_t = cser<&detail_polish_name_t::data>;
 
+			enum class id_type : uint8_t
+			{
+				IDT = 0,
+				DOI = 1,
+				EISSN = 2,
+				PISSN = 3
+			};
+
 			/** @brief object representation of publication */
 			struct detail_publication_t : public serial_helper_t
 			{
-				u16ser<&detail_publication_t::_>						title;
-				u16ser<&detail_publication_t::title>					polish_title;
-				dser<&detail_publication_t::polish_title, uint16_t>		year;
+				u16ser<		&detail_publication_t::_>								title;
+				u16ser<		&detail_publication_t::title>							polish_title;
+				dser<		&detail_publication_t::polish_title, uint16_t>			year;
+
+				using ids_map_t = map_ser<	&detail_publication_t::year, id_type, string_holder_t, enum_printer<id_type> >;
+				ids_map_t 															ids;
+
+				bool compare(const detail_publication_t&) const;
+				inline friend bool operator==(const detail_publication_t& me, const detail_publication_t& other) { return me.compare(other); }
+				inline friend bool operator!=(const detail_publication_t& me, const detail_publication_t& other) { return !(me == other); }
 			};
-			using publication_t = cser<&detail_publication_t::year>;
+			using publication_t = cser<&detail_publication_t::ids>;
 
 			/** @brief object representation of person (author) */
 			struct detail_person_t : public serial_helper_t
 			{
-				dser<&detail_person_t::_,			polish_name_t>				name;
-				dser<&detail_person_t::name,		polish_name_t>				surname;
-				dser<&detail_person_t::surname,		orcid_t>					orcid;
-				svec_ser<&detail_person_t::orcid,	publication_t>				publictions{};
+				dser<		&detail_person_t::_,		polish_name_t>				name;
+				dser<		&detail_person_t::name,		polish_name_t>				surname;
+				dser<		&detail_person_t::surname,	orcid_t>					orcid;
+				svec_ser<	&detail_person_t::orcid,	publication_t>				publictions{};
 
 				friend inline bool operator==(const detail_person_t& p1, const detail_person_t& p2) 
 				{
@@ -220,4 +238,19 @@ namespace core
 		using typename detail::publication_t;
 		using typename detail::person_t;
 	}
+}
+
+template<typename stream_type>
+inline stream_type& operator<<(stream_type& os, const core::objects::detail::id_type& id)
+{
+	return os << static_cast<int>(id);
+}
+
+template<typename stream_type>
+inline stream_type& operator>>(stream_type& is, core::objects::detail::id_type& id)
+{
+	int x;
+	is >> x;
+	id = static_cast<core::objects::detail::id_type>(x);
+	return is;
 }

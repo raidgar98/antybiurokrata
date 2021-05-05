@@ -29,7 +29,6 @@ namespace core
                 u16str authors{};
                 u16str org_title{};
                 u16str whole_title{};
-                u16str e_doc{};
                 u16str p_issn{};
                 u16str doi{};
                 u16str e_issn{};

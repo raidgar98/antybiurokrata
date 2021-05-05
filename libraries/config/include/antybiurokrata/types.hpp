@@ -42,7 +42,17 @@ namespace core
 	constexpr str_v polish_locale{"pl_PL.UTF-8"};
 
 	/** @brief polish locale object */
-	inline std::locale plPL() { static const std::locale loc{polish_locale.data()}; return loc; };
+	inline std::locale plPL() 
+	{ 
+		struct no_separator : std::numpunct<char>
+		{
+			virtual char do_thousands_sep() const override { return '\0'; }
+			virtual str do_grouping() const override { return ""; }
+		};
+		static const std::locale numbers_loc{ std::locale{polish_locale.data()}, new no_separator };
+		
+		return numbers_loc; 
+	};
 
 	struct u16str_serial;
 	struct u16str_deserial;

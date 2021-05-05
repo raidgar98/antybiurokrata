@@ -29,6 +29,7 @@ namespace core
 						if(orcid_t::class_t::is_valid(v))
 						{
 							(*person)().orcid(orcid_t::class_t::from_string(v));
+							if(current_publication) (*person)().publictions().push_back(current_publication);
 							this->persons.emplace(std::move(*person));
 						} else ticker = -1;
 						person.reset(new person_t{});
@@ -41,18 +42,48 @@ namespace core
 
 			return true;
 		}
+
+		bool publications_extractor_t::visit(bgpolsl_repr_t *ptr)
+		{
+			dassert(ptr, "pointer cannot be nullptr!");
+
+			publication_storage_t spub{ new publication_t{} };
+			publication_t& pub = *spub;
+			person_visitor.current_publication.reset();
+			
+			using objects::detail::id_type;
+			const auto fill_id = [&](const u16str_v view, const id_type it) { if(!view.empty()) pub().ids()[it] = view; };
+			fill_id(ptr->idt, id_type::IDT);
+			fill_id(ptr->doi, id_type::DOI);
+			fill_id(ptr->e_issn, id_type::EISSN);
+			fill_id(ptr->p_issn, id_type::PISSN);
+
+			if(pub().ids().empty()) return false;
+
+			if(ptr->year.empty()) return false;
+			else pub().year( std::stoi( get_conversion_engine().to_bytes(ptr->year) ) );
+
+			if(ptr->org_title.empty() && ptr->whole_title.empty()) return false;
+			else
+			{
+				if(ptr->org_title.empty()) pub().title(ptr->whole_title);
+				else if(ptr->whole_title.empty()) pub().title(ptr->org_title);
+				else
+				{
+					if(demangler<>::is_polish(ptr->org_title)) pub().polish_title(ptr->org_title);
+					else pub().title(ptr->org_title);
+
+					if(pub().polish_title().empty() && demangler<>::is_polish(ptr->whole_title)) pub().polish_title(ptr->whole_title);
+					else if(pub().title().empty()) pub().title(ptr->whole_title);
+				}
+			}
+
+			publications.push_back(spub);
+			person_visitor.current_publication = spub;
+			person_visitor.visit(ptr);
+
+			return true;
+		}
+
 	}
 }
-
-/*
-idt: 0000140234
-year: 2021
-authors: Barglik Jerzy Sajkowski Maciej Smagór Adrian Stenzel Tomasz Czupała S. Jaros W. Koreń B. Kowalczyk K. Kulig M.
-org_title: Projekt i budowa stanowiska laboratoryjnego do badania elementów ochrony przeciwporażeniowej z wykorzystaniem rzeczywistości mieszanej VR/AR
-whole_title: 
-e_doc: 
-p_issn: 2544-2740
-doi: 
-e_issn: 2544-3771
-affiliation: Barglik Jerzy 0000-0002-1994-3266 912576 054 RM Sajkowski Maciej 0000-0001-7953-1979 919111 104 RE Smagór Adrian 0000-0001-7667-6697 3926087 054 RM Stenzel Tomasz 0000-0002-5596-1330 919121 104 RE Czupała S. 000 000 Jaros W. 000 000 Koreń B. 000 000 Kowalczyk K. 000 000 Kulig M. 000 000
-*/

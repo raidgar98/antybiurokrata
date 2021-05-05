@@ -190,7 +190,6 @@ namespace patterns
 		template <typename Class, typename Result, Result Class::*value, serializable_req T, typename serial_methode, typename deserial_methode, typename pretty_print_methode>
 		struct ser<value, T, serial_methode, deserial_methode, pretty_print_methode>
 		{
-
 			using value_type = T;
 			/** wrapped value */
 			value_type val;
@@ -347,8 +346,8 @@ namespace patterns
 			/** wrapped value */
 			class_t val{};
 
-			cser(cser&&) = default;
-			cser(const cser&) = default;
+			template<auto X> cser(cser<X>&& x) : val{std::move(x.val)} {}
+			template<auto X> cser(const cser<X>& x) : val{x.val} {}
 
 			/**
 			 * @brief forwards all constructors to wrapped class type and adds ___null_t if required

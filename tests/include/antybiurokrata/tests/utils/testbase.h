@@ -20,7 +20,7 @@ namespace core
 		str to_upper(const str_v& v);
 
 		template<typename Any, typename ... U>
-		requires std::is_constructible_v<Any, U...> and std::is_default_constructible_v<Any>
+		// requires std::is_constructible_v<Any, U...> and std::is_default_constructible_v<Any>
 		inline bool check_serialization(U&& ... u)
 		{
 			std::stringstream ss;
