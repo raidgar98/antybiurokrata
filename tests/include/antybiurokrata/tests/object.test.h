@@ -118,7 +118,7 @@ namespace tests
 		};
 
 		"case_02"_test = [] {
-			const auto expect_assertion = [](const str_v& x) { ut::expect( ut::throws<core::exceptions::assert_exception>( [&]{ polish_name_t{ x }; log << "not failed: " << x << logger::endl; } ) ); };
+			const auto expect_assertion = [](const str_v& x) { ut::expect( ut::throws<core::exceptions::assert_exception>( [&]{ polish_name_t{ x }; } ) ); };
 
 			expect_assertion( invalid_pn_01 );
 			expect_assertion( invalid_pn_02 );
