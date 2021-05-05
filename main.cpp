@@ -27,14 +27,15 @@ int main(int argc, char *argv[])
 	// MainWindow w;
 	// w.show();
 	core::network::orcid_adapter oadapter{};
-	oadapter.get_person("0000-0003-0957-1291");
-	core::network::bgpolsl_adapter adapter{};
-	core::orm::persons_extractor_t person_visitor{};
-	core::orm::publications_extractor_t visitor{person_visitor};
-	auto xxxxx = adapter.get_person("ADRIAN", "SMAGÓR");
-	auto res = adapter.get_person(argv[1], argv[2]);
-	for(auto& x : *res) x.accept(&visitor);
-	for(const auto& p : person_visitor.persons) global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p} << logger::endl;
+	const auto ret = oadapter.get_person("0000-0003-0957-1291");
+	for(const auto& x : *ret) x.print();
+	// core::network::bgpolsl_adapter adapter{};
+	// core::orm::persons_extractor_t person_visitor{};
+	// core::orm::publications_extractor_t visitor{person_visitor};
+	// auto xxxxx = adapter.get_person("ADRIAN", "SMAGÓR");
+	// auto res = adapter.get_person(argv[1], argv[2]);
+	// for(auto& x : *res) x.accept(&visitor);
+	// for(const auto& p : person_visitor.persons) global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p} << logger::endl;
 	return 0;
 	// return a.exec();
 }

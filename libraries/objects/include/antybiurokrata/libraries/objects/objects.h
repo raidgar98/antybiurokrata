@@ -192,23 +192,36 @@ namespace core
 				IDT = 0,
 				DOI = 1,
 				EISSN = 2,
-				PISSN = 3
+				PISSN = 3,
+				EID = 4,
+				WOSUID = 5
 			};
 
 			struct id_type_stringinizer
 			{
+				inline static const str enum_to_string[] = { "IDT", "DOI", "EISSN", "PISSN", "EID", "WOSUID" };
+				constexpr static size_t length{ sizeof(enum_to_string) / sizeof(str) };
+
 				const id_type id;
+
+				static str get(const id_type x)
+				{
+					const size_t index = static_cast<size_t>(x);
+					dassert( index < length, "invalid id_type" );
+					return id_type_stringinizer::enum_to_string[ index ];
+				}
+
+				static id_type get(str x)
+				{
+					std::for_each(x.begin(), x.end(), [](char& c){ c = std::toupper(c); });
+					for(size_t i = 0; i < length; ++i) if(x == enum_to_string[i]) return static_cast<id_type>(i);
+					dassert(false, "invalid string");
+				}
 
 				template<typename stream_t>
 				inline friend stream_t& operator<<(stream_t& os, const id_type_stringinizer& x) 
 				{
-					if(x.id == id_type::IDT) os << "IDT";
-					else if(x.id == id_type::DOI) os << "DOI";
-					else if(x.id == id_type::EISSN) os << "EISSN";
-					else if(x.id == id_type::PISSN) os << "PISSN";
-					else dassert(false, "undefined id_type");
-
-					return os;
+					return os << get(x.id);
 				}
 			};
 
@@ -234,7 +247,7 @@ namespace core
 						dser<		&detail_person_t::_,		polish_name_t>				name;
 						dser<		&detail_person_t::name,		polish_name_t>				surname;
 						dser<		&detail_person_t::surname,	orcid_t>					orcid;
-				mutable svec_ser<	&detail_person_t::orcid,	publication_t>				publictions{};
+				mutable	svec_ser<	&detail_person_t::orcid,	publication_t>				publictions{};
 
 				friend inline bool operator==(const detail_person_t& p1, const detail_person_t& p2) 
 				{

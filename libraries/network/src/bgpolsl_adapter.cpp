@@ -2,7 +2,6 @@
 #include <antybiurokrata/libraries/bgpolsl_adapter/bgpolsl_adapter.h>
 #include <antybiurokrata/libraries/html_scalpel/html_scalpel.h>
 #include <antybiurokrata/libraries/demangler/demangler.h>
-#include <antybiurokrata/libraries/objects/objects.h>
 
 // STL
 #include <map>

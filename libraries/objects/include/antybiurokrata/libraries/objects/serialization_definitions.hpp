@@ -1,5 +1,6 @@
 #include <antybiurokrata/libraries/patterns/seiralizer.hpp>
 #include <iomanip>
+#include <array>
 #include <map>
 
 namespace core
