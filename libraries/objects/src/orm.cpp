@@ -64,6 +64,11 @@ namespace core
 			return true;
 		}
 
+		bool persons_extractor_t::visit(orcid_repr_t *ptr)
+		{
+
+		}
+
 		bool publications_extractor_t::visit(bgpolsl_repr_t *ptr)
 		{
 			dassert(ptr, "pointer cannot be nullptr!");
@@ -114,9 +119,18 @@ namespace core
 
 			publications.push_back(spub);
 			person_visitor.current_publication = spub;
-			person_visitor.visit(ptr);
+			ptr->accept(&person_visitor);
 
 			return true;
+		}
+
+		bool publications_extractor_t::visit(orcid_repr_t *ptr)
+		{
+			dassert(ptr, "pointer cannot be nullptr!");
+
+			publication_storage_t spub{new publication_t{}};
+			publication_t &pub = *spub;
+			person_visitor.current_publication.reset();
 		}
 
 	}
