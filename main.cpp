@@ -39,16 +39,34 @@ int main(int argc, char *argv[])
 	// QApplication a(argc, argv);
 	// MainWindow w;
 	// w.show();
-	// core::network::orcid_adapter oadapter{};
-	// const auto ret = oadapter.get_person("0000-0003-0957-1291");
 	// for(const auto& x : *ret) x.print();
-	core::network::bgpolsl_adapter adapter{};
-	core::orm::persons_extractor_t person_visitor{};
-	core::orm::publications_extractor_t visitor{person_visitor};
-	// auto xxxxx = adapter.get_person("ADRIAN", "SMAGÓR");
-	auto res = adapter.get_person(argv[1], argv[2]);
-	for(auto& x : *res) x.accept(&visitor);
-	for(const auto& p : person_visitor.persons) global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p} << logger::endl;
+	core::network::bgpolsl_adapter bgadapter{};
+	core::orm::persons_extractor_t bgperson_visitor{};
+	core::orm::publications_extractor_t bgvisitor{bgperson_visitor};
+	auto res = bgadapter.get_person(argv[1], argv[2]);
+	for(auto& x : *res) x.accept(&bgvisitor);
+
+	core::orm::persons_extractor_t orcid_person_visitor;
+	for(auto& obj : bgperson_visitor.persons)
+	{
+		core::objects::person_t x;
+		x().name()().data()().data( obj().name()().data()().data() );
+		x().surname()().data()().data( obj().surname()().data()().data() );
+		x().orcid()().identifier(obj().orcid()().identifier());
+	}
+
+	core::orm::publications_extractor_t ovisitor{orcid_person_visitor};
+	core::network::orcid_adapter oadapter{};
+
+	// auto ret = oadapter.get_person((*bgperson_visitor.persons.begin())().orcid()().operator core::str());
+	// auto ret = oadapter.get_person((*bgperson_visitor.persons.begin())().orcid()().operator core::str());
+	auto ret = oadapter.get_person("0000-0002-1994-3266");
+	// for(auto& x : *ret) x.accept(&ovisitor);
+	for(const auto& x : *ret) x.print();
+
+	for(const auto& p : bgperson_visitor.persons) global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p} << logger::endl;
+	global_logger << "#############" << logger::endl;
+	for(const auto& p : orcid_person_visitor.persons) global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p} << logger::endl;
 	return 0;
 	// return a.exec();
 }

@@ -68,8 +68,8 @@ namespace tests
 		log.info() << "entering `orcid_tests` suite" << logger::endl;
 		logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
-		const auto validation_success = [](const u16str_v &v) { ut::expect(ut::eq(true, orcid_t::class_t::is_valid(v))); };
-		const auto validation_fail = [](const u16str_v &v) { ut::expect(ut::eq(false, orcid_t::class_t::is_valid(v))); };
+		const auto validation_success = [](const u16str_v &v) { ut::expect(ut::eq(true, orcid_t::class_t::is_valid_orcid_string(v))); };
+		const auto validation_fail = [](const u16str_v &v) { ut::expect(ut::eq(false, orcid_t::class_t::is_valid_orcid_string(v))); };
 
 		"case_01"_test = [&] {
 			validation_success(correct_01);

@@ -11,6 +11,13 @@ namespace core
 	namespace objects
 	{
 
+		bool detail::detail_orcid_t::is_valid_orcid() const
+		{
+			size_t sum = 0;
+			for(auto x : identifier()) sum += x;
+			return sum > 0;
+		}
+
 		str detail::detail_orcid_t::to_string(const detail::detail_orcid_t &orcid)
 		{
 			std::stringstream result;
@@ -23,7 +30,7 @@ namespace core
 			return result.str();
 		}
 
-		bool detail::detail_orcid_t::is_valid(const u16str_v &data, str* conversion_output)
+		bool detail::detail_orcid_t::is_valid_orcid_string(const u16str_v &data, str* conversion_output)
 		{
 			const static std::regex orcid_validator_regex{"(\\d{4}-){3}\\d{4}"};
 			const str conv{ get_conversion_engine().to_bytes(u16str(data)) };
@@ -34,7 +41,7 @@ namespace core
 		detail::detail_orcid_t detail::detail_orcid_t::from_string(const u16str_v &data)
 		{
 			str conv;
-			dassert{is_valid(data, &conv), "given string is not valid ORCID number"};
+			dassert{is_valid_orcid_string(data, &conv), "given string is not valid ORCID number"};
 			detail_orcid_t result{};
 
 			size_t i = 0;

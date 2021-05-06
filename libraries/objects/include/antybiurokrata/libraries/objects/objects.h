@@ -53,6 +53,14 @@ namespace core
 				explicit operator str() const { return to_string(*this); }
 
 				/**
+				 * @brief checks is current orcid is proper (if 0000-0000-0000-0000 it's not)
+				 * 
+				 * @return true if so
+				 * @return false if not
+				 */
+				bool is_valid_orcid() const;
+
+				/**
 				 * @brief implementation of detail_orcid_t -> std::string conversion
 				 * 
 				 * @param orcid object to convert
@@ -68,7 +76,7 @@ namespace core
 				 * @return true if string is valid
 				 * @return false if string is not valid
 				 */
-				static bool is_valid(const u16str_v& data, str* conversion_output = nullptr);
+				static bool is_valid_orcid_string(const u16str_v& data, str* conversion_output = nullptr);
 
 				/**
 				 * @brief implementation of std::string -> detail_orcid_t conversion
@@ -80,6 +88,15 @@ namespace core
 				static detail_orcid_t from_string(const u16str_v& data);
 
 				friend inline bool operator==(const detail_orcid_t& o1, const detail_orcid_t& o2) { return o1.identifier() == o2.identifier(); }
+				friend inline bool operator!=(const detail_orcid_t& o1, const detail_orcid_t& o2) { return !(o1 == o2); }
+				friend inline bool operator<(const detail_orcid_t& o1, const detail_orcid_t& o2) 
+				{ 
+					for(size_t i = 0; i < detail_orcid_t::words_in_orcid_num; ++i) 
+						if(o1.identifier()[i] != o2.identifier()[i])
+							return o1.identifier()[i] < o2.identifier()[i];
+
+					return false; // they are same
+				}
 			};
 			using orcid_t = cser<&detail_orcid_t::identifier>;
 
@@ -136,6 +153,7 @@ namespace core
 
 				inline friend bool operator==(const detail_string_holder_t& s1, const detail_string_holder_t& s2) { return s1.data() == s2.data(); }
 				inline friend bool operator!=(const detail_string_holder_t& s1, const detail_string_holder_t& s2) { return !(s1 == s2); }
+				inline friend bool operator<(const detail_string_holder_t& s1, const detail_string_holder_t& s2) { return s1.data() < s2.data(); }
 			};
 			using string_holder_t = cser<&detail_string_holder_t::data>;
 
@@ -169,6 +187,9 @@ namespace core
 				explicit operator u16str_v() const { return data()().operator u16str_v(); }
 
 				friend inline bool operator==(const detail_polish_name_t& pn1, const detail_polish_name_t& pn2) { return pn1.data()().data() == pn2.data()().data(); }
+				friend inline bool operator!=(const detail_polish_name_t& pn1, const detail_polish_name_t& pn2) { return !(pn1 == pn2); }
+				friend inline bool operator<(const detail_polish_name_t& pn1, const detail_polish_name_t& pn2) { return pn1.data() < pn2.data(); }
+
 
 				[[nodiscard]] static bool basic_validation(u16str_v input);
 
@@ -199,29 +220,30 @@ namespace core
 
 			struct id_type_stringinizer
 			{
-				inline static const str enum_to_string[] = { "IDT", "DOI", "EISSN", "PISSN", "EID", "WOSUID" };
+				inline static const u16str enum_to_string[] = { u"IDT", u"DOI", u"EISSN", u"PISSN", u"EID", u"WOSUID" };
 				constexpr static size_t length{ sizeof(enum_to_string) / sizeof(str) };
 
 				const id_type id;
 
-				static str get(const id_type x)
+				static u16str get(const id_type x)
 				{
 					const size_t index = static_cast<size_t>(x);
 					dassert( index < length, "invalid id_type" );
 					return id_type_stringinizer::enum_to_string[ index ];
 				}
 
-				static id_type get(str x)
+				static id_type get(u16str x)
 				{
-					std::for_each(x.begin(), x.end(), [](char& c){ c = std::toupper(c); });
+					std::for_each(x.begin(), x.end(), [](u16char_t& c){ c = std::toupper(c); });
 					for(size_t i = 0; i < length; ++i) if(x == enum_to_string[i]) return static_cast<id_type>(i);
 					dassert(false, "invalid string");
+					return id_type{}; // dead code
 				}
 
 				template<typename stream_t>
 				inline friend stream_t& operator<<(stream_t& os, const id_type_stringinizer& x) 
 				{
-					return os << get(x.id);
+					return os << get_conversion_engine().to_bytes(get(x.id));
 				}
 			};
 
@@ -232,7 +254,15 @@ namespace core
 				u16ser<		&detail_publication_t::title>							polish_title;
 				dser<		&detail_publication_t::polish_title, uint16_t>			year;
 
-				using ids_map_t = map_ser<	&detail_publication_t::year, id_type, string_holder_t, enum_printer<id_type, id_type_stringinizer> >;
+				using ids_map_t = map_ser<	
+					&detail_publication_t::year, 
+					id_type, 
+					string_holder_t, 
+					enum_printer<
+						id_type, 
+						id_type_stringinizer
+					> 
+				>;
 				ids_map_t 															ids;
 
 				bool compare(const detail_publication_t&) const;
@@ -254,10 +284,13 @@ namespace core
 					if(p1.orcid() == p2.orcid()) return true;
 					else return ( p1.name() == p2.name() ) && ( p1.surname() == p2.surname() );
 				}
+				friend inline bool operator!=(const detail_person_t& p1, const detail_person_t& p2) { return !(p1 == p2); }
 
 				friend inline bool operator<(const detail_person_t& p1, const detail_person_t& p2)
 				{
-					return static_cast<u16str_v>(p1.surname()()) < static_cast<u16str_v>(p2.surname()());
+					if(p1.orcid()().is_valid_orcid() && p2.orcid()().is_valid_orcid()) [[likely]] return p1.orcid() < p2.orcid();
+					else if(p1.surname() != p2.surname()) return p1.surname() < p2.surname();
+					else return p1.name() < p2.name();
 				}
 			};
 			using person_t = cser<&detail_person_t::publictions>;
@@ -267,6 +300,7 @@ namespace core
 		using typename detail::polish_name_t;
 		using typename detail::publication_t;
 		using typename detail::person_t;
+		using typename detail::id_type;
 	}
 }
 

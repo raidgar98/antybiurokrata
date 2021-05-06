@@ -31,21 +31,28 @@ namespace core
 			log.info() << "successfully got response from `https://pub.orcid.org`" << logger::endl;
 
 			using jvalue = Json::Value;
-			const auto empty_array = jvalue{Json::ValueType::arrayValue};
-			const auto null_value = jvalue{Json::ValueType::nullValue};
+			const auto empty_array = jvalue{Json::ValueType::arrayValue};	// alternative return if array is expected
+			const auto null_value = jvalue{Json::ValueType::nullValue};		// alternative result if anything other that array is expected
 
-			const auto json = response.second->getJsonObject();
+			std::shared_ptr<jvalue> json{ nullptr };
+			try { json = response.second->getJsonObject(); }
+			catch(const std::exception& e) { log.error() << "cought `std::exception` while gathering json. what(): " << logger::endl << e.what() << logger::endl; }
+			catch(...) { log.error() << "cought unknown exception while gathering json" << logger::endl; }
+
 			dassert(json.get() != nullptr, "empty result or invalid json");
+
 			const jvalue& array = json->get("group", empty_array);
 			dassert(array.isArray(), "it's not array");
 			log << "it's array, with size: " << array.size() << " hooray!" << logger::endl;
 			if(array.size() == 0) log.warn() << "array is empty for orcid: " << orcid << logger::endl;
 			auto cengine = get_conversion_engine();
+			const u16str wide_orcid = cengine.from_bytes(orcid);
 
 			using namespace network::detail;
 			for(const jvalue& x : array)
 			{
 				orcid_repr_t obj{};
+				obj.orcid = wide_orcid;
 
 				const jvalue& work_summary = x.get("work-summary", empty_array);
 				if(work_summary.isArray() && work_summary.size() > 0)
@@ -65,18 +72,30 @@ namespace core
 					{	// title
 						const jvalue& pretitle = item_0.get("title", null_value);
 						if(pretitle == null_value) continue;
+						constexpr u16char_t double_tittle_separator{ u',' };
+						bool double_title = false;
 						
 						{	// orginal
 							const jvalue& title = pretitle.get("title", null_value);
 							if(title == null_value) continue;
 							else obj.title = cengine.from_bytes(title["value"].asCString());
+							if(obj.title.find(double_tittle_separator)) double_title = true;
 							log << "added tittle" << logger::endl;
 						}
 
-						{	// polish (?)
+						if(!double_title) /* i hope */ [[likely]] 
+						{
 							const jvalue& title = pretitle.get("translated-title", null_value);
 							if(title != null_value) obj.translated_title = cengine.from_bytes(title["value"].asCString());
 							log << "added translated tittle" << logger::endl;
+						}
+						else
+						{
+							const string_utils::split_words<u16str_v> splitter{ obj.title, double_tittle_separator };
+							auto it = splitter.begin();
+							u16str first_title{ *it }; it++;
+							obj.translated_title = *it;
+							obj.title = std::move(first_title);
 						}
 					}
 				}

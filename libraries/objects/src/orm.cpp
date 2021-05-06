@@ -11,7 +11,6 @@ namespace core
 			dassert(ptr, "pointer cannot be nullptr!");
 
 			const u16str_v affiliation{ptr->affiliation}; // alias
-			int ticker{0};
 			std::unique_ptr<person_t> person;
 			const auto reset_person = [&person]{ person.reset(new person_t{}); };
 			for (u16str_v part_of_affiliation : string_utils::split_words<u16str_v>{affiliation, u','})
@@ -48,7 +47,7 @@ namespace core
 
 				if(!safely_move()) continue;
 
-				if (orcid_t::class_t::is_valid(v)) (*person)().orcid(orcid_t::class_t::from_string(v));
+				if (orcid_t::class_t::is_valid_orcid_string(v)) (*person)().orcid(orcid_t::class_t::from_string(v));
 				else
 				{
 					log.warn() << "failed validation on orcid: " << v << logger::endl;
@@ -66,7 +65,21 @@ namespace core
 
 		bool persons_extractor_t::visit(orcid_repr_t *ptr)
 		{
+			dassert(ptr, "pointer cannot be nullptr!");
 
+			std::unique_ptr<person_t> person;
+			person_t& pp{ *person };
+
+			if(ptr->orcid.empty() || !objects::detail::detail_orcid_t::is_valid_orcid_string(ptr->orcid)) return false;
+			else pp().orcid() = objects::detail::detail_orcid_t::from_string(ptr->orcid);
+
+			if(!pp().orcid()().is_valid_orcid()) return false;
+
+			auto found = persons.find(pp);
+			dassert(found != persons.end(), "unknown person for given orcid!");
+
+			(*found)().publictions().emplace_back(current_publication);
+			return true;
 		}
 
 		bool publications_extractor_t::visit(bgpolsl_repr_t *ptr)
@@ -131,6 +144,53 @@ namespace core
 			publication_storage_t spub{new publication_t{}};
 			publication_t &pub = *spub;
 			person_visitor.current_publication.reset();
+
+			if(ptr->year.empty())
+			{
+				log.warn() << "failed validation because of empty year" << logger::endl;
+				return false;
+			}
+			else pub().year( std::stoi( get_conversion_engine().to_bytes(ptr->year) ) );
+
+			if(ptr->title.empty())
+			{
+				log.warn() << "failed validation because of empty title" << logger::endl;
+				return false;
+			}
+			else pub().title(ptr->title);
+
+			if(!ptr->translated_title.empty())
+			{
+				pub().polish_title(ptr->translated_title);
+				if(demangler<>::is_polish(pub().title()) && !demangler<>::is_polish(pub().polish_title()) ) 
+					std::swap( pub().title(), pub().polish_title() );
+
+				demangler<>::sanitize(pub().polish_title());
+			}
+
+			demangler<>::sanitize(pub().title());
+
+			for(const auto& pair : ptr->ids)
+			{
+				const objects::id_type id = objects::detail::id_type_stringinizer::get( pair.first );
+				auto exists_pair = pub().ids().find(id);
+				if(exists_pair == pub().ids().end()) pub().ids()[id] = pair.second;
+			}
+
+			if(pub().ids().empty()) log.warn() << "orcid input has no ids" << logger::endl;
+
+			auto it = std::find_if( publications.begin(), publications.end(), [&pub](const publication_storage_t& pp) { return *pp == pub; } );
+			if(it == publications.end())
+			{
+				publications.emplace_back(spub);
+				log.info() << "succefully added new publications" << logger::endl;
+			}
+			else spub = *it;
+
+			person_visitor.current_publication = spub;
+
+			if(!ptr->accept( &person_visitor )) log.warn() << "adding person with orcid: `" << ptr->orcid << "` failed" << logger::endl;
+			return true;
 		}
 
 	}
