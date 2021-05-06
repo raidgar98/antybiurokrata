@@ -26,13 +26,13 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 ---
 
 - add more tests
-- added object representation for:
-	- [BN](https://data.bn.org.pl/bibs)
-	- [ORCID](https://pub.orcid.org/v3.0/)
-	- [Web Of Science](https://developer.clarivate.com/apis/wos)
+- add object representation for:
+	<!-- - [BN](https://data.bn.org.pl/bibs) // bn does not support science artticles, only books -->
+	<!-- - [Web Of Science](https://developer.clarivate.com/apis/wos) // => failed cannot access API -->
 	- [Scopus](https://dev.elsevier.com/)
 - design UI
 - implement configs
+- implement report generation
 
 ## Currently done
 ---
@@ -50,7 +50,7 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 - add conversion between object representation to comparable objects (objects with higher abstraction)
 - added object representation for:
 	- [dorobek](https://www.bg.polsl.pl/expertus/new/bib/)
-
+	- [ORCID](https://pub.orcid.org/v3.0/)
 
 
 ## Setup
