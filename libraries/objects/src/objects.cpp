@@ -54,7 +54,7 @@ namespace core
 			return result;
 		}
 
-		detail::detail_string_holder_t::detail_string_holder_t(const u16str_v &v)
+		void detail::detail_string_holder_t::set(const u16str_v &v)
 		{
 			using namespace core;
 			

@@ -161,6 +161,13 @@ namespace patterns
 			{ put_to_stream( std::cout, x ) };
 			{ get_from_stream( std::cin, x ) };
 		};
+
+		template<template<auto X, typename ... U> typename some_class, auto X, typename ... U>
+		concept serializable_class_type_req = requires(some_class<X, U...> x){ 
+			typename some_class<X, U...>::is_serializable_class; 
+			{ x.val };
+		};
+
 			// std::is_constructible_v<get_from_stream, std::istream, T>
 		// and
 			// std::is_constructible_v<put_to_stream, std::ostream, T>
@@ -190,9 +197,13 @@ namespace patterns
 		template <typename Class, typename Result, Result Class::*value, serializable_req T, typename serial_methode, typename deserial_methode, typename pretty_print_methode>
 		struct ser<value, T, serial_methode, deserial_methode, pretty_print_methode>
 		{
+			using is_serializable_class = std::true_type;
 			using value_type = T;
 			/** wrapped value */
 			value_type val;
+
+			operator value_type&() { return val; }
+			operator const value_type&() const { return val; }
 
 			/**
 			 * @brief forward constructor
@@ -218,6 +229,28 @@ namespace patterns
 			ser(const T &v) : val{v} {};
 
 			/**
+			 * @brief specializes copy constructor for other wrappers
+			 * 
+			 * @tparam U any type
+			 * @param v any ser
+			 * @return ser& self
+			 */
+			template<template<auto X, typename ... U> typename serial, auto X, typename ... U>
+			requires serializable_class_type_req<serial, X, U...>
+			ser(const serial<X, U...>& v) : val{v.val} {}
+
+			/**
+			 * @brief specializes move constructor for other wrappers
+			 * 
+			 * @tparam U any type
+			 * @param v any ser
+			 * @return ser& self
+			 */
+			template<template<auto X, typename ... U> typename serial, auto X, typename ... U>
+			requires serializable_class_type_req<serial, X, U...>
+			ser(serial<X, U...>&& v) : val{std::move(v.val)} {}
+
+			/**
 			 * @brief forwards move assignment operator
 			 * 
 			 * @tparam U any other type
@@ -236,6 +269,28 @@ namespace patterns
 			*/
 			template<typename U>
 			ser& operator=(const U& v) { val = v; return *this; }
+
+			/**
+			 * @brief forwards copy assigment operator for any wrapper
+			 * 
+			 * @tparam U any type
+			 * @param v any ser
+			 * @return ser& self
+			 */
+			template<template<auto X, typename ... U> typename serial, auto X, typename ... U>
+			requires serializable_class_type_req<serial, X, U...>
+			ser& operator=(const serial<X, U...>& v) { val = v.val; return *this; }
+
+			/**
+			 * @brief forwards move assigment operator for any wrapper
+			 * 
+			 * @tparam U any type
+			 * @param v any ser
+			 * @return ser& self
+			 */
+			template<template<auto X, typename ... U> typename serial, auto X, typename ... U>
+			requires serializable_class_type_req<serial, X, U...>
+			ser& operator=(serial<X, U...>&& v) { val = std::move(v.val); return *this; }
 
 			/**
 			 * @brief thanks to this operator, this wrapper is also getter
@@ -261,14 +316,34 @@ namespace patterns
 			void operator()(const U& u) { val = u; }
 
 			/**
-			 * @brief copying constructor for others members with same type
+			 * @brief overload of previous for serializable objects
 			 * 
-			 * @tparam U any other member from same/other class
-			 * @tparam _T any other (or same) type convertible to T
-			 * @param v any wrapper
+			 * @tparam U Any value convertible to value_type
+			 * @param u data to set
 			 */
-			template <auto ... U>
-			explicit ser(const ser<U...> &v) : val{v.val} {};
+			template<template<auto X, typename ... U> typename serial, auto X, typename ... U>
+			requires serializable_class_type_req<serial, X, U...>
+			void operator()(const serial<X, U...>& u) { val = u.val; }
+
+			/**
+			 * @brief overload of previous for serializable objects
+			 * 
+			 * @tparam U Any value convertible to value_type
+			 * @param u data to set
+			 */
+			template<template<auto X, typename ... U> typename serial, auto X, typename ... U>
+			requires serializable_class_type_req<serial, X, U...>
+			void operator()(serial<X, U...>&& u) { val = std::move(u.val); }
+
+			// /**
+			//  * @brief copying constructor for others members with same type
+			//  * 
+			//  * @tparam U any other member from same/other class
+			//  * @tparam _T any other (or same) type convertible to T
+			//  * @param v any wrapper
+			//  */
+			// template <auto ... U>
+			// explicit ser(const ser<U...> &v) : val{v.val} {};
 
 			/**
 			 * @brief serializes current member and forward serialization to next member 
@@ -342,9 +417,13 @@ namespace patterns
 		struct cser<last>
 		{
 			using class_t = Class;
+			using is_serializable_class = std::true_type;
 
 			/** wrapped value */
 			class_t val{};
+
+			operator class_t&() { return val; }
+			operator const class_t&() const { return val; }
 
 			template<auto X> cser(cser<X>&& x) : val{std::move(x.val)} {}
 			template<auto X> cser(const cser<X>& x) : val{x.val} {}
@@ -370,7 +449,23 @@ namespace patterns
 			cser(U &&...u) : val{std::forward<U>(u)...} {}
 
 			template<typename U>
-			cser& operator=(U&& u) { val = std::forward<U>(u); return *this; }
+			cser& operator=(U&& u) { val = std::move(u); return *this; }
+
+			template<template<auto X, typename ... U> typename serial, auto X, typename ... U>
+			requires serializable_class_type_req<serial, X, U...>
+			cser(serial<X, U...>&&u) : val{std::move(u.val)} {}
+
+			template<template<auto X, typename ... U> typename serial, auto X, typename ... U>
+			requires serializable_class_type_req<serial, X, U...>
+			cser(const serial<X, U...>& u) : val{u.val} {}
+
+			template<template<auto X, typename ... U> typename serial, auto X, typename ... U>
+			requires serializable_class_type_req<serial, X, U...>
+			cser operator=(serial<X, U...>&&u) { val = std::move(u.val); return *this; }
+
+			template<template<auto X, typename ... U> typename serial, auto X, typename ... U>
+			requires serializable_class_type_req<serial, X, U...>
+			cser operator=(const serial<X, U...>& u) { val = u.val; return *this; }
 
 			/**
 			 * @brief serializes recursively class

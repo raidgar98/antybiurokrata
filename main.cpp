@@ -46,23 +46,22 @@ int main(int argc, char *argv[])
 	auto res = bgadapter.get_person(argv[1], argv[2]);
 	for(auto& x : *res) x.accept(&bgvisitor);
 
-	core::orm::persons_extractor_t orcid_person_visitor;
-	for(auto& obj : bgperson_visitor.persons)
-	{
-		core::objects::person_t x;
-		x().name()().data()().data( obj().name()().data()().data() );
-		x().surname()().data()().data( obj().surname()().data()().data() );
-		x().orcid()().identifier(obj().orcid()().identifier());
-	}
+	core::orm::persons_extractor_t orcid_person_visitor{bgperson_visitor};
+	for(auto& x : orcid_person_visitor.persons) x().publictions().clear();
 
 	core::orm::publications_extractor_t ovisitor{orcid_person_visitor};
 	core::network::orcid_adapter oadapter{};
 
+	for(const auto& person : orcid_person_visitor.persons)
+	{
+		auto ret = oadapter.get_person(person().orcid()());
+		for(auto& x : *ret) x.accept(&ovisitor);
+	}
 	// auto ret = oadapter.get_person((*bgperson_visitor.persons.begin())().orcid()().operator core::str());
 	// auto ret = oadapter.get_person((*bgperson_visitor.persons.begin())().orcid()().operator core::str());
-	auto ret = oadapter.get_person("0000-0002-1994-3266");
+	// auto ret = oadapter.get_person("0000-0002-1994-3266");
 	// for(auto& x : *ret) x.accept(&ovisitor);
-	for(const auto& x : *ret) x.print();
+	// for(const auto& x : *ret) x.print();
 
 	for(const auto& p : bgperson_visitor.persons) global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p} << logger::endl;
 	global_logger << "#############" << logger::endl;

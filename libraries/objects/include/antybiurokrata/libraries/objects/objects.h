@@ -36,21 +36,21 @@ namespace core
 				 * 
 				 * @param input valid orcid as string_view
 				*/
-				explicit detail_orcid_t(const u16str_v& input) : detail_orcid_t{ std::move(from_string(input)) } {}
+				detail_orcid_t(const u16str_v& input) : detail_orcid_t{ std::move(from_string(input)) } {}
 
 				/**
 				 * @brief provides easy conversion to u16str
 				 * 
 				 * @return u16str
 				*/
-				explicit operator u16str() const { return get_conversion_engine().from_bytes(to_string(*this)); }
+				operator u16str() const { return get_conversion_engine().from_bytes(to_string(*this)); }
 
 				/**
 				 * @brief provides easy conversion to string
 				 * 
 				 * @return str
 				*/
-				explicit operator str() const { return to_string(*this); }
+				operator str() const { return to_string(*this); }
 
 				/**
 				 * @brief checks is current orcid is proper (if 0000-0000-0000-0000 it's not)
@@ -104,34 +104,45 @@ namespace core
 			{
 				u16ser<&detail_string_holder_t::_> data;
 
-				/** brief default constructor */
+				/** @brief default constructor */
 				detail_string_holder_t() = default;
 				detail_string_holder_t(const detail_string_holder_t&) = default;
 				detail_string_holder_t(detail_string_holder_t&&) = default;
+				detail_string_holder_t& operator=(const detail_string_holder_t&) = default;
+				detail_string_holder_t& operator=(detail_string_holder_t&&) = default;
+
+				/** @brief this is constructor body, preferable way of setting data */
+				void set(const u16str_v& v);
 
 				/** @brief 1) Construct a new detail detail_string_holder_t object from string view; forwards to 2 */
-				explicit detail_string_holder_t(const str_v& v) : detail_string_holder_t{ str{v.data()} } 
-				{}
+				explicit detail_string_holder_t(const str_v& v) : detail_string_holder_t{ str{v.data()} } {}
 
 				/** @brief 2) Construct a new detail detail_string_holder_t object from string; forwards to 3 */
-				explicit detail_string_holder_t(const str& v) : detail_string_holder_t{ core::get_conversion_engine().from_bytes(v) } 
-				{}
+				explicit detail_string_holder_t(const str& v) : detail_string_holder_t{ core::get_conversion_engine().from_bytes(v) } {}
 
 				/** @brief 3) Construct a new detail detail_string_holder_t object from u16string_view */
-				explicit detail_string_holder_t(const u16str_v& v);
+				explicit detail_string_holder_t(const u16str_v& v) { set(v); }
 
 				/** @brief 4) Construct a new detail detail_string_holder_t object from u16string; forwards to 3 */
-				explicit detail_string_holder_t(const u16str& v) : detail_string_holder_t{ u16str_v{v} } 
-				{}
+				explicit detail_string_holder_t(const u16str& v) : detail_string_holder_t{ u16str_v{v} } {}
 
-				template<typename U>
-				detail_string_holder_t& operator=(U&& u) { detail_string_holder_t x{u}; this->data(x.data()); return *this; }
+				/** @brief 1) forward to assign operator 2 */
+				detail_string_holder_t& operator=(const str_v& v) { return (*this = str{v.data()}); }
+
+				/** @brief 2) forward to assign operator 3 */
+				detail_string_holder_t& operator=(const str& v) { return (*this = core::get_conversion_engine().from_bytes(v)); }
+
+				/** @brief 3) actually constructs object */
+				detail_string_holder_t& operator=(const u16str_v& v) { this->set(v); return *this; }
+
+				/** @brief 4) forward to assign operator 3 */
+				detail_string_holder_t& operator=(const u16str& v) { return (*this = u16str_v{v}); }
 
 				/** @brief provides conversion to string*/
-				explicit operator str() const;
+				operator str() const;
 
 				/** @brief provides conversion to u16string_view*/
-				explicit operator u16str_v() const { return u16str_v{ data() }; }
+				operator u16str_v() const { return u16str_v{ data() }; }
 
 				/**
 				 * @brief provides conversion easy conversion with demangler
@@ -175,7 +186,10 @@ namespace core
 				detail_polish_name_t(U&& ... v) : data{std::forward<U>(v)...} { validate(); unify(); }
 
 				template<typename U>
-				detail_polish_name_t& operator=(U&& u) { detail_polish_name_t x(std::forward<U>(u)); data()().data() = x.data()().data(); return *this; }
+				detail_polish_name_t& operator=(U&& u) { data = std::move(u); validate(); unify(); return *this; }
+
+				template<typename U>
+				detail_polish_name_t& operator=(const U& u) { data = u; validate(); unify(); return *this; }
 
 				/** @brief in this case it's proxy to toupper */
 				void unify() noexcept;

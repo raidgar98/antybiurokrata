@@ -67,7 +67,9 @@ namespace core
 		{
 			dassert(ptr, "pointer cannot be nullptr!");
 
-			std::unique_ptr<person_t> person;
+			int i = 0;
+
+			std::unique_ptr<person_t> person{new person_t{}};
 			person_t& pp{ *person };
 
 			if(ptr->orcid.empty() || !objects::detail::detail_orcid_t::is_valid_orcid_string(ptr->orcid)) return false;
