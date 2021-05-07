@@ -26,8 +26,8 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 ---
 
 <!-- - add object representation for: -->
-<!-- - [BN](https://data.bn.org.pl/bibs) // no sense: bn does not support science artticles, only books -->
-<!-- - [Web Of Science](https://developer.clarivate.com/apis/wos) // => failed: cannot access API -->
+<!-- 	- [BN](https://data.bn.org.pl/bibs) // no sense: bn does not support science artticles, only books -->
+<!-- 	- [Web Of Science](https://developer.clarivate.com/apis/wos) // => failed: cannot access API -->
 	🞎 add more tests
 	🞎 design UI
 	🞎 implement configs

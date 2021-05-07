@@ -4,7 +4,7 @@
 #include <antybiurokrata/libraries/orcid_adapter/orcid_adapter.h>
 #include <antybiurokrata/libraries/scopus_adapter/scopus_adapter.h>
 #include <antybiurokrata/libraries/orm/orm.h>
-// #include <antybiurokrata/windows/mainwindow/mainwindow.h>
+#include <antybiurokrata/windows/mainwindow/mainwindow.h>
 
 #include <signal.h>	 // ::signal, ::raise
 #include <boost/stacktrace.hpp>
@@ -36,10 +36,11 @@ int main(int argc, char* argv[])
 	::signal(SIGABRT, &my_signal_handler);
 
 	std::locale::global(core::plPL());
-	// QApplication a(argc, argv);
-	// MainWindow w;
-	// w.show();
-	// for(const auto& x : *ret) x.print();
+	QApplication a(argc, argv);
+	MainWindow w;
+	w.show();
+	return a.exec();
+
 
 	///////////////////////////////////////////////////////////////////////////////////
 
@@ -90,5 +91,4 @@ int main(int argc, char* argv[])
 
 	global_logger << "^^^^^^^^^^^^^ SCOPUS ^^^^^^^^^^^^" << logger::endl;
 	return 0;
-	// return a.exec();
 }
