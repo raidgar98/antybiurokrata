@@ -13,9 +13,10 @@ namespace core
 		using namespace core::network::detail;
 		using publication_storage_t = std::shared_ptr<publication_t>;
 
-		struct persons_extractor_t : Log<persons_extractor_t>,
-			public patterns::visits<bgpolsl_repr_t>,
-			public patterns::visits<orcid_repr_t>
+		struct persons_extractor_t :
+			 Log<persons_extractor_t>,
+			 public patterns::visits<bgpolsl_repr_t>,
+			 public patterns::visits<orcid_repr_t>
 		{
 			using Log<persons_extractor_t>::log;
 
@@ -26,9 +27,10 @@ namespace core
 			virtual bool visit(orcid_repr_t* ptr) override;
 		};
 
-		struct publications_extractor_t : Log<publications_extractor_t>,
-			public patterns::visits<bgpolsl_repr_t>,
-			public patterns::visits<orcid_repr_t>
+		struct publications_extractor_t :
+			 Log<publications_extractor_t>,
+			 public patterns::visits<bgpolsl_repr_t>,
+			 public patterns::visits<orcid_repr_t>
 		{
 			using Log<publications_extractor_t>::log;
 
@@ -40,5 +42,5 @@ namespace core
 			virtual bool visit(bgpolsl_repr_t* ptr) override;
 			virtual bool visit(orcid_repr_t* ptr) override;
 		};
-	}
-}
+	}	 // namespace orm
+}	 // namespace core

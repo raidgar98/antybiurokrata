@@ -8,43 +8,46 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem/operations.hpp>
 
-namespace ___dummmy { struct global_logger{}; };
-logger global_logger{ logger::_get_logger<___dummmy::global_logger>() };
-
-void logger::log_with_global_logger(const std::string &msg)
+namespace ___dummmy
 {
-	global_logger << msg;
-}
+	struct global_logger
+	{
+	};
+};	  // namespace ___dummmy
+logger global_logger{logger::_get_logger<___dummmy::global_logger>()};
 
-logger::logger(const std::string &preambula)
-	: preambula{preambula} {}
+void logger::log_with_global_logger(const std::string& msg) { global_logger << msg; }
+
+logger::logger(const std::string& preambula) : preambula{preambula} {}
 
 std::string logger::get_preambula(const uint16_t depth) const
 {
 	std::stringstream ss;
-	ss << "[" << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << "]"; // time
-	ss << "[" << std::string(preambula) << "]";																					// logger name
-	
+	ss << "[" << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << "]";	// time
+	ss << "[" << std::string(preambula) << "]";	 // logger name
+
 	const std::vector<boost::stacktrace::frame> frames{boost::stacktrace::stacktrace().as_vector()};
 
-	if (depth < frames.size()) // info about log position
+	if(depth < frames.size())	 // info about log position
 	{
-		const boost::stacktrace::frame &fr{frames[depth]};
-		if(fr.source_line() > 0) ss << "[" << boost::filesystem::path(fr.source_file()).filename().c_str() << ":" << fr.source_line() << "]" << "[" << fr.name() << "]";
+		const boost::stacktrace::frame& fr{frames[depth]};
+		if(fr.source_line() > 0)
+			ss << "[" << boost::filesystem::path(fr.source_file()).filename().c_str() << ":" << fr.source_line() << "]"
+				<< "[" << fr.name() << "]";
 	}
 	return ss.str() + " ";
 }
 
-void logger::print_out(const std::string &msg, const format_function &_format) const
+void logger::print_out(const std::string& msg, const format_function& _format) const
 {
-	if (not logger::dump_file.empty())
+	if(not logger::dump_file.empty())
 	{
-		std::ofstream file{ logger::dump_file, std::ios::app };
-		if (file.good())
+		std::ofstream file{logger::dump_file, std::ios::app};
+		if(file.good())
 		{
 			_format(file);
 			file << msg << std::endl;
-			logger::reset_color_scheme( file );
+			logger::reset_color_scheme(file);
 			file << '\0';
 		}
 		file.close();
@@ -64,34 +67,31 @@ void logger::print_stacktrace() const
 	dbg() << logger::endl << boost::stacktrace::stacktrace();
 }
 
-void logger::dbg(const std::string & msg) const
+void logger::dbg(const std::string& msg) const
 {
 	if(!log_on_current_log_level<logger::log_level::DEBUG>()) return;
-	print_out( get_preambula(2) + msg, debug_format );
+	print_out(get_preambula(2) + msg, debug_format);
 }
 
-void logger::info(const std::string & msg) const
+void logger::info(const std::string& msg) const
 {
-	if(!log_on_current_log_level<logger::log_level::INFO>()) return; 
-	print_out( get_preambula(2) + msg, info_format );
+	if(!log_on_current_log_level<logger::log_level::INFO>()) return;
+	print_out(get_preambula(2) + msg, info_format);
 }
 
-void logger::warn(const std::string & msg) const
+void logger::warn(const std::string& msg) const
 {
-	if(!log_on_current_log_level<logger::log_level::WARN>()) return; 
-	print_out( get_preambula(2) + msg, warn_format );
+	if(!log_on_current_log_level<logger::log_level::WARN>()) return;
+	print_out(get_preambula(2) + msg, warn_format);
 }
 
-void logger::error(const std::string & msg) const
+void logger::error(const std::string& msg) const
 {
-	if(!log_on_current_log_level<logger::log_level::ERROR>()) return; 
-	print_out( get_preambula(2) + msg, erro_format );
+	if(!log_on_current_log_level<logger::log_level::ERROR>()) return;
+	print_out(get_preambula(2) + msg, erro_format);
 }
 
-logger::logger_piper logger::dbg() const
-{
-	return _config_logger_piper(log_on_current_log_level<logger::log_level::DEBUG>());
-}
+logger::logger_piper logger::dbg() const { return _config_logger_piper(log_on_current_log_level<logger::log_level::DEBUG>()); }
 
 logger::logger_piper logger::info() const
 {
@@ -108,12 +108,11 @@ logger::logger_piper logger::error() const
 	return _config_logger_piper(log_on_current_log_level<logger::log_level::ERROR>(), logger::erro_format);
 }
 
-bool logger::set_dump_file( const std::string& file )
+bool logger::set_dump_file(const std::string& file)
 {
 	logger logg = logger::_get_logger<logger>("logger");
 
-	if(boost::filesystem::exists(boost::filesystem::path(file)))
-		logg.warn("File " + file + " will be deleted." );
+	if(boost::filesystem::exists(boost::filesystem::path(file))) logg.warn("File " + file + " will be deleted.");
 
 	std::ofstream f(file);
 	if(f.good()) f << "";

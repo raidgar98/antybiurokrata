@@ -37,17 +37,17 @@ namespace core
 					log << "orcid: " << orcid << logger::endl;
 					log << "year: " << year << logger::endl;
 					log << "title: " << title << logger::endl;
-					if (!translated_title.empty()) log << "translated_title: " << translated_title << logger::endl;
-					for (const auto &x : ids) log << "id: ( " << x.first << " ; " << x.second << " )" << logger::endl;
+					if(!translated_title.empty()) log << "translated_title: " << translated_title << logger::endl;
+					for(const auto& x: ids) log << "id: ( " << x.first << " ; " << x.second << " )" << logger::endl;
 				}
 			};
-		}
+		}	 // namespace detail
 
 		/** @brief data collector for orcid */
 		struct orcid_adapter : protected connection_handler, private Log<orcid_adapter>
 		{
 			using Log<orcid_adapter>::log;
-			using value_t = std::list<detail::orcid_repr_t>;
+			using value_t	= std::list<detail::orcid_repr_t>;
 			using result_t = std::shared_ptr<value_t>;
 
 			/** @brief default constructor */
@@ -59,17 +59,16 @@ namespace core
 			 * @param orcid string in format that maatches regex: ([0-9]{4})-\1-\1-\1
 			 * @return result_t list of trival object representation
 			 */
-			[[nodiscard]] result_t get_person(const str &orcid);
+			[[nodiscard]] result_t get_person(const str& orcid);
 
-		private:
-
+		 private:
 			/**
 			 * @brief prepares request for given orcid string (headers, paths, etc...)
 			 * 
 			 * @param orcid string
 			 * @return drogon::HttpRequestPtr 
 			 */
-			drogon::HttpRequestPtr prepare_request(const str &orcid);
+			drogon::HttpRequestPtr prepare_request(const str& orcid);
 		};
-	}
-}
+	}	 // namespace network
+}	 // namespace core

@@ -21,4 +21,4 @@ namespace core
 		virtual bool dump_config(const str& file_name) const { return false; }
 		virtual bool load_config(const str& file_name) { return false; }
 	};
-}
+}	 // namespace core

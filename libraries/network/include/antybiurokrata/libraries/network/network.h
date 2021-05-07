@@ -34,53 +34,49 @@ namespace core
 				std::unique_ptr<std::jthread> thread;
 
 				loop_holder_t()
-					// : handle{ new event_loop_t{} }
+				// : handle{ new event_loop_t{} }
 				{
-					thread = std::make_unique<std::jthread>(
-						[&] {
-							handle = std::make_unique<event_loop_t>();
-							log.info("checking is loop in current thread");
-							if(!handle->isInLoopThread())
-							{
-								log.info("moving to current thread");
-								handle->moveToCurrentThread();
-							}
-							log.info("running loop");
-							handle->loop();
+					thread = std::make_unique<std::jthread>([&] {
+						handle = std::make_unique<event_loop_t>();
+						log.info("checking is loop in current thread");
+						if(!handle->isInLoopThread())
+						{
+							log.info("moving to current thread");
+							handle->moveToCurrentThread();
 						}
-					);
+						log.info("running loop");
+						handle->loop();
+					});
 
 					// await for thread to start and start looping
 					while(handle.get() == nullptr || !handle->isRunning()) std::this_thread::yield();
 					log.info("loop thread created");
 				}
 
-				~loop_holder_t() 
-				{ 
+				~loop_holder_t()
+				{
 					log.info() << "closing loop" << logger::endl;
-					handle->quit(); 
+					handle->quit();
 				}
 			};
 
 			/** @brief global loop for whole program */
 			// using global_loop = patterns::thread_safe_singleton<loop_holder_t>;
 			extern loop_holder_t global_loop;
-		}
+		}	 // namespace detail
 
 		/** @brief provides basic interface for handling http requests */
 		class connection_handler : public Log<connection_handler>
 		{
-			std::shared_ptr<typename detail::loop_holder_t> loop;	/** @brief pointer to loop */
-			drogon::HttpClientPtr connection;						/** @brief drogon HTTP connection interface */
+			std::shared_ptr<typename detail::loop_holder_t> loop; /** @brief pointer to loop */
+			drogon::HttpClientPtr connection;							/** @brief drogon HTTP connection interface */
 
-		protected:
-
+		 protected:
 			using Log<connection_handler>::log;
 			using raw_response_t = std::pair<drogon::ReqResult, drogon::HttpResponsePtr>;
-			using raw_request_t = drogon::HttpRequestPtr;
+			using raw_request_t	= drogon::HttpRequestPtr;
 
-		public:
-
+		 public:
 			/**
 			 * @brief Construct a new connection handler object
 			 * 
@@ -97,5 +93,5 @@ namespace core
 			 */
 			raw_response_t send_request(raw_request_t);
 		};
-	}
-}
+	}	 // namespace network
+}	 // namespace core

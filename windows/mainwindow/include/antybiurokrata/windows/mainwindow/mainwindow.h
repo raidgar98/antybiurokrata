@@ -13,13 +13,13 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
-public:
-	MainWindow(QWidget *parent = nullptr);
+ public:
+	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
-private slots:
+ private slots:
 	void on_bt_1_clicked(bool checked);
 
-private:
-	Ui::MainWindow *ui;
+ private:
+	Ui::MainWindow* ui;
 };

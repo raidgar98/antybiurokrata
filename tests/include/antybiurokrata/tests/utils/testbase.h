@@ -19,9 +19,9 @@ namespace core
 
 		str to_upper(const str_v& v);
 
-		template<typename Any, typename ... U>
+		template<typename Any, typename... U>
 		// requires std::is_constructible_v<Any, U...> and std::is_default_constructible_v<Any>
-		inline bool check_serialization(U&& ... u)
+		inline bool check_serialization(U&&... u)
 		{
 			std::stringstream ss;
 			Any a{std::forward<U>(u)...};
@@ -30,11 +30,11 @@ namespace core
 			ss >> b;
 			return a == b;
 		}
-	} // namespace testbase
-}
+	}	 // namespace testbase
+}	 // namespace core
 
 namespace tests
 {
 	using namespace core::testbase;
 	extern logger& log;
-}
+}	 // namespace tests

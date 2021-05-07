@@ -34,11 +34,11 @@ namespace demangler_tests_values
 	constexpr str_v msg_15{"#261;"};
 
 	// URL
-	constexpr str_v msg_16{"%C4%85"}; // ą
-	constexpr str_v msg_17{"%C4%85%C4%85%C4%85"}; // ąąą
+	constexpr str_v msg_16{"%C4%85"};					// ą
+	constexpr str_v msg_17{"%C4%85%C4%85%C4%85"};	// ąąą
 	constexpr str_v msg_18{"C4%85"};
 	constexpr str_v msg_19{"aaaaaaC4%85"};
-	constexpr str_v msg_20{"aaaaaa%C4%85"}; // aaaaaaą
+	constexpr str_v msg_20{"aaaaaa%C4%85"};	// aaaaaaą
 	constexpr str_v msg_21{"%%%%%%%C4%%85"};
 	constexpr str_v msg_22{"%%%%%%%C%85"};
 	constexpr str_v msg_23{"ą"};
@@ -51,7 +51,7 @@ namespace demangler_tests_values
 	constexpr str_v msg_30{"%C44%85"};
 	constexpr str_v msg_31{"%C4%851"};
 	constexpr str_v msg_32{"ą1"};
-}
+}	 // namespace demangler_tests_values
 
 namespace tests
 {
@@ -65,9 +65,7 @@ namespace tests
 
 		"case_01"_test = [] {
 			demangler dmg{msg_01};
-			ut::expect(
-				ut::throws<typename core::exceptions::assert_exception>(
-					[&]() { dmg.get(); }));
+			ut::expect(ut::throws<typename core::exceptions::assert_exception>([&]() { dmg.get(); }));
 		};
 
 		"case_02"_test = [] {
@@ -97,32 +95,30 @@ namespace tests
 
 		"case_07"_test = [] {
 			logger::set_current_log_level<logger::log_level::DEBUG>();
-			core::str result{ msg_03 };
+			core::str result{msg_03};
 			demangler<>::mangle<core::conv_t::HTML>(result);
-			ut::expect( ut::eq( result, msg_02 ) );
+			ut::expect(ut::eq(result, msg_02));
 		};
 
-		"case_08"_test = []{
-			auto check = [](const str_v& in, const str_v& exp) -> void
-			{
-				core::str result{ in };
+		"case_08"_test = [] {
+			auto check = [](const str_v& in, const str_v& exp) -> void {
+				core::str result{in};
 				demangler<>::mangle<core::conv_t::HTML>(result);
-				ut::expect( ut::eq(exp, result) );
+				ut::expect(ut::eq(exp, result));
 			};
 
-			check( msg_07, msg_11 );
-			check( msg_08, msg_12 );
-			check( msg_09, msg_13 );
-			check( msg_10, msg_14 );
-			check( msg_15, msg_15 );
+			check(msg_07, msg_11);
+			check(msg_08, msg_12);
+			check(msg_09, msg_13);
+			check(msg_10, msg_14);
+			check(msg_15, msg_15);
 		};
 
-		"case_09"_test = []{
-			auto check = [](const str_v& in, const str_v& exp) -> void
-			{
-				core::str result{ in };
+		"case_09"_test = [] {
+			auto check = [](const str_v& in, const str_v& exp) -> void {
+				core::str result{in};
 				demangler<>::mangle<core::conv_t::URL>(result);
-				ut::expect( ut::eq(exp, result) );
+				ut::expect(ut::eq(exp, result));
 			};
 
 			check(msg_16, msg_23);
@@ -141,4 +137,4 @@ namespace tests
 			check(msg_31, msg_32);
 		};
 	};
-}
+}	 // namespace tests

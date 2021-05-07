@@ -63,8 +63,7 @@ namespace patterns
 		 * @tparam return_t what is returned after invokation
 		 * @tparam arg_t variadic type of arguments
 		 */
-		template <typename return_t = void, typename... arg_t>
-		struct _functor : public visitable<_functor<return_t, arg_t...>>
+		template<typename return_t = void, typename... arg_t> struct _functor : public visitable<_functor<return_t, arg_t...>>
 		{
 			/**
 			 * @brief This should be overrided in definition
@@ -79,8 +78,7 @@ namespace patterns
 		 * @tparam return_t type of returned value
 		 * @tparam arg_t optional arguments
 		 */
-		template <typename _Prev, typename return_t = void, typename... arg_t>
-		struct functor : public _functor<return_t, arg_t...>
+		template<typename _Prev, typename return_t = void, typename... arg_t> struct functor : public _functor<return_t, arg_t...>
 		{
 			using Prev = _Prev;
 		};
@@ -90,62 +88,59 @@ namespace patterns
 		 * 
 		 * @tparam _Last type of last item in type collection
 		 */
-		template <typename _Last>
-		struct do_nothing_functor_end : public functor<_Last> {};
+		template<typename _Last> struct do_nothing_functor_end : public functor<_Last>
+		{
+		};
 
 		/**
 		 * @brief this is helper class for creating type collections, whichc is putted at the begining
 		 */
-		struct do_nothing_functor_begin : _functor<>{};
+		struct do_nothing_functor_begin : _functor<>
+		{
+		};
 
 		/**
 		 * @brief created static_variant for chain of functors
 		 * 
 		 * @tparam _Last last functor
 		 */
-		template <typename _Last>
-		using functor_collection_t = RCNS::recursive_concentrator<std::variant, do_nothing_functor_begin, do_nothing_functor_end<_Last>>::result;
+		template<typename _Last>
+		using functor_collection_t
+			 = RCNS::recursive_concentrator<std::variant, do_nothing_functor_begin, do_nothing_functor_end<_Last>>::result;
 
-	} // namespace functors
+	}	 // namespace functors
 
 	namespace processors
 	{
 		namespace processor_concept_ns
 		{
-			template <typename T>
-			using c_func = decltype([](T) {});
+			template<typename T> using c_func = decltype([](T) {});
 
-			using Supp = c_func<int>;
+			using Supp		  = c_func<int>;
 			using variadic_t = std::variant<Supp, c_func<float>>;
 
-			template <template <typename _Supp> typename T>
-			concept is_valid_processor_t = requires(T<Supp> var)
+			template<template<typename _Supp> typename T> concept is_valid_processor_t = requires(T<Supp> var)
 			{
 				{
 					var.invoke(variadic_t{[](int) {}})
 				}
 				->std::same_as<void>;
 			};
-		} // namespace processor_concept_ns
+		}	 // namespace processor_concept_ns
 
 		using processor_concept_ns::is_valid_processor_t;
 
-		template <typename _Supported>
-		struct processor
+		template<typename _Supported> struct processor
 		{
-			virtual void invoke(_Supported &&op) = 0;
+			virtual void invoke(_Supported&& op) = 0;
 		};
 
-		template <typename _Supported>
-		struct processor_autocall : public processor<_Supported>
+		template<typename _Supported> struct processor_autocall : public processor<_Supported>
 		{
 			// default call
-			virtual void invoke(_Supported &&op) override
-			{
-				op();
-			}
+			virtual void invoke(_Supported&& op) override { op(); }
 		};
 
-	} // namespace processors
+	}	 // namespace processors
 
-} // namespace patterns
+}	 // namespace patterns

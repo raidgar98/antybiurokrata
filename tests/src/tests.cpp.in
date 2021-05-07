@@ -1,3 +1,6 @@
-@TEST_HEADERS@
+@TEST_HEADERS @
 
-int main() {}
+	 int
+	 main()
+{
+}

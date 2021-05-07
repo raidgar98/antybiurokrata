@@ -28,33 +28,33 @@ namespace object_tests_values
 		constexpr u16str_v invalid_06{u"0000-0000-0000"};
 		constexpr u16str_v invalid_07{u"000000000000000"};
 		constexpr u16str_v invalid_08{u"---"};
-	}
+	}	 // namespace orcid
 
 	namespace names
 	{
-		constexpr str_v correct_pn_01{ "żółć" };
-		constexpr str_v correct_pn_02{ "jan" };
-		constexpr str_v correct_pn_03{ "ZoFia" };
-		constexpr str_v correct_pn_04{ "maryla" };
-		constexpr str_v correct_pn_05{ "krzysztoF" };
-		constexpr str_v correct_pn_06{ "ęąśćż" };
-		constexpr str_v correct_pn_07{ "żółtą-sząsą" };
+		constexpr str_v correct_pn_01{"żółć"};
+		constexpr str_v correct_pn_02{"jan"};
+		constexpr str_v correct_pn_03{"ZoFia"};
+		constexpr str_v correct_pn_04{"maryla"};
+		constexpr str_v correct_pn_05{"krzysztoF"};
+		constexpr str_v correct_pn_06{"ęąśćż"};
+		constexpr str_v correct_pn_07{"żółtą-sząsą"};
 
-		constexpr str_v invalid_pn_01{ "" };
-		constexpr str_v invalid_pn_02{ " " };
-		constexpr str_v invalid_pn_03{ " aaa" };
-		constexpr str_v invalid_pn_04{ "aaa " };
-		constexpr str_v invalid_pn_05{ "aaa_" };
-		constexpr str_v invalid_pn_06{ "aaa-" };
-		constexpr str_v invalid_pn_07{ "aaa+" };
-		constexpr str_v invalid_pn_08{ "a^aa" };
-		constexpr str_v invalid_pn_09{ "   " };
-		constexpr str_v invalid_pn_10{ "a@a" };
-		constexpr str_v invalid_pn_11{ "a2a" };
-		constexpr str_v invalid_pn_12{ "111" };
-		constexpr str_v invalid_pn_13{ "|" };
-	};
-}
+		constexpr str_v invalid_pn_01{""};
+		constexpr str_v invalid_pn_02{" "};
+		constexpr str_v invalid_pn_03{" aaa"};
+		constexpr str_v invalid_pn_04{"aaa "};
+		constexpr str_v invalid_pn_05{"aaa_"};
+		constexpr str_v invalid_pn_06{"aaa-"};
+		constexpr str_v invalid_pn_07{"aaa+"};
+		constexpr str_v invalid_pn_08{"a^aa"};
+		constexpr str_v invalid_pn_09{"   "};
+		constexpr str_v invalid_pn_10{"a@a"};
+		constexpr str_v invalid_pn_11{"a2a"};
+		constexpr str_v invalid_pn_12{"111"};
+		constexpr str_v invalid_pn_13{"|"};
+	};	  // namespace names
+}	 // namespace object_tests_values
 
 namespace tests
 {
@@ -68,8 +68,10 @@ namespace tests
 		log.info() << "entering `orcid_tests` suite" << logger::endl;
 		logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
-		const auto validation_success = [](const u16str_v &v) { ut::expect(ut::eq(true, orcid_t::class_t::is_valid_orcid_string(v))); };
-		const auto validation_fail = [](const u16str_v &v) { ut::expect(ut::eq(false, orcid_t::class_t::is_valid_orcid_string(v))); };
+		const auto validation_success
+			 = [](const u16str_v& v) { ut::expect(ut::eq(true, orcid_t::class_t::is_valid_orcid_string(v))); };
+		const auto validation_fail
+			 = [](const u16str_v& v) { ut::expect(ut::eq(false, orcid_t::class_t::is_valid_orcid_string(v))); };
 
 		"case_01"_test = [&] {
 			validation_success(correct_01);
@@ -90,11 +92,7 @@ namespace tests
 			ut::expect(ut::eq(static_cast<str>(orcid()), get_conversion_engine().to_bytes(correct_01.data())));
 		};
 
-		"case_03"_test = [&] {
-			ut::expect(
-				ut::throws<core::exceptions::assert_exception>(
-					[] { orcid_t{invalid_01}; }));
-		};
+		"case_03"_test = [&] { ut::expect(ut::throws<core::exceptions::assert_exception>([] { orcid_t{invalid_01}; })); };
 	};
 
 	const ut::suite polish_name_tests = [] {
@@ -104,35 +102,35 @@ namespace tests
 		logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
 		"case_01"_test = [] {
-			const auto validate_data = [&](const str_v& x) { 
-				ut::expect(ut::eq( testbase::to_upper(x), static_cast<str>( polish_name_t{ x }() ))); 
-			};
+			const auto validate_data
+				 = [&](const str_v& x) { ut::expect(ut::eq(testbase::to_upper(x), static_cast<str>(polish_name_t{x}()))); };
 
-			validate_data( correct_pn_01 );
-			validate_data( correct_pn_02 );
-			validate_data( correct_pn_03 );
-			validate_data( correct_pn_04 );
-			validate_data( correct_pn_05 );
-			validate_data( correct_pn_06 );
-			validate_data( correct_pn_07 );
+			validate_data(correct_pn_01);
+			validate_data(correct_pn_02);
+			validate_data(correct_pn_03);
+			validate_data(correct_pn_04);
+			validate_data(correct_pn_05);
+			validate_data(correct_pn_06);
+			validate_data(correct_pn_07);
 		};
 
 		"case_02"_test = [] {
-			const auto expect_assertion = [](const str_v& x) { ut::expect( ut::throws<core::exceptions::assert_exception>( [&]{ polish_name_t{ x }; } ) ); };
+			const auto expect_assertion
+				 = [](const str_v& x) { ut::expect(ut::throws<core::exceptions::assert_exception>([&] { polish_name_t{x}; })); };
 
-			expect_assertion( invalid_pn_01 );
-			expect_assertion( invalid_pn_02 );
-			expect_assertion( invalid_pn_03 );
-			expect_assertion( invalid_pn_04 );
-			expect_assertion( invalid_pn_05 );
-			expect_assertion( invalid_pn_06 );
-			expect_assertion( invalid_pn_07 );
-			expect_assertion( invalid_pn_08 );
-			expect_assertion( invalid_pn_09 );
-			expect_assertion( invalid_pn_10 );
-			expect_assertion( invalid_pn_11 );
-			expect_assertion( invalid_pn_12 );
-			expect_assertion( invalid_pn_13 );
+			expect_assertion(invalid_pn_01);
+			expect_assertion(invalid_pn_02);
+			expect_assertion(invalid_pn_03);
+			expect_assertion(invalid_pn_04);
+			expect_assertion(invalid_pn_05);
+			expect_assertion(invalid_pn_06);
+			expect_assertion(invalid_pn_07);
+			expect_assertion(invalid_pn_08);
+			expect_assertion(invalid_pn_09);
+			expect_assertion(invalid_pn_10);
+			expect_assertion(invalid_pn_11);
+			expect_assertion(invalid_pn_12);
+			expect_assertion(invalid_pn_13);
 		};
 	};
 
@@ -143,8 +141,8 @@ namespace tests
 		logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
 		"case_01"_test = [] {
-			ut::expect( testbase::check_serialization<person_t>() );
-			ut::expect( testbase::check_serialization<person_t>(names::correct_pn_01, names::correct_pn_02, orcid::correct_01) );
+			ut::expect(testbase::check_serialization<person_t>());
+			ut::expect(testbase::check_serialization<person_t>(names::correct_pn_01, names::correct_pn_02, orcid::correct_01));
 		};
 	};
-}
+}	 // namespace tests

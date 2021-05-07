@@ -20,12 +20,11 @@ namespace patterns
 	 * 
 	 * @tparam T CRTP - pass here child class type
 	 */
-	template <typename T>
-	class visits : private Log<visits<T>>
+	template<typename T> class visits : private Log<visits<T>>
 	{
 		using Log<visits<T>>::get_logger;
 
-	public:
+	 public:
 		/**
 		 * @brief this is called when this design pattern is used
 		 * 
@@ -33,7 +32,7 @@ namespace patterns
 		 * @return true if visit goes well
 		 * @return false stop signal or somethiong goes wrong
 		 */
-		virtual bool visit(T *ptr)
+		virtual bool visit(T* ptr)
 		{
 			get_logger().warn("Empty visit, by: `" + get_class_name<T>() + "`.");
 			return true;
@@ -45,12 +44,11 @@ namespace patterns
 	 * 
 	 * @tparam T CRTP - pass here child class type
 	 */
-	template <class T>
-	class visitable : private Log<visitable<T>>
+	template<class T> class visitable : private Log<visitable<T>>
 	{
 		using Log<visitable<T>>::get_logger;
 
-	public:
+	 public:
 		/**
 		 * @brief proxy to accept
 		 * 
@@ -67,11 +65,11 @@ namespace patterns
 		 * @return true if visit goes well
 		 * @return false stop signal or somethiong goes wrong
 		 */
-		virtual bool accept(visits<T> *v)
+		virtual bool accept(visits<T>* v)
 		{
 			get_logger().info("Accepted: `" + get_class_name<T>() + "`.");
-			return v->visit(dynamic_cast<T *>(this));
+			return v->visit(dynamic_cast<T*>(this));
 		}
 	};
 
-} // namespace patterns
+}	 // namespace patterns
