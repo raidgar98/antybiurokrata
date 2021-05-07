@@ -25,33 +25,34 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 ## TODO
 ---
 
-- add more tests
-- add object representation for:
-	<!-- - [BN](https://data.bn.org.pl/bibs) // no sense: bn does not support science artticles, only books -->
-	<!-- - [Web Of Science](https://developer.clarivate.com/apis/wos) // => failed: cannot access API -->
-	- [Scopus](https://dev.elsevier.com/)
-- design UI
-- refactor orm (exclude abstract classes for jsons, now it's ugly)
-- implement configs
-- implement report generation
+<!-- - add object representation for: -->
+<!-- - [BN](https://data.bn.org.pl/bibs) // no sense: bn does not support science artticles, only books -->
+<!-- - [Web Of Science](https://developer.clarivate.com/apis/wos) // => failed: cannot access API -->
+	🞎 add more tests
+	🞎 design UI
+	🞎 refactor orm (exclude abstract classes for jsons, now it's ugly)
+	🞎 implement configs
+	🞎 implement report generation
 
 ## Currently done
 ---
 
-- depolishing names and surnames of authors
-- added scripts to generate libraries / windowses
-- properly linked all libraries in cmake with DRY methodology
-- added documentation generation
-- added few patterns for future usage
-- added manual on how to install
-- preimplemented data gathering from `dorobek`
-- recognition of `ORCID` usage
-- implemented assertion and exception mechanism
-- added networking mechanism
-- add conversion between object representation to comparable objects (objects with higher abstraction)
-- added object representation for:
-	- [dorobek](https://www.bg.polsl.pl/expertus/new/bib/)
-	- [ORCID](https://pub.orcid.org/v3.0/)
+	🗹 depolishing names and surnames of authors
+	🗹 added scripts to generate libraries / windowses
+	🗹 properly linked all libraries in cmake with DRY methodology
+	🗹 added documentation generation
+	🗹 added few patterns for future usage
+	🗹 added manual on how to install
+	🗹 preimplemented data gathering from `dorobek`
+	🗹 recognition of `ORCID` usage
+	🗹 implemented assertion and exception mechanism
+	🗹 added networking mechanism
+	🗹 add conversion between object representation to comparable objects (objects with higher abstraction)
+
+	🗹 added object representation for:
+		🗹 [dorobek](https://www.bg.polsl.pl/expertus/new/bib/)
+		🗹 [ORCID](https://pub.orcid.org/v3.0/)
+		🗹 [Scopus](https://dev.elsevier.com/)
 
 
 ## Setup
