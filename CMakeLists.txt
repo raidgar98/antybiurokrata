@@ -87,14 +87,24 @@ ENDIF()
 
 option(FORMAT "determins to create make format that performes format all files !!! IN SOURCE DIR !!!" ON)
 IF(${FORMAT})
-	file(GLOB_RECURSE FILES_TO_FORMAT LIST_DIRECTORIES false *.hpp *.cpp *.h *.test.h *.cpp.in)
+
+	# get all files to format
+	file(GLOB_RECURSE FILES_TO_FORMAT LIST_DIRECTORIES false RELATIVE ${CMAKE_SOURCE_DIR} *.hpp *.cpp *.h *.test.h *.cpp.in)
+
+	# filter out direcotries
 	set(FILES_FOR_CLANG_FORMAT)
 	foreach(x ${FILES_TO_FORMAT})
-	set(FILES_FOR_CLANG_FORMAT "${FILES_FOR_CLANG_FORMAT} ${x}")
+		if(x MATCHES "antybiurokrata/gen/.*")
+			continue() 
+		endif()
+		list(APPEND FILES_FOR_CLANG_FORMAT "${x}")
 	endforeach()
 
+	# locate program
 	find_program(CLANG_FORMAT_BINARY clang-format HINTS /usr/bin)
-	add_custom_target(format COMMAND ${CLANG_FORMAT_BINARY} "-style=file ${FILES_FOR_CLANG_FORMAT}" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+
+	# To run: `make format` in build directory
+	add_custom_target(format COMMAND ${CLANG_FORMAT_BINARY} -style=file -i ${FILES_FOR_CLANG_FORMAT} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 ENDIF()
 
 
