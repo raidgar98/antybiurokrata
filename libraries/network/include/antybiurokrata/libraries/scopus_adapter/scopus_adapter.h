@@ -12,43 +12,16 @@
 #pragma once
 
 #include <antybiurokrata/libraries/network/network.h>
-#include <antybiurokrata/libraries/patterns/visitor.hpp>
-
 
 namespace core
 {
 	namespace network
 	{
-		namespace detail
-		{
-			/** @brief trival object representation of scopus output */
-			struct scopus_repr_t : Log<scopus_repr_t>, public patterns::visitable<scopus_repr_t>
-			{
-				using Log<scopus_repr_t>::log;
-
-				u16str orcid{};
-				u16str year{};
-				u16str title{};
-				u16str translated_title{};
-				std::vector<std::pair<u16str, u16str>> ids{};
-
-				/** @brief DEBUG */
-				void print() const
-				{
-					log << "orcid: " << orcid << logger::endl;
-					log << "year: " << year << logger::endl;
-					log << "title: " << title << logger::endl;
-					if(!translated_title.empty()) log << "translated_title: " << translated_title << logger::endl;
-					for(const auto& x: ids) log << "id: ( " << x.first << " ; " << x.second << " )" << logger::endl;
-				}
-			};
-		}	 // namespace detail
-
 		/** @brief data collector for scopus */
 		struct scopus_adapter : protected connection_handler, private Log<scopus_adapter>
 		{
 			using Log<scopus_adapter>::log;
-			using value_t	= std::list<detail::scopus_repr_t>;
+			using value_t	= std::list<detail::json_repr_t>;
 			using result_t = std::shared_ptr<value_t>;
 
 			/** @brief default constructor */

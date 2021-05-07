@@ -11,10 +11,13 @@
 
 #pragma once
 
+// STL
+#include <list>
+
 // Project includes
+#include <antybiurokrata/libraries/patterns/visitor.hpp>
 #include <antybiurokrata/libraries/logger/logger.h>
 #include <antybiurokrata/types.hpp>
-#include <antybiurokrata/libraries/patterns/singleton.hpp>
 
 // drogon
 #include <drogon/drogon.h>
@@ -60,8 +63,28 @@ namespace core
 				}
 			};
 
+			struct json_repr_t : Log<json_repr_t>, public patterns::visitable<json_repr_t>
+			{
+				using Log<json_repr_t>::log;
+
+				u16str orcid{};
+				u16str year{};
+				u16str title{};
+				u16str translated_title{};
+				std::vector<std::pair<u16str, u16str>> ids{};
+
+				/** @brief DEBUG */
+				void print() const
+				{
+					log << "orcid: " << orcid << logger::endl;
+					log << "year: " << year << logger::endl;
+					log << "title: " << title << logger::endl;
+					if(!translated_title.empty()) log << "translated_title: " << translated_title << logger::endl;
+					for(const auto& x: ids) log << "id: ( " << x.first << " ; " << x.second << " )" << logger::endl;
+				}
+			};
+
 			/** @brief global loop for whole program */
-			// using global_loop = patterns::thread_safe_singleton<loop_holder_t>;
 			extern loop_holder_t global_loop;
 		}	 // namespace detail
 

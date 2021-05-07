@@ -62,13 +62,7 @@ namespace core
 			return true;
 		}
 
-		bool persons_extractor_t::visit(scopus_repr_t* ptr)
-		{
-			// very bad, but DRY
-			return this->visit(reinterpret_cast<orcid_repr_t*>(ptr));
-		}
-
-		bool persons_extractor_t::visit(orcid_repr_t* ptr)
+		bool persons_extractor_t::visit(json_repr_t* ptr)
 		{
 			dassert(ptr, "pointer cannot be nullptr!");
 
@@ -141,13 +135,7 @@ namespace core
 			return true;
 		}
 
-		bool publications_extractor_t::visit(scopus_repr_t* ptr)
-		{
-			// very bad, but DRY
-			return this->visit(reinterpret_cast<orcid_repr_t*>(ptr));
-		}
-
-		bool publications_extractor_t::visit(orcid_repr_t* ptr)
+		bool publications_extractor_t::visit(json_repr_t* ptr)
 		{
 			dassert(ptr, "pointer cannot be nullptr!");
 

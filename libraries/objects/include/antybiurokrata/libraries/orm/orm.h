@@ -17,8 +17,7 @@ namespace core
 		struct persons_extractor_t :
 			 Log<persons_extractor_t>,
 			 public patterns::visits<bgpolsl_repr_t>,
-			 public patterns::visits<scopus_repr_t>,
-			 public patterns::visits<orcid_repr_t>
+			 public patterns::visits<json_repr_t>
 		{
 			using Log<persons_extractor_t>::log;
 
@@ -26,15 +25,13 @@ namespace core
 			publication_storage_t current_publication{nullptr};
 
 			virtual bool visit(bgpolsl_repr_t* ptr) override;
-			virtual bool visit(scopus_repr_t* ptr) override;
-			virtual bool visit(orcid_repr_t* ptr) override;
+			virtual bool visit(json_repr_t* ptr) override;
 		};
 
 		struct publications_extractor_t :
 			 Log<publications_extractor_t>,
 			 public patterns::visits<bgpolsl_repr_t>,
-			 public patterns::visits<scopus_repr_t>,
-			 public patterns::visits<orcid_repr_t>
+			 public patterns::visits<json_repr_t>
 		{
 			using Log<publications_extractor_t>::log;
 
@@ -44,8 +41,7 @@ namespace core
 			std::vector<publication_storage_t> publications{};
 
 			virtual bool visit(bgpolsl_repr_t* ptr) override;
-			virtual bool visit(scopus_repr_t* ptr) override;
-			virtual bool visit(orcid_repr_t* ptr) override;
+			virtual bool visit(json_repr_t* ptr) override;
 		};
 	}	 // namespace orm
 }	 // namespace core

@@ -95,7 +95,7 @@ namespace core
 				dassert(entry.isArray(), "entry has to be array");
 				for(const jvalue& obj: entry)
 				{
-					detail::scopus_repr_t x{};
+					detail::json_repr_t x{};
 
 					x.title = safe_get("dc:title", obj);
 					if(x.title.empty()) continue;

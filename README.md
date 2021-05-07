@@ -30,7 +30,6 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 <!-- - [Web Of Science](https://developer.clarivate.com/apis/wos) // => failed: cannot access API -->
 	🞎 add more tests
 	🞎 design UI
-	🞎 refactor orm (exclude abstract classes for jsons, now it's ugly)
 	🞎 implement configs
 	🞎 implement report generation
 
@@ -47,6 +46,7 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 	🗹 recognition of `ORCID` usage
 	🗹 implemented assertion and exception mechanism
 	🗹 added networking mechanism
+	🗹 refactor orm
 	🗹 add conversion between object representation to comparable objects (objects with higher abstraction)
 
 	🗹 added object representation for:

@@ -61,7 +61,7 @@ namespace core
 			using namespace network::detail;
 			for(const jvalue& x: array)
 			{
-				orcid_repr_t obj{};
+				detail::json_repr_t obj{};
 				obj.orcid = wide_orcid;
 
 				const jvalue& work_summary = x.get("work-summary", empty_array);

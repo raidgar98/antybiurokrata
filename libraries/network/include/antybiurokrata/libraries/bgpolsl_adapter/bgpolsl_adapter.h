@@ -36,10 +36,10 @@ namespace core
 				u16str affiliation{};
 
 				/**
-                 * @brief Construct a new bgpolsl repr t object
-                 * 
-                 * @param words input for preprocessed words 
-                 */
+				 * @brief Construct a new bgpolsl repr t object
+				 * 
+				 * @param words input for preprocessed words 
+				*/
 				explicit bgpolsl_repr_t(const std::vector<u16str>& words);
 
 				/** @brief DEBUG */
