@@ -43,8 +43,6 @@ int main(int argc, char* argv[])
 
 	///////////////////////////////////////////////////////////////////////////////////
 
-	while(true) {}
-
 	// bgpolsl
 	core::network::bgpolsl_adapter bgadapter{};
 	core::orm::persons_extractor_t bgperson_visitor{};
@@ -64,19 +62,32 @@ int main(int argc, char* argv[])
 	}
 
 	// scopus
+	core::orm::persons_extractor_t scopus_person_visitor{bgperson_visitor};
+	for(auto& x: scopus_person_visitor.persons) x().publictions().clear();
+	core::orm::publications_extractor_t svisitor{scopus_person_visitor};
 	core::network::scopus_adapter sadapter{};
-	const auto ret = sadapter.get_person("0000-0001-7667-6697");
+	for(const auto& person: scopus_person_visitor.persons)
+	{
+		auto ret = sadapter.get_person(person().orcid()());
+		for(auto& x: *ret) x.accept(&svisitor);
+	}
 
 	for(const auto& p: bgperson_visitor.persons)
 		global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p}
 									<< logger::endl;
 
 	global_logger << "^^^^^^^^^^^^ BGPOLSL ^^^^^^^^^^^^" << logger::endl;
+
 	for(const auto& p: orcid_person_visitor.persons)
 		global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p}
 									<< logger::endl;
 
 	global_logger << "^^^^^^^^^^^^^ ORCID ^^^^^^^^^^^^^" << logger::endl;
+
+	for(const auto& p: scopus_person_visitor.persons)
+		global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p}
+									<< logger::endl;
+
 	global_logger << "^^^^^^^^^^^^^ SCOPUS ^^^^^^^^^^^^" << logger::endl;
 	return 0;
 	// return a.exec();

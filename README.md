@@ -27,10 +27,11 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 
 - add more tests
 - add object representation for:
-	<!-- - [BN](https://data.bn.org.pl/bibs) // bn does not support science artticles, only books -->
-	<!-- - [Web Of Science](https://developer.clarivate.com/apis/wos) // => failed cannot access API -->
+	<!-- - [BN](https://data.bn.org.pl/bibs) // no sense: bn does not support science artticles, only books -->
+	<!-- - [Web Of Science](https://developer.clarivate.com/apis/wos) // => failed: cannot access API -->
 	- [Scopus](https://dev.elsevier.com/)
 - design UI
+- refactor orm (exclude abstract classes for jsons, now it's ugly)
 - implement configs
 - implement report generation
 
