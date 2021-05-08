@@ -45,13 +45,13 @@ void MainWindow::on_search_button_clicked()
 	core::network::bgpolsl_adapter bgadapter{};
 	core::orm::persons_extractor_t bgperson_visitor{};
 	core::orm::publications_extractor_t bgvisitor{bgperson_visitor};
-	auto res = bgadapter.get_person(name, surname);
+	auto res				= bgadapter.get_person(name, surname);
 	const double size = res->size();
-	double i = 0;
+	double i				= 0;
 	for(auto& x: *res)
 	{
 		using namespace std::chrono_literals;
-		ui->progress->setValue((i++/size) * 100.0);
+		ui->progress->setValue((i++ / size) * 100.0);
 		std::this_thread::sleep_for(0.1s);
 		x.accept(&bgvisitor);
 	}

@@ -40,7 +40,6 @@ int main(int argc, char* argv[])
 
 	///////////////////////////////////////////////////////////////////////////////////
 
-	
 
 	// for(const auto& p: bgperson_visitor.persons)
 	// 	global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p}

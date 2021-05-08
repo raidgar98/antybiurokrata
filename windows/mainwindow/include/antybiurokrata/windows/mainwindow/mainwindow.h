@@ -21,11 +21,11 @@ class MainWindow : public QMainWindow
 	MainWindow(QWidget* parent = nullptr);
 	~MainWindow();
 
-signals:
+ signals:
 
 	void send_neighbours(std::shared_ptr<core::orm::persons_extractor_t>);
 
-private slots:
+ private slots:
 
 	void on_orcid_1_textChanged(const QString& arg1);
 	void on_orcid_2_textChanged(const QString& arg1);
@@ -36,7 +36,7 @@ private slots:
 	void on_generate_report_clicked();
 	void on_neighbours_itemChanged(QListWidgetItem* item);
 
-public slots:
+ public slots:
 
 	void collect_neighbours(std::shared_ptr<core::orm::persons_extractor_t>);
 
