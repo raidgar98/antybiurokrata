@@ -37,7 +37,14 @@ MACRO(create_qt_library libname)
 
 	set(variadic ${ARGN})
 	list(LENGTH variadic var_length)
-
 	target_link_libraries( ${libname} Qt5::Widgets Qt5::Core ${variadic} )
+
+	foreach( pack ${variadic} )
+		message("for ${libname} adding pack: ${pack} with includes: ${${pack}_INCLUDE_DIRECTORIES}")
+		if(pack STREQUAL "Drogon::Drogon") 
+			continue() 
+		endif()
+		include_directories(${${pack}_INCLUDE_DIRECTORIES})
+	endforeach()
 
 ENDMACRO()

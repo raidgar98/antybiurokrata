@@ -105,6 +105,7 @@ namespace core
 			struct detail_string_holder_t : public serial_helper_t
 			{
 				u16ser<&detail_string_holder_t::_> data;
+				u16str raw;
 
 				/** @brief default constructor */
 				detail_string_holder_t()										= default;
@@ -305,6 +306,7 @@ namespace core
 			struct detail_publication_t : public serial_helper_t
 			{
 				u16ser<&detail_publication_t::_> title;
+				u16str raw_title;
 				u16ser<&detail_publication_t::title> polish_title;
 				dser<&detail_publication_t::polish_title, uint16_t> year;
 

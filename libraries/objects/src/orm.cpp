@@ -125,6 +125,7 @@ namespace core
 				}
 			}
 
+			pub().raw_title = pub().title();
 			demangler<>::sanitize(pub().title());
 			demangler<>::sanitize(pub().polish_title());
 
@@ -168,6 +169,7 @@ namespace core
 				demangler<>::sanitize(pub().polish_title());
 			}
 
+			pub().raw_title = pub().title();
 			demangler<>::sanitize(pub().title());
 
 			for(const auto& pair: ptr->ids)

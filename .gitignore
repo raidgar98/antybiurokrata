@@ -1,2 +1,5 @@
 .vscode/
-*/build*/*
+build*
+*/build*
+**/build*
+CMakeLists.txt.user

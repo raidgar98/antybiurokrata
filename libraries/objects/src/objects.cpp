@@ -66,6 +66,8 @@ namespace core
 			if(has_hashes && has_ampersands) demangler<>::mangle<conv_t::HTML>(data());
 			else if(has_percents)
 				demangler<>::mangle<conv_t::URL>(data());
+
+			raw = v;
 		}
 
 		bool detail::detail_polish_name_t::basic_validation(u16str_v input)
