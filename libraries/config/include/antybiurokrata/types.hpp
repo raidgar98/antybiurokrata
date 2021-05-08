@@ -65,13 +65,9 @@ namespace core
 
 	struct u16str_serial;
 	struct u16str_deserial;
-	struct u16str_pretty_serial;
 
 	/** @brief handy type for wide type */
-	template<auto X> using u16ser = patterns::serial::ser<X, u16str, u16str_serial, u16str_deserial, u16str_pretty_serial>;
-
-	/** @brief handy type for wide view type. view is read-only, so it's impossible to deserialize*/
-	template<auto X> using u16vser = u16ser<X>;
+	// template<auto X> using u16ser = patterns::serial::ser<X, u16str, u16str_serial, u16str_deserial, u16str_pretty_serial>;
 
 	/**
 	 * @brief returns the conversion engine object
@@ -91,44 +87,6 @@ namespace core
 		};
 		return std::wstring_convert<deletable_codecvt, u16char_t>{"Error", u"Error"};
 	}
-
-	struct u16str_serial
-	{
-		template<typename stream_type> u16str_serial(stream_type& os, const u16str_v& view)
-		{
-			using patterns::serial::delimiter;
-			os << view.size() << delimiter;
-			for(const auto c: view) os << static_cast<int>(c) << delimiter;
-		}
-	};
-
-	struct u16str_deserial
-	{
-		template<typename stream_type> u16str_deserial(stream_type& is, u16str& out)
-		{
-			using patterns::serial::delimiter;
-			size_t size;
-			is >> size;
-			if(size == 0) return;
-			else
-				out.reserve(size);
-			for(size_t i = 0; i < size; ++i)
-			{
-				int c;
-				is >> c;
-				out += static_cast<u16char_t>(c);
-			}
-		}
-	};
-
-	struct u16str_pretty_serial
-	{
-		template<typename stream_type> u16str_pretty_serial(stream_type& os, const u16str_v& view)
-		{
-			using patterns::serial::delimiter;
-			os << get_conversion_engine().to_bytes(view.data());
-		}
-	};
 
 	/**
 	 * @brief contains basic defninitions and tools for throwing exceptions

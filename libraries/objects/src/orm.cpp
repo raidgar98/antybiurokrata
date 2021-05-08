@@ -11,7 +11,7 @@ namespace core
 			dassert(ptr, "pointer cannot be nullptr!"_u8);
 
 			const u16str_v affiliation{ptr->affiliation};	// alias
-			std::unique_ptr<person_t> person;
+			std::shared_ptr<person_t> person;
 			const auto reset_person = [&person] { person.reset(new person_t{}); };
 			for(u16str_v part_of_affiliation: string_utils::split_words<u16str_v>{affiliation, u','})
 			{
@@ -28,7 +28,7 @@ namespace core
 					return true;
 				};
 
-				if(polish_name_t::class_t::basic_validation(v)) (*person)().surname(v);
+				if(polish_name_t::value_t::basic_validation(v)) (*person)().surname(v);
 				else
 				{
 					log.warn() << "failed validation on surname: " << v << logger::endl;
@@ -37,7 +37,7 @@ namespace core
 
 				if(!safely_move()) continue;
 
-				if(polish_name_t::class_t::basic_validation(v)) (*person)().name(v);
+				if(polish_name_t::value_t::basic_validation(v)) (*person)().name(v);
 				else
 				{
 					log.warn() << "failed validation on name: " << v << logger::endl;
@@ -46,17 +46,17 @@ namespace core
 
 				if(!safely_move()) continue;
 
-				if(orcid_t::class_t::is_valid_orcid_string(v)) (*person)().orcid(orcid_t::class_t::from_string(v));
+				if(orcid_t::value_t::is_valid_orcid_string(v)) (*person)().orcid(orcid_t::value_t::from_string(v));
 				else
 				{
 					log.warn() << "failed validation on orcid: " << v << logger::endl;
 					continue;
 				}
 
-				auto pair = this->persons.emplace(std::move(*person));
+				auto pair = this->persons.emplace(person);
 				if(pair.second)
-					log.info() << "successfully added new author: " << patterns::serial::pretty_print{*pair.first} << logger::endl;
-				if(current_publication) pair.first->val.publictions().push_back(current_publication);
+					log.info() << "successfully added new author: " << patterns::serial::pretty_print{**pair.first} << logger::endl;
+				if(current_publication) (**pair.first)().publictions()()->push_back(current_publication);
 			}
 
 			return true;
@@ -68,19 +68,18 @@ namespace core
 
 			int i = 0;
 
-			std::unique_ptr<person_t> person{new person_t{}};
+			std::shared_ptr<person_t> person{new person_t{}};
 			person_t& pp{*person};
 
 			if(ptr->orcid.empty() || !objects::detail::detail_orcid_t::is_valid_orcid_string(ptr->orcid)) return false;
-			else
-				pp().orcid() = objects::detail::detail_orcid_t::from_string(ptr->orcid);
+			else pp().orcid() = objects::detail::detail_orcid_t::from_string(ptr->orcid);
 
 			if(!pp().orcid()().is_valid_orcid()) return false;
 
-			auto found = persons.find(pp);
+			auto found = persons.find(person);
 			dassert(found != persons.end(), "unknown person for given orcid!"_u8);
 
-			(*found)().publictions().emplace_back(current_publication);
+			(**found)().publictions()()->emplace_back(current_publication);
 			return true;
 		}
 
@@ -94,14 +93,14 @@ namespace core
 
 			using objects::detail::id_type;
 			const auto fill_id = [&](const u16str_v view, const id_type it) {
-				if(!view.empty()) pub().ids()[it] = view;
+				if(!view.empty()) pub().ids()().data()[it] = view;
 			};
 			fill_id(ptr->idt, id_type::IDT);
 			fill_id(ptr->doi, id_type::DOI);
 			fill_id(ptr->e_issn, id_type::EISSN);
 			fill_id(ptr->p_issn, id_type::PISSN);
 
-			if(pub().ids().empty()) return false;
+			if(pub().ids()()->empty()) return false;
 
 			if(ptr->year.empty()) return false;
 			else
@@ -119,15 +118,18 @@ namespace core
 					else
 						pub().title(ptr->org_title);
 
-					if(pub().polish_title().empty() && demangler<>::is_polish(ptr->whole_title)) pub().polish_title(ptr->whole_title);
-					else if(pub().title().empty())
+					if(
+						pub().polish_title()()->empty() && 
+						demangler<>::is_polish(ptr->whole_title)
+					) pub().polish_title(ptr->whole_title);
+					else if(pub().title()()->empty())
 						pub().title(ptr->whole_title);
 				}
 			}
 
-			pub().raw_title = pub().title();
-			demangler<>::sanitize(pub().title());
-			demangler<>::sanitize(pub().polish_title());
+			pub().title()().raw = pub().title()();
+			demangler<>::sanitize(pub().title()().data());
+			demangler<>::sanitize(pub().polish_title()().data());
 
 			publications.push_back(spub);
 			person_visitor.current_publication = spub;
@@ -163,23 +165,23 @@ namespace core
 			if(!ptr->translated_title.empty())
 			{
 				pub().polish_title(ptr->translated_title);
-				if(demangler<>::is_polish(pub().title()) && !demangler<>::is_polish(pub().polish_title()))
+				if(demangler<>::is_polish(pub().title()()) && !demangler<>::is_polish(pub().polish_title()()))
 					std::swap(pub().title(), pub().polish_title());
 
-				demangler<>::sanitize(pub().polish_title());
+				demangler<>::sanitize(pub().polish_title()().data());
 			}
 
-			pub().raw_title = pub().title();
-			demangler<>::sanitize(pub().title());
+			pub().title()().raw = pub().title()();
+			demangler<>::sanitize(pub().title()().data());
 
 			for(const auto& pair: ptr->ids)
 			{
 				const objects::id_type id = objects::detail::id_type_stringinizer::get(pair.first);
-				auto exists_pair			  = pub().ids().find(id);
-				if(exists_pair == pub().ids().end()) pub().ids()[id] = pair.second;
+				auto exists_pair			  = pub().ids()()->find(id);
+				if(exists_pair == pub().ids()()->end()) pub().ids()().data()[id] = pair.second;
 			}
 
-			if(pub().ids().empty()) log.warn() << "orcid input has no ids" << logger::endl;
+			if(pub().ids()()->empty()) log.warn() << "orcid input has no ids" << logger::endl;
 
 			auto it = std::find_if(publications.begin(), publications.end(), [&pub](const publication_storage_t& pp) {
 				return *pp == pub;

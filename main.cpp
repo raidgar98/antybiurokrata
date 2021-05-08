@@ -52,40 +52,40 @@ int main(int argc, char* argv[])
 
 	// orcid
 	core::orm::persons_extractor_t orcid_person_visitor{bgperson_visitor};
-	for(auto& x: orcid_person_visitor.persons) x().publictions().clear();
+	for(auto& x: orcid_person_visitor.persons) (*x)().publictions()()->clear();
 	core::orm::publications_extractor_t ovisitor{orcid_person_visitor};
 	core::network::orcid_adapter oadapter{};
 	for(const auto& person: orcid_person_visitor.persons)
 	{
-		auto ret = oadapter.get_person(person().orcid()());
+		auto ret = oadapter.get_person((*person)().orcid()());
 		for(auto& x: *ret) x.accept(&ovisitor);
 	}
 
 	// scopus
 	core::orm::persons_extractor_t scopus_person_visitor{bgperson_visitor};
-	for(auto& x: scopus_person_visitor.persons) x().publictions().clear();
+	for(auto& x: scopus_person_visitor.persons) (*x)().publictions()()->clear();
 	core::orm::publications_extractor_t svisitor{scopus_person_visitor};
 	core::network::scopus_adapter sadapter{};
 	for(const auto& person: scopus_person_visitor.persons)
 	{
-		auto ret = sadapter.get_person(person().orcid()());
+		auto ret = sadapter.get_person((*person)().orcid()());
 		for(auto& x: *ret) x.accept(&svisitor);
 	}
 
 	for(const auto& p: bgperson_visitor.persons)
-		global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p}
+		global_logger.info() << "[ size: " << (*p)().publictions()()->size() << " ] " << patterns::serial::pretty_print{*p}
 									<< logger::endl;
 
 	global_logger << "^^^^^^^^^^^^ BGPOLSL ^^^^^^^^^^^^" << logger::endl;
 
 	for(const auto& p: orcid_person_visitor.persons)
-		global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p}
+		global_logger.info() << "[ size: " << (*p)().publictions()()->size() << " ] " << patterns::serial::pretty_print{*p}
 									<< logger::endl;
 
 	global_logger << "^^^^^^^^^^^^^ ORCID ^^^^^^^^^^^^^" << logger::endl;
 
 	for(const auto& p: scopus_person_visitor.persons)
-		global_logger.info() << "[ size: " << p().publictions().size() << " ] " << patterns::serial::pretty_print{p}
+		global_logger.info() << "[ size: " << (*p)().publictions()()->size() << " ] " << patterns::serial::pretty_print{*p}
 									<< logger::endl;
 
 	global_logger << "^^^^^^^^^^^^^ SCOPUS ^^^^^^^^^^^^" << logger::endl;

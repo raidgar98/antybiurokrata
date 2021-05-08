@@ -98,18 +98,18 @@ namespace core
 		bool detail::detail_publication_t::compare(const detail::detail_publication_t& that) const
 		{
 			const detail::detail_publication_t& me = *this;	  // alias, to make it handy
-			if(me.ids().size() > 0 && that.ids().size() > 0)
+			if(me.ids()()->size() > 0 && that.ids()()->size() > 0)
 			{
-				for(const auto& pair: me.ids())
+				for(const auto& pair: me.ids()().data())
 				{
-					const auto found = that.ids().find(pair.first);
-					if(found != that.ids().end()) /* if found */
+					const auto found = that.ids()()->find(pair.first);
+					if(found != that.ids()()->end()) /* if found */
 						return pair.second() == found->second();
 				}
 			}
 
 			// worst case
-			return (me.year == that.year) && (me.title == that.title);
+			return (me.year == that.year) && (me.title()() == that.title()());
 		}
 
 	}	 // namespace objects

@@ -12,6 +12,44 @@ namespace core
 			using namespace patterns::serial;
 			using patterns::serial::serial_helper_t;
 
+			struct u16str_serial
+			{
+				template<typename stream_type> u16str_serial(stream_type& os, const u16str_v& view)
+				{
+					using patterns::serial::delimiter;
+					os << view.size() << delimiter;
+					for(const auto c: view) os << static_cast<int>(c) << delimiter;
+				}
+			};
+
+			struct u16str_deserial
+			{
+				template<typename stream_type> u16str_deserial(stream_type& is, u16str& out)
+				{
+					using patterns::serial::delimiter;
+					size_t size;
+					is >> size;
+					if(size == 0) return;
+					else
+						out.reserve(size);
+					for(size_t i = 0; i < size; ++i)
+					{
+						int c;
+						is >> c;
+						out += static_cast<u16char_t>(c);
+					}
+				}
+			};
+
+			struct u16str_pretty_serial
+			{
+				template<typename stream_type> u16str_pretty_serial(stream_type& os, const u16str_v& view)
+				{
+					using patterns::serial::delimiter;
+					os << get_conversion_engine().to_bytes(view.data());
+				}
+			};
+
 			/**
 			 * @brief definition of any array serialization
 			 * 
@@ -223,7 +261,7 @@ namespace core
 			 * @tparam N array size
 			 */
 			template<auto X, typename T, size_t N>
-			using array_ser = ser<X, std::array<T, N>, array_serial<T, N>, array_deserial<T, N>, array_pretty_serial<T, N>>;
+			using array_ser = ser<X, std::array<T, N>>;
 
 			/**
 			 * @brief alias for serializing shared vector
@@ -232,8 +270,7 @@ namespace core
 			 * @tparam T type in shared vector
 			 */
 			template<auto X, typename T>
-			using svec_ser = ser<X, std::vector<std::shared_ptr<T>>, shared_vector_serial<T>, shared_vector_deserial<T>,
-										shared_vector_pretty_serial<T>>;
+			using svec_ser = ser<X, std::vector< std::shared_ptr<T> > >;
 
 			/**
 			 * @brief alias for serializing shared vector
@@ -241,9 +278,9 @@ namespace core
 			 * @tparam X reference to previous member
 			 * @tparam T type in shared vector
 			 */
-			template<auto X, typename Key, typename Value, typename key_pretty_printer>
-			using map_ser = ser<X, std::map<Key, Value>, map_serial<Key, Value>, map_deserial<Key, Value>,
-									  map_pretty_serial<Key, Value, key_pretty_printer>>;
+			template<auto X, typename Key, typename Value>
+			using map_ser = ser<X, std::map<Key, Value>>;
+
 		}	 // namespace serial_definitions
 	}		 // namespace objects
 }	 // namespace core

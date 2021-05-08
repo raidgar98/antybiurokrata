@@ -80,18 +80,22 @@ void MainWindow::on_search_button_clicked()
 	// }
 	// ui->progress->setValue(75);
 
-	for(const auto& p: bgperson_visitor.persons)
+	for(const auto& _p: bgperson_visitor.persons)
 	{
+		// using namespace core
+		core::dassert{_p || false, "must be not null"_u8};
+		auto& p = *_p;
+
 		core::u16str label{p().name()().data()().raw + u" " + p().surname()().data()().raw + u"[ "};
 		label += static_cast<core::u16str>(p().orcid()()) + u" ]";
 
 		ui->neighbours->addItem(QString::fromStdU16String(label));
 
 		if(p().name() == name && p().surname() == surname)
-			for(const auto& x: p().publictions())
+			for(const auto& x: p().publictions()().data())
 			{
 				const QString year			  = QString::fromStdString(std::to_string((*x)().year()));
-				const core::u16str full_name = core::u16str(u"[ ") + year.toStdU16String() + u" ] " + (*x)().raw_title;
+				const core::u16str full_name = core::u16str(u"[ ") + year.toStdU16String() + u" ] " + (*x)().title()().raw;
 				ui->publications->addItem(QString::fromStdU16String(full_name));
 			}
 	}
