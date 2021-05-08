@@ -10,3 +10,7 @@ create_library( recursive_type_collection )
 create_library( functor recursive_type_collection )
 
 create_library( serializer )
+
+
+add_executable(serial_test serial_test.cpp)
+target_link_libraries(serial_test serializer)
