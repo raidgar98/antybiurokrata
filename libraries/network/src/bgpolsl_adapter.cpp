@@ -118,7 +118,7 @@ namespace core
 				 = send_request(prepare_request(core::demangler<>{full_name}.process<conv_t::URL>().get()));
 
 
-			dassert{response.first == drogon::ReqResult::Ok, "expected 200 response code"};
+			dassert{response.first == drogon::ReqResult::Ok, "expected 200 response code"_u8};
 			log.info() << "successfully got response from `https://www.bg.polsl.pl`" << logger::endl;
 
 			const str_v view{response.second->getBody()};

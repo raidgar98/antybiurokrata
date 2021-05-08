@@ -55,7 +55,7 @@ namespace core
 				else if constexpr(conversion_t::URL == type)
 					return u16str_v{url};
 
-				core::dassert{false, "invalid decision path"};
+				core::dassert{false, "invalid decision path"_u8};
 				return decltype(get<type>()){};
 			}
 		};
@@ -171,7 +171,7 @@ namespace core
 		 */
 		string_view_type get() const
 		{
-			dassert(processed, "data is not processed yet, run `process` first");
+			dassert(processed, "data is not processed yet, run `process` first"_u8);
 			return string_view_type{data};
 		}
 
@@ -183,7 +183,7 @@ namespace core
 		 */
 		string_type get_copy() const
 		{
-			dassert(processed, "data is not processed yet, run `process` first");
+			dassert(processed, "data is not processed yet, run `process` first"_u8);
 			return data;
 		}
 
@@ -213,7 +213,7 @@ namespace core
 			else if constexpr(type == conv_t::URL)
 				demangler<>::mangle_url(out);
 			else
-				core::dassert(false, "invalid decision path");
+				core::dassert(false, "invalid decision path"_u8);
 		}
 
 		/**

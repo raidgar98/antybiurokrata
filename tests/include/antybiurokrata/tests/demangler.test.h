@@ -65,7 +65,7 @@ namespace tests
 
 		"case_01"_test = [] {
 			demangler dmg{msg_01};
-			ut::expect(ut::throws<typename core::exceptions::assert_exception>([&]() { dmg.get(); }));
+			ut::expect(ut::throws<typename core::exceptions::assert_exception<core::str> >([&]() { dmg.get(); }));
 		};
 
 		"case_02"_test = [] {
