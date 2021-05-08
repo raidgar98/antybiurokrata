@@ -40,13 +40,13 @@ namespace core
 		detail::detail_orcid_t detail::detail_orcid_t::from_string(const u16str_v& data)
 		{
 			str conv;
-			dassert{is_valid_orcid_string(data, &conv), "given string is not valid ORCID number"};
+			dassert{is_valid_orcid_string(data, &conv), "given string is not valid ORCID number"_u8};
 			detail_orcid_t result{};
 
 			size_t i = 0;
 			for(str_v part: string_utils::split_words<str_v>{conv, '-'})
 			{
-				dassert(i < detail_orcid_t::words_in_orcid_num, "out of range");
+				dassert(i < detail_orcid_t::words_in_orcid_num, "out of range"_u8);
 				result.identifier()[i++] = static_cast<uint16_t>(std::stoi(part.data()));
 			}
 
@@ -94,8 +94,6 @@ namespace core
 		{
 			for(u16char_t& c: data()().data()) c = static_cast<u16char_t>(std::toupper(static_cast<wchar_t>(c), plPL()));
 		}
-
-		detail::detail_string_holder_t::operator str() const { return get_conversion_engine().to_bytes(data()); }
 
 		bool detail::detail_publication_t::compare(const detail::detail_publication_t& that) const
 		{

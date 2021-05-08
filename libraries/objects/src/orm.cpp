@@ -8,7 +8,7 @@ namespace core
 	{
 		bool persons_extractor_t::visit(bgpolsl_repr_t* ptr)
 		{
-			dassert(ptr, "pointer cannot be nullptr!");
+			dassert(ptr, "pointer cannot be nullptr!"_u8);
 
 			const u16str_v affiliation{ptr->affiliation};	// alias
 			std::unique_ptr<person_t> person;
@@ -64,7 +64,7 @@ namespace core
 
 		bool persons_extractor_t::visit(json_repr_t* ptr)
 		{
-			dassert(ptr, "pointer cannot be nullptr!");
+			dassert(ptr, "pointer cannot be nullptr!"_u8);
 
 			int i = 0;
 
@@ -78,7 +78,7 @@ namespace core
 			if(!pp().orcid()().is_valid_orcid()) return false;
 
 			auto found = persons.find(pp);
-			dassert(found != persons.end(), "unknown person for given orcid!");
+			dassert(found != persons.end(), "unknown person for given orcid!"_u8);
 
 			(*found)().publictions().emplace_back(current_publication);
 			return true;
@@ -86,7 +86,7 @@ namespace core
 
 		bool publications_extractor_t::visit(bgpolsl_repr_t* ptr)
 		{
-			dassert(ptr, "pointer cannot be nullptr!");
+			dassert(ptr, "pointer cannot be nullptr!"_u8);
 
 			publication_storage_t spub{new publication_t{}};
 			publication_t& pub = *spub;
@@ -138,7 +138,7 @@ namespace core
 
 		bool publications_extractor_t::visit(json_repr_t* ptr)
 		{
-			dassert(ptr, "pointer cannot be nullptr!");
+			dassert(ptr, "pointer cannot be nullptr!"_u8);
 
 			publication_storage_t spub{new publication_t{}};
 			publication_t& pub = *spub;

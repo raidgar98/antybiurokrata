@@ -145,22 +145,8 @@ namespace core
 				/** @brief 4) forward to assign operator 3 */
 				detail_string_holder_t& operator=(const u16str& v) { return (*this = u16str_v{v}); }
 
-				/** @brief provides conversion to string*/
-				operator str() const;
-
 				/** @brief provides conversion to u16string_view*/
 				operator u16str_v() const { return u16str_v{data()}; }
-
-				/**
-				 * @brief provides conversion easy conversion with demangler
-				 * 
-				 * @tparam conv_t type of conversion
-				 * @return str 
-				*/
-				template<core::detail::conversion_t conv_t> str get_as() const
-				{
-					return core::demangler<str, str_v>{static_cast<str>(*this)}.process<conv_t>().get_copy();
-				}
 
 				/**
 				 * @brief provides conversion easy conversion with demangler
@@ -229,9 +215,6 @@ namespace core
 				void unify() noexcept;
 
 				/** @brief forwarding to data*/
-				explicit operator str() const { return data()().operator core::str(); }
-
-				/** @brief forwarding to data*/
 				explicit operator u16str_v() const { return data()().operator u16str_v(); }
 
 				friend inline bool operator==(const detail_polish_name_t& pn1, const detail_polish_name_t& pn2)
@@ -259,7 +242,7 @@ namespace core
 				 * 
 				 * @throw assert_exception if given string is not valid
 				 */
-				void validate() const { dassert{is_valid(), static_cast<str>(data()()) + ": is not valid for polish name"}; }
+				void validate() const { dassert{is_valid(), u16str(data()()) + ": is not valid for polish name"_u16}; }
 			};
 			using polish_name_t = cser<&detail_polish_name_t::data>;
 
@@ -283,7 +266,7 @@ namespace core
 				static u16str get(const id_type x)
 				{
 					const size_t index = static_cast<size_t>(x);
-					dassert(index < length, "invalid id_type");
+					dassert(index < length, "invalid id_type"_u8);
 					return id_type_stringinizer::enum_to_string[index];
 				}
 
@@ -292,7 +275,7 @@ namespace core
 					std::for_each(x.begin(), x.end(), [](u16char_t& c) { c = std::toupper(c); });
 					for(size_t i = 0; i < length; ++i)
 						if(x == enum_to_string[i]) return static_cast<id_type>(i);
-					dassert(false, "invalid string");
+					dassert(false, "invalid string"_u8);
 					return id_type{};	  // dead code
 				}
 

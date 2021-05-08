@@ -53,7 +53,7 @@ namespace core
 			do {
 				if(total_results) offset += count;
 				const connection_handler::raw_response_t response = send_request(prepare_request(orcid, offset, count));
-				dassert{response.first == drogon::ReqResult::Ok, "expected 200 response code"};
+				dassert{response.first == drogon::ReqResult::Ok, "expected 200 response code"_u8};
 				log.info() << "successfully got response from `https://api.elsevier.com`" << logger::endl;
 
 				std::shared_ptr<jvalue> json{nullptr};
@@ -73,13 +73,13 @@ namespace core
 					throw;
 				}
 
-				dassert(json.get() != nullptr, "empty result or invalid json");
+				dassert(json.get() != nullptr, "empty result or invalid json"_u8);
 
 				const jvalue& search_results = json->get("search-results", null_value);
-				dassert(search_results != null_value, "invalid input, no `search-results` field in json");
+				dassert(search_results != null_value, "invalid input, no `search-results` field in json"_u8);
 
 				const jvalue& jtr = search_results.get("opensearch:totalResults", null_value);
-				dassert(jtr != null_value, "expected totalResults to be a numeric string");
+				dassert(jtr != null_value, "expected totalResults to be a numeric string"_u8);
 				total_results = std::stoi(jtr.asCString());
 				if(total_results == 0)
 				{
@@ -92,7 +92,7 @@ namespace core
 				}
 
 				const jvalue& entry = search_results.get("entry", empty_array);
-				dassert(entry.isArray(), "entry has to be array");
+				dassert(entry.isArray(), "entry has to be array"_u8);
 				for(const jvalue& obj: entry)
 				{
 					detail::json_repr_t x{};

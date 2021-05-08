@@ -27,7 +27,7 @@ namespace core
 			value_t& list = *result_list;
 
 			const connection_handler::raw_response_t response = send_request(prepare_request(orcid));
-			dassert{response.first == drogon::ReqResult::Ok, "expected 200 response code"};
+			dassert{response.first == drogon::ReqResult::Ok, "expected 200 response code"_u8};
 			log.info() << "successfully got response from `https://pub.orcid.org`" << logger::endl;
 
 			using jvalue			  = Json::Value;
@@ -49,10 +49,10 @@ namespace core
 				log.error() << "cought unknown exception while gathering json" << logger::endl;
 			}
 
-			dassert(json.get() != nullptr, "empty result or invalid json");
+			dassert(json.get() != nullptr, "empty result or invalid json"_u8);
 
 			const jvalue& array = json->get("group", empty_array);
-			dassert(array.isArray(), "it's not array");
+			dassert(array.isArray(), "it's not array"_u8);
 			log << "it's array, with size: " << array.size() << " hooray!" << logger::endl;
 			if(array.size() == 0) log.warn() << "array is empty for orcid: " << orcid << logger::endl;
 			auto cengine				= get_conversion_engine();

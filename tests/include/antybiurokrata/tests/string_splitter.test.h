@@ -56,7 +56,7 @@ namespace tests
 			ut::expect(ut::eq(*it, str_v{"w3"}));
 			it++;
 			ut::expect(it == ss.end());
-			ut::expect(ut::throws<core::exceptions::assert_exception>([&it] { it++; }));
+			ut::expect(ut::throws<core::exceptions::assert_exception<str>>([&it] { it++; }));
 		};
 
 		"case_02"_test = [&] {
@@ -84,7 +84,7 @@ namespace tests
 			ut::expect(*it == u16str_v{u"w3"});
 			it++;
 			ut::expect(it == ss.end());
-			ut::expect(ut::throws<core::exceptions::assert_exception>([&it] { it++; }));
+			ut::expect(ut::throws<core::exceptions::assert_exception<str>>([&it] { it++; }));
 		};
 
 		"case_05"_test = [&] {
