@@ -102,6 +102,18 @@ namespace core
 			};
 			using orcid_t = cser<&detail_orcid_t::identifier>;
 
+
+			struct default_unifier
+			{
+				u16str& x;
+			};
+			struct default_validator
+			{
+				const u16str_v& x;
+				operator bool() const noexcept { return true; }
+			};
+
+			template<typename validator = default_validator, typename unifier = default_unifier>
 			struct detail_string_holder_t : public serial_helper_t
 			{
 				u16ser<&detail_string_holder_t::_> data;
@@ -115,7 +127,23 @@ namespace core
 				detail_string_holder_t& operator=(detail_string_holder_t&&) = default;
 
 				/** @brief this is constructor body, preferable way of setting data */
-				void set(const u16str_v& v);
+				void set(const u16str_v& v)
+				{
+					using namespace core;
+
+					if(v.size() == 0) return;
+					const bool has_hashes{v.find(u'#') != u16str_v::npos};
+					const bool has_ampersands{v.find(u'&') != u16str_v::npos};
+					const bool has_percents{v.find(u'%') != u16str_v::npos};
+					data(v);
+
+					if(has_hashes && has_ampersands) demangler<>::mangle<conv_t::HTML>(data());
+					else if(has_percents)
+						demangler<>::mangle<conv_t::URL>(data());
+
+					raw = v;
+					unifier{data()};
+				}
 
 				/** @brief 1) Construct a new detail detail_string_holder_t object from string view; forwards to 2 */
 				explicit detail_string_holder_t(const str_v& v) : detail_string_holder_t{str{v.data()}} {}
@@ -171,80 +199,34 @@ namespace core
 				{
 					return s1.data() < s2.data();
 				}
-			};
-			using string_holder_t = cser<&detail_string_holder_t::data>;
 
-			/** @brief object representation and holder of polish name */
-			struct detail_polish_name_t : public serial_helper_t
-			{
-				dser<&detail_polish_name_t::_, string_holder_t> data;
+				static bool validate(const u16str_v& x) { return static_cast<bool>(validator{x}); }
 
-				/** @brief default constructor */
-				detail_polish_name_t() = default;
-
-				/**
-				 * @brief forward all to parent constructor
-				 * 
-				 * @tparam string_type basically everythink that can construct str or u16str
-				 */
-				template<typename... U>
-				// requires(!std::is_same_v< std::tuple_element_t<0, std::tuple<U...>>, ___null_t>)
-				detail_polish_name_t(U&&... v) : data{std::forward<U>(v)...}
-				{
-					validate();
-					unify();
-				}
-
-				template<typename U> detail_polish_name_t& operator=(U&& u)
-				{
-					data = std::move(u);
-					validate();
-					unify();
-					return *this;
-				}
-
-				template<typename U> detail_polish_name_t& operator=(const U& u)
-				{
-					data = u;
-					validate();
-					unify();
-					return *this;
-				}
-
-				/** @brief in this case it's proxy to toupper */
-				void unify() noexcept;
-
-				/** @brief forwarding to data*/
-				explicit operator u16str_v() const { return data()().operator u16str_v(); }
-
-				friend inline bool operator==(const detail_polish_name_t& pn1, const detail_polish_name_t& pn2)
-				{
-					return pn1.data()().data() == pn2.data()().data();
-				}
-				friend inline bool operator!=(const detail_polish_name_t& pn1, const detail_polish_name_t& pn2)
-				{
-					return !(pn1 == pn2);
-				}
-				friend inline bool operator<(const detail_polish_name_t& pn1, const detail_polish_name_t& pn2)
-				{
-					return pn1.data() < pn2.data();
-				}
-
-
-				[[nodiscard]] static bool basic_validation(u16str_v input);
-
-			 protected:
-				/** @brief override this if you dervie from this class, it's guaranteed that data is set */
-				[[nodiscard]] virtual bool is_valid() const;
-
+			 private:
 				/** 
 				 * @brief if validation fails it's throw assertion
 				 * 
 				 * @throw assert_exception if given string is not valid
 				 */
-				void validate() const { dassert{is_valid(), u16str(data()()) + ": is not valid for polish name"_u16}; }
+				void validate() const { dassert{validate(data()), data() + ": is not valid name"_u16}; }
 			};
-			using polish_name_t = cser<&detail_polish_name_t::data>;
+			template<typename validator = default_validator, typename unifier = default_unifier>
+			using string_holder_custom_t = cser<&detail_string_holder_t<validator, unifier>::data>;
+			using string_holder_t		  = string_holder_custom_t<>;
+
+			struct polish_validator
+			{
+				const u16str_v& x;
+
+				operator bool() const noexcept;
+			};
+
+			struct polish_unifier
+			{
+				polish_unifier(u16str& x) noexcept;
+			};
+
+			using polish_name_t = string_holder_custom_t<polish_validator, polish_unifier>;
 
 			enum class id_type : uint8_t
 			{
@@ -253,12 +235,15 @@ namespace core
 				EISSN	 = 2,
 				PISSN	 = 3,
 				EID	 = 4,
-				WOSUID = 5
+				WOSUID = 5,
+				ISBN	 = 6,
+
+				NOT_FOUND = 99
 			};
 
 			struct id_type_stringinizer
 			{
-				inline static const u16str enum_to_string[] = {u"IDT", u"DOI", u"EISSN", u"PISSN", u"EID", u"WOSUID"};
+				inline static const u16str enum_to_string[] = {u"IDT", u"DOI", u"EISSN", u"PISSN", u"EID", u"WOSUID", u"ISBN"};
 				constexpr static size_t length{sizeof(enum_to_string) / sizeof(str)};
 
 				const id_type id;
@@ -275,8 +260,9 @@ namespace core
 					std::for_each(x.begin(), x.end(), [](u16char_t& c) { c = std::toupper(c); });
 					for(size_t i = 0; i < length; ++i)
 						if(x == enum_to_string[i]) return static_cast<id_type>(i);
-					dassert(false, "invalid string"_u8);
-					return id_type{};	  // dead code
+					// dassert(false, "invalid string: "_u16 + x);
+					global_logger.warn() << "invalid string: " << x << logger::endl;
+					return id_type::NOT_FOUND;
 				}
 
 				template<typename stream_t> inline friend stream_t& operator<<(stream_t& os, const id_type_stringinizer& x)
@@ -288,9 +274,8 @@ namespace core
 			/** @brief object representation of publication */
 			struct detail_publication_t : public serial_helper_t
 			{
-				u16ser<&detail_publication_t::_> title;
-				u16str raw_title;
-				u16ser<&detail_publication_t::title> polish_title;
+				dser<&detail_publication_t::_, string_holder_t> title;
+				dser<&detail_publication_t::title, string_holder_t> polish_title;
 				dser<&detail_publication_t::polish_title, uint16_t> year;
 
 				using ids_map_t

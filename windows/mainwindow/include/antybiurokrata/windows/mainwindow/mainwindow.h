@@ -13,9 +13,11 @@ namespace Ui
 }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, private Log<MainWindow>
 {
 	Q_OBJECT
+
+	using Log<MainWindow>::log;
 
  public:
 	MainWindow(QWidget* parent = nullptr);
@@ -23,7 +25,8 @@ class MainWindow : public QMainWindow
 
  signals:
 
-	void send_neighbours(std::shared_ptr<core::orm::persons_extractor_t>);
+	void send_neighbours(QSharedPointer<core::orm::persons_extractor_t>);
+	void send_progress(const size_t);
 
  private slots:
 
@@ -38,10 +41,13 @@ class MainWindow : public QMainWindow
 
  public slots:
 
-	void collect_neighbours(std::shared_ptr<core::orm::persons_extractor_t>);
+	void collect_neighbours(QSharedPointer<core::orm::persons_extractor_t>);
+	void set_progress(const size_t);
 
  private:
 	void normalize_text(const QString& arg1, QLineEdit& line);
+	void clear_ui();
 
+	std::list<std::shared_ptr<std::jthread>> jobs;
 	Ui::MainWindow* ui;
 };

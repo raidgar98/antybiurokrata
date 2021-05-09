@@ -13,7 +13,7 @@ template<> typename logger::logger_piper operator<<<>(logger::logger_piper src, 
 }
 
 core::u16str operator"" _u16(const char* str, const size_t) { return core::get_conversion_engine().from_bytes(str); }
-core::u16str operator"" _u16(const char16_t* str, const size_t s) { return core::u16str{ str, s }; }
+core::u16str operator"" _u16(const char16_t* str, const size_t s) { return core::u16str{str, s}; }
 
 core::str operator"" _u8(const char16_t* str, const size_t) { return core::get_conversion_engine().to_bytes(str); }
 core::str operator"" _u8(const char* c_str, const size_t s) { return core::str{c_str, s}; }

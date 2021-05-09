@@ -102,8 +102,9 @@ namespace tests
 		logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
 		"case_01"_test = [] {
-			const auto validate_data
-				 = [&](const str_v& x) { ut::expect(core::get_conversion_engine().from_bytes(testbase::to_upper(x)) == (u16str_v) polish_name_t{x}() ); };
+			const auto validate_data = [&](const str_v& x) {
+				ut::expect(core::get_conversion_engine().from_bytes(testbase::to_upper(x)) == (u16str_v)polish_name_t{x}());
+			};
 
 			validate_data(correct_pn_01);
 			validate_data(correct_pn_02);
@@ -115,8 +116,9 @@ namespace tests
 		};
 
 		"case_02"_test = [] {
-			const auto expect_assertion
-				 = [](const str_v& x) { ut::expect(ut::throws<core::exceptions::assert_exception<u16str>>([&] { polish_name_t{x}; })); };
+			const auto expect_assertion = [](const str_v& x) {
+				ut::expect(ut::throws<core::exceptions::assert_exception<u16str>>([&] { polish_name_t{x}; }));
+			};
 
 			expect_assertion(invalid_pn_01);
 			expect_assertion(invalid_pn_02);

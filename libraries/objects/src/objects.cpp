@@ -53,29 +53,12 @@ namespace core
 			return result;
 		}
 
-		void detail::detail_string_holder_t::set(const u16str_v& v)
-		{
-			using namespace core;
-
-			if(v.size() == 0) return;
-			const bool has_hashes{v.find(u'#') != u16str_v::npos};
-			const bool has_ampersands{v.find(u'&') != u16str_v::npos};
-			const bool has_percents{v.find(u'%') != u16str_v::npos};
-			data(v);
-
-			if(has_hashes && has_ampersands) demangler<>::mangle<conv_t::HTML>(data());
-			else if(has_percents)
-				demangler<>::mangle<conv_t::URL>(data());
-
-			raw = v;
-		}
-
-		bool detail::detail_polish_name_t::basic_validation(u16str_v input)
+		detail::polish_validator::operator bool() const noexcept
 		{
 			constexpr u16str_v allowed{u"-"};	// '-' for doubled surname
-			if(input.size() <= 2) return false;
+			if(x.size() <= 2) return false;
 			bool bad_last = false;	 // '-' cannot be at the end of surname
-			for(const u16char_t c: input)
+			for(const u16char_t c: x)
 			{
 				const bool is_letter{std::isalpha(static_cast<wchar_t>(c), plPL())};
 				const bool is_allowed_char{allowed.find(c) != u16str_v::npos};
@@ -88,11 +71,9 @@ namespace core
 			return !bad_last;
 		}
 
-		bool detail::detail_polish_name_t::is_valid() const { return basic_validation(data()().data()); }
-
-		void detail::detail_polish_name_t::unify() noexcept
+		detail::polish_unifier::polish_unifier(u16str& x) noexcept
 		{
-			for(u16char_t& c: data()().data()) c = static_cast<u16char_t>(std::toupper(static_cast<wchar_t>(c), plPL()));
+			for(u16char_t& c: x) c = static_cast<u16char_t>(std::toupper(static_cast<wchar_t>(c), plPL()));
 		}
 
 		bool detail::detail_publication_t::compare(const detail::detail_publication_t& that) const

@@ -28,7 +28,7 @@ namespace core
 					return true;
 				};
 
-				if(polish_name_t::class_t::basic_validation(v)) (*person)().surname(v);
+				if(polish_name_t::class_t::validate(v)) (*person)().surname(v);
 				else
 				{
 					log.warn() << "failed validation on surname: " << v << logger::endl;
@@ -37,7 +37,7 @@ namespace core
 
 				if(!safely_move()) continue;
 
-				if(polish_name_t::class_t::basic_validation(v)) (*person)().name(v);
+				if(polish_name_t::class_t::validate(v)) (*person)().name(v);
 				else
 				{
 					log.warn() << "failed validation on name: " << v << logger::endl;
@@ -119,15 +119,15 @@ namespace core
 					else
 						pub().title(ptr->org_title);
 
-					if(pub().polish_title().empty() && demangler<>::is_polish(ptr->whole_title)) pub().polish_title(ptr->whole_title);
-					else if(pub().title().empty())
+					if(pub().polish_title()().data().empty() && demangler<>::is_polish(ptr->whole_title))
+						pub().polish_title(ptr->whole_title);
+					else if(pub().title()().data().empty())
 						pub().title(ptr->whole_title);
 				}
 			}
 
-			pub().raw_title = pub().title();
-			demangler<>::sanitize(pub().title());
-			demangler<>::sanitize(pub().polish_title());
+			demangler<>::sanitize(pub().title()().data());
+			demangler<>::sanitize(pub().polish_title()().data());
 
 			publications.push_back(spub);
 			person_visitor.current_publication = spub;
@@ -163,19 +163,19 @@ namespace core
 			if(!ptr->translated_title.empty())
 			{
 				pub().polish_title(ptr->translated_title);
-				if(demangler<>::is_polish(pub().title()) && !demangler<>::is_polish(pub().polish_title()))
+				if(demangler<>::is_polish(pub().title()()) && !demangler<>::is_polish(pub().polish_title()().data()))
 					std::swap(pub().title(), pub().polish_title());
 
-				demangler<>::sanitize(pub().polish_title());
+				demangler<>::sanitize(pub().polish_title()().data());
 			}
 
-			pub().raw_title = pub().title();
-			demangler<>::sanitize(pub().title());
+			demangler<>::sanitize(pub().title()().data());
 
 			for(const auto& pair: ptr->ids)
 			{
 				const objects::id_type id = objects::detail::id_type_stringinizer::get(pair.first);
-				auto exists_pair			  = pub().ids().find(id);
+				if(id == objects::id_type::NOT_FOUND) continue;
+				auto exists_pair = pub().ids().find(id);
 				if(exists_pair == pub().ids().end()) pub().ids()[id] = pair.second;
 			}
 
