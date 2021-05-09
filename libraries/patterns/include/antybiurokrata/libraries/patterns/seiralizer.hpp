@@ -537,6 +537,26 @@ namespace patterns
 			return os << serialize /* < put_to_stream, serial::cser<T> > */ {obj};
 		}
 
+/*
+
+struct my_ser{ ser<&::_, int> a; };
+struct my_ser_c{ using custom_serial = my_serializer; ser<&::_, int> a; };
+
+TODO: implement custom serializers like:
+
+template<typename serialize_t = default_serializer, typename deserialize_t = default_deserializer>
+struct serialization_set
+{
+	using serialize = serialize_t;
+	using serialize = deserialize_t;
+};
+
+for ex. serializer, if typename custom_serial exists, use this instead of default
+for ex. sql_serializer, if typename customm_sql_serial exists... etc
+
+
+*/
+
 		template<typename stream_getter = get_from_stream, typename X = int> struct deserialize
 		{
 			X& x;
