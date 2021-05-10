@@ -51,7 +51,6 @@ get_directory_property(WINDOW_LIBS DIRECTORY ${WINDOWS_DIR} DEFINITION WINDOWSES
 # create executable
 add_executable( antybiurokrata main.cpp )
 target_link_libraries(antybiurokrata PRIVATE Qt5::Widgets PUBLIC ${WINDOW_LIBS} )
-# target_link_libraries(antybiurokrata PRIVATE types bgpolsl_adapter orcid_adapter scopus_adapter orm )
 
 # doxygen
 option(DOXYGEN "determines to generate docs or not" ON)

@@ -30,7 +30,7 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 <!-- 	- [Web Of Science](https://developer.clarivate.com/apis/wos) // => failed: cannot access API -->
 🞎 add more tests
 
-🞎 design GUI
+🞎 implement multithreading
 
 🞎 design CLI
 
@@ -74,6 +74,7 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 
 - [Scopus](https://dev.elsevier.com/)
 
+🗹 design GUI
 
 
 ## Setup
@@ -121,7 +122,7 @@ sudo mkdir /opt/rang
 sudo chown $USER:$USER /opt/rang
 pushd /opt/rang
 git clone https://github.com/agauniyal/rang.git .
-push include
+pushd include
 sudo ln -s $PWD /usr/include/rang
 popd && popd
 ```

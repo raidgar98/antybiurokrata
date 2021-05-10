@@ -37,7 +37,16 @@ namespace core
 
 	/** @brief unifies string view type for utf-8 */
 	using u16str_v = std::u16string_view;
+}	 // namespace core
 
+// literals
+core::u16str operator"" _u16(const char* str, const size_t);
+core::u16str operator"" _u16(const char16_t* str, const size_t s);
+core::str operator"" _u8(const char16_t* str, const size_t);
+core::str operator"" _u8(const char* c_str, const size_t s);
+
+namespace core
+{
 	/** @brief locale string for polish localization */
 	constexpr str_v polish_locale{"pl_PL.UTF-8"};
 
@@ -56,13 +65,9 @@ namespace core
 
 	struct u16str_serial;
 	struct u16str_deserial;
-	struct u16str_pretty_serial;
 
 	/** @brief handy type for wide type */
-	template<auto X> using u16ser = patterns::serial::ser<X, u16str, u16str_serial, u16str_deserial, u16str_pretty_serial>;
-
-	/** @brief handy type for wide view type. view is read-only, so it's impossible to deserialize*/
-	template<auto X> using u16vser = u16ser<X>;
+	// template<auto X> using u16ser = patterns::serial::ser<X, u16str, u16str_serial, u16str_deserial, u16str_pretty_serial>;
 
 	/**
 	 * @brief returns the conversion engine object
@@ -83,96 +88,59 @@ namespace core
 		return std::wstring_convert<deletable_codecvt, u16char_t>{"Error", u"Error"};
 	}
 
-	struct u16str_serial
-	{
-		template<typename stream_type> u16str_serial(stream_type& os, const u16str_v& view)
-		{
-			using patterns::serial::delimiter;
-			os << view.size() << delimiter;
-			for(const auto c: view) os << static_cast<int>(c) << delimiter;
-		}
-	};
-
-	struct u16str_deserial
-	{
-		template<typename stream_type> u16str_deserial(stream_type& is, u16str& out)
-		{
-			using patterns::serial::delimiter;
-			size_t size;
-			is >> size;
-			if(size == 0) return;
-			else
-				out.reserve(size);
-			for(size_t i = 0; i < size; ++i)
-			{
-				int c;
-				is >> c;
-				out += static_cast<u16char_t>(c);
-			}
-		}
-	};
-
-	struct u16str_pretty_serial
-	{
-		template<typename stream_type> u16str_pretty_serial(stream_type& os, const u16str_v& view)
-		{
-			using patterns::serial::delimiter;
-			os << get_conversion_engine().to_bytes(view.data());
-		}
-	};
-
 	/**
 	 * @brief contains basic defninitions and tools for throwing exceptions
 	 */
 	namespace exceptions
 	{
 		/**
-		 * @brief verifies is type can be represented with string
-		 * 
-		 * @tparam T type to check
-		 */
-		template<typename T> concept stringizable = requires { std::is_convertible_v<T, str>; };
-
-		/**
 		 * @brief basic exception, as recommended it's derived freom std::exception
 		 * 
 		 * @tparam T provides logger for all child exception
+		 * @tparam MsgType message type, ex: core::str, core::u16str
 		 */
-		template<typename T> struct exception_base : public std::exception, Log<exception_base<T>>
+		template<typename T, typename MsgType> struct exception_base : /* public std::exception,*/ Log<exception_base<T, MsgType>>
 		{
-			using Log<exception_base<T>>::get_logger;
+			using Log<exception_base<T, MsgType>>::get_logger;
 
 			/** stores message */
-			const str ___what;
+			const MsgType _what;
 
-			template<typename MsgType> explicit exception_base(MsgType msg) : ___what{msg} {}
+			template<typename Any> requires std::is_convertible_v<Any, MsgType> explicit exception_base(const Any& msg) : _what{msg}
+			{
+			}
 
-			virtual const char* what() const noexcept override { return this->___what.c_str(); }
+			// virtual const char* what() const noexcept override { return this->___what.c_str(); }
+			const MsgType& what() const noexcept { return this->_what; }
+
 			// virtual const str& what() const noexcept { return this->___what; }
-			virtual str_v what_v() const noexcept { return this->___what; }
+			// virtual str_v what_v() const noexcept { return this->___what; }
 		};
 
 		/**
 		 * @brief simplest exception
 		 */
-		struct exception : public exception_base<exception>
+		template<typename MsgType> struct exception : public exception_base<exception<MsgType>, MsgType>
 		{
 		};
 
 		/**
 		 * @brief default exception, that is raised on failed check
 		 */
-		struct assert_exception : public exception_base<assert_exception>
+		template<typename MsgType> struct assert_exception : public exception_base<assert_exception<MsgType>, MsgType>
 		{
-			using exception_base<assert_exception>::exception_base;
+			using exception_base<assert_exception<MsgType>, MsgType>::exception_base;
 		};
 
 		/**
 		 * @brief same as exception, but additionally prints reason to stdout, usefull, if extended log is required
 		 */
-		struct tee_exception : public exception_base<tee_exception>
+		template<typename MsgType> struct tee_exception : public exception_base<tee_exception<MsgType>, MsgType>
 		{
-			template<stringizable U> explicit tee_exception(const U& msg) : exception_base{msg} { get_logger().error(what()); }
+			template<typename U> explicit tee_exception(const U& msg) : exception_base<tee_exception<MsgType>, MsgType>{msg}
+			{
+				this->get_logger().error(this->what());
+			}
 		};
 
 		/**
@@ -180,17 +148,21 @@ namespace core
 		 * 
 		 * @tparam T type to check
 		 */
-		template<typename T> concept supported_exception = requires { std::is_base_of_v<std::exception, T>; };
+		template<template<typename Msg> typename T> concept supported_exception = requires
+		{
+			std::is_base_of_v<std::exception, T<core::str>>;
+		};
 
 		/**
 		 * @brief alternative to asertion
 		 * 
 		 * @tparam _ExceptionType exception to throw if check failed
 		 */
-		template<supported_exception _ExceptionType = exception, bool __log_pass = false>
-		struct require : Log<require<_ExceptionType>>
+		template<template<typename Msg> typename _ExceptionType = exception, bool __log_pass = false>
+		requires supported_exception<_ExceptionType> struct require : Log<require<_ExceptionType, __log_pass>>
 		{
-			using Log<require<_ExceptionType>>::get_logger;
+			using Log<require<_ExceptionType, __log_pass>>::get_logger;
+
 			/**
 			 * @brief Construct a new require object, which is also checker
 			 * 
@@ -211,7 +183,7 @@ namespace core
 				{
 					get_logger().error() << "Failed on check: " << msg << logger::endl;
 					get_logger().print_stacktrace();
-					throw _ExceptionType(msg, std::forward<ExceptionArgs>(argv)...);
+					throw _ExceptionType<MsgType>(msg, std::forward<ExceptionArgs>(argv)...);
 				}
 			}
 		};
@@ -223,13 +195,14 @@ namespace core
 	 * 
 	 * @tparam Ex_t exception to throw, by default assert_exception
 	 */
-	template<typename Ex_t = typename exceptions::assert_exception> using cassert = typename exceptions::require<Ex_t>;
+	template<template<typename MsgT> typename Ex_t = exceptions::assert_exception>
+	using cassert = typename exceptions::require<Ex_t>;
 
 	/** [ d(efault) asssert ] */
 	using dassert = cassert<>;
 
 	/** [ v(erbouse) d(efault) asssert ] */
-	using vdassert = exceptions::require<typename exceptions::assert_exception, true>;
+	using vdassert = exceptions::require<exceptions::assert_exception, true>;
 
 	/** @brief this namespace contains string utilities */
 	namespace string_utils
@@ -341,7 +314,7 @@ namespace core
 				/** @brief defines how to move between words */
 				virtual void move() override
 				{
-					dassert{this->pos < this->view.size(), "it's end"};
+					dassert{this->pos < this->view.size(), "it's end"_u8};
 					this->pos = this->next_pos;
 					get_next_pos();
 				}
@@ -393,7 +366,7 @@ namespace core
 				/** @brief defines how to move between words */
 				virtual void move() override
 				{
-					dassert{this->next_pos != 0, "cannot decrement from beginning"};
+					dassert{this->next_pos != 0, "cannot decrement from beginning"_u8};
 					set_prev_pos();
 				}
 
@@ -417,6 +390,3 @@ namespace core
 
 template<> typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str_v& v);
 template<> typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str& v);
-
-core::u16str operator"" _u16(const char* str, const size_t);
-core::str operator"" _u8(const char16_t* str, const size_t);
