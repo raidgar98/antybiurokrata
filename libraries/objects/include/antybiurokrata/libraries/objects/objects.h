@@ -27,7 +27,7 @@ namespace core
 				constexpr static size_t words_in_orcid_num{4ul};
 				array_ser<&detail_orcid_t::_, uint16_t, words_in_orcid_num> identifier;
 
-				using custom_serialize = array_serial<uint16_t, words_in_orcid_num>;
+				using custom_serialize	 = array_serial<uint16_t, words_in_orcid_num>;
 				using custom_deserialize = array_deserial<uint16_t, words_in_orcid_num>;
 
 				/** @brief default constructor */
@@ -110,11 +110,11 @@ namespace core
 				u16str raw;
 
 				using ser_data_t = decltype(data);
-				using inner_t = typename ser_data_t::value_type;
+				using inner_t	  = typename ser_data_t::value_type;
 				inner_t* operator->() { return &(data()); }
 				const inner_t* operator->() const { return &(data()); }
 
-				using custom_serialize = u16str_serial;
+				using custom_serialize	 = u16str_serial;
 				using custom_deserialize = u16str_deserial;
 
 				/** @brief default constructor */
@@ -182,7 +182,7 @@ namespace core
 					return s1.data() < s2.data();
 				}
 			};
-			using string_holder_t = cser<&detail_string_holder_t::data>;
+			using string_holder_t			= cser<&detail_string_holder_t::data>;
 			template<auto X> using u16ser = dser<X, string_holder_t>;
 
 			/** @brief object representation and holder of polish name */
@@ -301,11 +301,11 @@ namespace core
 				map_ser<&serial_helper_t::_, id_type, string_holder_t> data;
 
 				using ser_data_t = decltype(data);
-				using inner_t = typename ser_data_t::value_type;
+				using inner_t	  = typename ser_data_t::value_type;
 				inner_t* operator->() { return &(data()); }
 				const inner_t* operator->() const { return &(data()); }
 
-				using custom_serialize = map_serial<id_type, string_holder_t>;
+				using custom_serialize	 = map_serial<id_type, string_holder_t>;
 				using custom_deserialize = map_deserial<id_type, string_holder_t>;
 			};
 			using ids_storage_t = cser<&detail_ids_storage_t::data>;
@@ -335,11 +335,11 @@ namespace core
 				svec_ser<&serial_helper_t::_, publication_t> data{};
 
 				using ser_data_t = decltype(data);
-				using inner_t = typename ser_data_t::value_type;
+				using inner_t	  = typename ser_data_t::value_type;
 				inner_t* operator->() { return &(data()); }
 				const inner_t* operator->() const { return &(data()); }
 
-				using custom_serialize = shared_vector_serial<publication_t>;
+				using custom_serialize	 = shared_vector_serial<publication_t>;
 				using custom_deserialize = shared_vector_deserial<publication_t>;
 			};
 			using publications_storage_t = cser<&detail_publications_storage_t::data>;
@@ -354,7 +354,8 @@ namespace core
 
 				friend inline bool operator==(const detail_person_t& p1, const detail_person_t& p2)
 				{
-					if(p1.orcid()() == p2.orcid()()) [[likely]] return true;
+					if(p1.orcid()() == p2.orcid()()) [[likely]]
+						return true;
 					else
 						return (p1.name()() == p2.name()()) && (p1.surname()() == p2.surname()());
 				}

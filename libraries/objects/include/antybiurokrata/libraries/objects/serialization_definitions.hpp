@@ -260,8 +260,7 @@ namespace core
 			 * @tparam T type in array
 			 * @tparam N array size
 			 */
-			template<auto X, typename T, size_t N>
-			using array_ser = ser<X, std::array<T, N>>;
+			template<auto X, typename T, size_t N> using array_ser = ser<X, std::array<T, N>>;
 
 			/**
 			 * @brief alias for serializing shared vector
@@ -269,8 +268,7 @@ namespace core
 			 * @tparam X reference to previous member
 			 * @tparam T type in shared vector
 			 */
-			template<auto X, typename T>
-			using svec_ser = ser<X, std::vector< std::shared_ptr<T> > >;
+			template<auto X, typename T> using svec_ser = ser<X, std::vector<std::shared_ptr<T>>>;
 
 			/**
 			 * @brief alias for serializing shared vector
@@ -278,8 +276,7 @@ namespace core
 			 * @tparam X reference to previous member
 			 * @tparam T type in shared vector
 			 */
-			template<auto X, typename Key, typename Value>
-			using map_ser = ser<X, std::map<Key, Value>>;
+			template<auto X, typename Key, typename Value> using map_ser = ser<X, std::map<Key, Value>>;
 
 		}	 // namespace serial_definitions
 	}		 // namespace objects

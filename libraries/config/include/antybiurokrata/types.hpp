@@ -37,7 +37,7 @@ namespace core
 
 	/** @brief unifies string view type for utf-8 */
 	using u16str_v = std::u16string_view;
-}
+}	 // namespace core
 
 // literals
 core::u16str operator"" _u16(const char* str, const size_t);
@@ -99,17 +99,16 @@ namespace core
 		 * @tparam T provides logger for all child exception
 		 * @tparam MsgType message type, ex: core::str, core::u16str
 		 */
-		template<typename T, typename MsgType> 
-		struct exception_base : /* public std::exception,*/ Log<exception_base<T, MsgType>>
+		template<typename T, typename MsgType> struct exception_base : /* public std::exception,*/ Log<exception_base<T, MsgType>>
 		{
 			using Log<exception_base<T, MsgType>>::get_logger;
 
 			/** stores message */
 			const MsgType _what;
 
-			template<typename Any>
-			requires std::is_convertible_v<Any, MsgType>
-			explicit exception_base(const Any& msg) : _what{msg} {}
+			template<typename Any> requires std::is_convertible_v<Any, MsgType> explicit exception_base(const Any& msg) : _what{msg}
+			{
+			}
 
 			// virtual const char* what() const noexcept override { return this->___what.c_str(); }
 			const MsgType& what() const noexcept { return this->_what; }
@@ -121,14 +120,14 @@ namespace core
 		/**
 		 * @brief simplest exception
 		 */
-		template<typename MsgType>
-		struct exception : public exception_base<exception<MsgType>, MsgType> {};
+		template<typename MsgType> struct exception : public exception_base<exception<MsgType>, MsgType>
+		{
+		};
 
 		/**
 		 * @brief default exception, that is raised on failed check
 		 */
-		template<typename MsgType>
-		struct assert_exception : public exception_base<assert_exception<MsgType>, MsgType>
+		template<typename MsgType> struct assert_exception : public exception_base<assert_exception<MsgType>, MsgType>
 		{
 			using exception_base<assert_exception<MsgType>, MsgType>::exception_base;
 		};
@@ -136,10 +135,12 @@ namespace core
 		/**
 		 * @brief same as exception, but additionally prints reason to stdout, usefull, if extended log is required
 		 */
-		template<typename MsgType>
-		struct tee_exception : public exception_base<tee_exception<MsgType>, MsgType>
+		template<typename MsgType> struct tee_exception : public exception_base<tee_exception<MsgType>, MsgType>
 		{
-			template<typename U> explicit tee_exception(const U& msg) : exception_base<tee_exception<MsgType>, MsgType>{msg} { this->get_logger().error(this->what()); }
+			template<typename U> explicit tee_exception(const U& msg) : exception_base<tee_exception<MsgType>, MsgType>{msg}
+			{
+				this->get_logger().error(this->what());
+			}
 		};
 
 		/**
@@ -147,7 +148,10 @@ namespace core
 		 * 
 		 * @tparam T type to check
 		 */
-		template<template<typename Msg> typename T> concept supported_exception = requires { std::is_base_of_v<std::exception, T<core::str>>; };
+		template<template<typename Msg> typename T> concept supported_exception = requires
+		{
+			std::is_base_of_v<std::exception, T<core::str>>;
+		};
 
 		/**
 		 * @brief alternative to asertion
@@ -155,8 +159,7 @@ namespace core
 		 * @tparam _ExceptionType exception to throw if check failed
 		 */
 		template<template<typename Msg> typename _ExceptionType = exception, bool __log_pass = false>
-		requires supported_exception<_ExceptionType>
-		struct require : Log<require<_ExceptionType, __log_pass>>
+		requires supported_exception<_ExceptionType> struct require : Log<require<_ExceptionType, __log_pass>>
 		{
 			using Log<require<_ExceptionType, __log_pass>>::get_logger;
 

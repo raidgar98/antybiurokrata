@@ -72,7 +72,8 @@ namespace core
 			person_t& pp{*person};
 
 			if(ptr->orcid.empty() || !objects::detail::detail_orcid_t::is_valid_orcid_string(ptr->orcid)) return false;
-			else pp().orcid() = objects::detail::detail_orcid_t::from_string(ptr->orcid);
+			else
+				pp().orcid() = objects::detail::detail_orcid_t::from_string(ptr->orcid);
 
 			if(!pp().orcid()().is_valid_orcid()) return false;
 
@@ -118,10 +119,8 @@ namespace core
 					else
 						pub().title(ptr->org_title);
 
-					if(
-						pub().polish_title()()->empty() && 
-						demangler<>::is_polish(ptr->whole_title)
-					) pub().polish_title(ptr->whole_title);
+					if(pub().polish_title()()->empty() && demangler<>::is_polish(ptr->whole_title))
+						pub().polish_title(ptr->whole_title);
 					else if(pub().title()()->empty())
 						pub().title(ptr->whole_title);
 				}
