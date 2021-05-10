@@ -176,7 +176,7 @@ namespace core
 				const objects::id_type id = objects::detail::id_type_stringinizer::get(pair.first);
 
 				if(id == objects::id_type::NOT_FOUND) continue;
-				auto exists_pair			  = pub().ids()()->find(id);
+				auto exists_pair = pub().ids()()->find(id);
 				if(exists_pair == pub().ids()()->end()) pub().ids()().data()[id] = pair.second;
 			}
 

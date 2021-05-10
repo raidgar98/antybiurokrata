@@ -33,6 +33,18 @@ namespace core
 			std::set<wrap_person_t, less_person_comparator> persons;
 			publication_storage_t current_publication{nullptr};
 
+			static void shallow_copy_persons(const persons_extractor_t& input, persons_extractor_t& output)
+			{
+				for(const auto& person: input.persons)
+				{
+					wrap_person_t np{new person_t{}};
+					(*np)().name	 = (*person)().name;
+					(*np)().surname = (*person)().surname;
+					(*np)().orcid	 = (*person)().orcid;
+					output.persons.emplace(np);
+				}
+			}
+
 			virtual bool visit(bgpolsl_repr_t* ptr) override;
 			virtual bool visit(json_repr_t* ptr) override;
 		};

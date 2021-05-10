@@ -220,11 +220,10 @@ namespace core
 				 */
 				void validate() const { dassert{validate(data()), data() + ": is not valid name"_u16}; }
 			};
-			template<typename validator= default_validator, typename unifier = default_unifier>
+			template<typename validator = default_validator, typename unifier = default_unifier>
 			using string_holder_custom_t	= cser<&detail_string_holder_t<validator, unifier>::data>;
 			using string_holder_t			= string_holder_custom_t<>;
-			template<auto X> 
-			using u16ser = dser<X, string_holder_t>;
+			template<auto X> using u16ser = dser<X, string_holder_t>;
 
 			struct polish_validator
 			{
