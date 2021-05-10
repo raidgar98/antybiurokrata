@@ -25,8 +25,10 @@ namespace core
 			struct detail_orcid_t : public serial_helper_t
 			{
 				constexpr static size_t words_in_orcid_num{4ul};
-
 				array_ser<&detail_orcid_t::_, uint16_t, words_in_orcid_num> identifier;
+
+				using custom_serialize	 = array_serial<uint16_t, words_in_orcid_num>;
+				using custom_deserialize = array_deserial<uint16_t, words_in_orcid_num>;
 
 				/** @brief default constructor */
 				explicit detail_orcid_t() = default;
@@ -116,8 +118,16 @@ namespace core
 			template<typename validator = default_validator, typename unifier = default_unifier>
 			struct detail_string_holder_t : public serial_helper_t
 			{
-				u16ser<&detail_string_holder_t::_> data;
+				dser<&detail_string_holder_t::_, u16str> data;
 				u16str raw;
+
+				using ser_data_t = decltype(data);
+				using inner_t	  = typename ser_data_t::value_type;
+				inner_t* operator->() { return &(data()); }
+				const inner_t* operator->() const { return &(data()); }
+
+				using custom_serialize	 = u16str_serial;
+				using custom_deserialize = u16str_deserial;
 
 				/** @brief default constructor */
 				detail_string_holder_t()										= default;
@@ -210,9 +220,11 @@ namespace core
 				 */
 				void validate() const { dassert{validate(data()), data() + ": is not valid name"_u16}; }
 			};
-			template<typename validator = default_validator, typename unifier = default_unifier>
-			using string_holder_custom_t = cser<&detail_string_holder_t<validator, unifier>::data>;
-			using string_holder_t		  = string_holder_custom_t<>;
+			template<typename validator= default_validator, typename unifier = default_unifier>
+			using string_holder_custom_t	= cser<&detail_string_holder_t<validator, unifier>::data>;
+			using string_holder_t			= string_holder_custom_t<>;
+			template<auto X> 
+			using u16ser = dser<X, string_holder_t>;
 
 			struct polish_validator
 			{
@@ -271,16 +283,27 @@ namespace core
 				}
 			};
 
+			struct detail_ids_storage_t : public serial_helper_t
+			{
+				map_ser<&serial_helper_t::_, id_type, string_holder_t> data;
+
+				using ser_data_t = decltype(data);
+				using inner_t	  = typename ser_data_t::value_type;
+				inner_t* operator->() { return &(data()); }
+				const inner_t* operator->() const { return &(data()); }
+
+				using custom_serialize	 = map_serial<id_type, string_holder_t>;
+				using custom_deserialize = map_deserial<id_type, string_holder_t>;
+			};
+			using ids_storage_t = cser<&detail_ids_storage_t::data>;
+
 			/** @brief object representation of publication */
 			struct detail_publication_t : public serial_helper_t
 			{
-				dser<&detail_publication_t::_, string_holder_t> title;
-				dser<&detail_publication_t::title, string_holder_t> polish_title;
+				u16ser<&detail_publication_t::_> title;
+				u16ser<&detail_publication_t::title> polish_title;
 				dser<&detail_publication_t::polish_title, uint16_t> year;
-
-				using ids_map_t
-					 = map_ser<&detail_publication_t::year, id_type, string_holder_t, enum_printer<id_type, id_type_stringinizer>>;
-				ids_map_t ids;
+				dser<&detail_publication_t::year, ids_storage_t> ids;
 
 				bool compare(const detail_publication_t&) const;
 				inline friend bool operator==(const detail_publication_t& me, const detail_publication_t& other)
@@ -294,30 +317,45 @@ namespace core
 			};
 			using publication_t = cser<&detail_publication_t::ids>;
 
+			struct detail_publications_storage_t : public serial_helper_t
+			{
+				svec_ser<&serial_helper_t::_, publication_t> data{};
+
+				using ser_data_t = decltype(data);
+				using inner_t	  = typename ser_data_t::value_type;
+				inner_t* operator->() { return &(data()); }
+				const inner_t* operator->() const { return &(data()); }
+
+				using custom_serialize	 = shared_vector_serial<publication_t>;
+				using custom_deserialize = shared_vector_deserial<publication_t>;
+			};
+			using publications_storage_t = cser<&detail_publications_storage_t::data>;
+
 			/** @brief object representation of person (author) */
 			struct detail_person_t : public serial_helper_t
 			{
 				dser<&detail_person_t::_, polish_name_t> name;
 				dser<&detail_person_t::name, polish_name_t> surname;
 				dser<&detail_person_t::surname, orcid_t> orcid;
-				mutable svec_ser<&detail_person_t::orcid, publication_t> publictions{};
+				mutable dser<&detail_person_t::orcid, publications_storage_t> publictions{};
 
 				friend inline bool operator==(const detail_person_t& p1, const detail_person_t& p2)
 				{
-					if(p1.orcid() == p2.orcid()) return true;
+					if(p1.orcid()() == p2.orcid()()) [[likely]]
+						return true;
 					else
-						return (p1.name() == p2.name()) && (p1.surname() == p2.surname());
+						return (p1.name()() == p2.name()()) && (p1.surname()() == p2.surname()());
 				}
 				friend inline bool operator!=(const detail_person_t& p1, const detail_person_t& p2) { return !(p1 == p2); }
 
 				friend inline bool operator<(const detail_person_t& p1, const detail_person_t& p2)
 				{
 					if(p1.orcid()().is_valid_orcid() && p2.orcid()().is_valid_orcid()) [[likely]]
-						return p1.orcid() < p2.orcid();
-					else if(p1.surname() != p2.surname())
-						return p1.surname() < p2.surname();
+						return p1.orcid()() < p2.orcid()();
+					else if(p1.surname()() != p2.surname()())
+						return p1.surname()() < p2.surname()();
 					else
-						return p1.name() < p2.name();
+						return p1.name()() < p2.name()();
 				}
 			};
 			using person_t = cser<&detail_person_t::publictions>;

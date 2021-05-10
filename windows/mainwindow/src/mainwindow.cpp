@@ -81,11 +81,12 @@ void MainWindow::on_search_button_clicked()
 			 std::initializer_list<std::jthread>{std::jthread{[&] {
 																 // orcid
 																 core::orm::persons_extractor_t orcid_person_visitor{bgperson_visitor};
-																 for(auto& x: orcid_person_visitor.persons) x().publictions().clear();
+																 for(auto& x: orcid_person_visitor.persons) (*x)().publictions()()->clear();
 																 core::orm::publications_extractor_t ovisitor{orcid_person_visitor};
 																 core::network::orcid_adapter oadapter{};
-																 for(const auto& person: orcid_person_visitor.persons)
+																 for(const auto& _person: orcid_person_visitor.persons)
 																 {
+																	 auto& person = *_person;
 																	 auto ret = oadapter.get_person(person().orcid()());
 																	 emit set_progress((i++ / size) * 100.0);
 																	 for(auto& x: *ret) x.accept(&ovisitor);
@@ -94,11 +95,12 @@ void MainWindow::on_search_button_clicked()
 															 std::jthread{[&] {
 																 // scopus
 																 core::orm::persons_extractor_t scopus_person_visitor{bgperson_visitor};
-																 for(auto& x: scopus_person_visitor.persons) x().publictions().clear();
+																 for(auto& x: scopus_person_visitor.persons) (*x)().publictions()()->clear();
 																 core::orm::publications_extractor_t svisitor{scopus_person_visitor};
 																 core::network::scopus_adapter sadapter{};
-																 for(const auto& person: scopus_person_visitor.persons)
+																 for(const auto& _person: scopus_person_visitor.persons)
 																 {
+																	 auto& person = *_person;
 																	 auto ret = sadapter.get_person(person().orcid()());
 																	 emit set_progress((i++ / size) * 100.0);
 																	 for(auto& x: *ret) x.accept(&svisitor);
@@ -126,20 +128,21 @@ void MainWindow::collect_neighbours(QSharedPointer<core::orm::persons_extractor_
 	clear_ui();
 
 	size_t cmax	 = 0;
-	using coll_t = std::remove_reference<decltype((*bgperson_visitor->persons.begin())().publictions())>::type;
+	using coll_t = std::remove_reference<decltype((**bgperson_visitor->persons.begin())().publictions()().data())>::type;
 	coll_t* coll = nullptr;
 
-	for(const auto& p: bgperson_visitor->persons)
+	for(const auto& _p: bgperson_visitor->persons)
 	{
+		auto& p = *_p;
 		core::u16str label{p().name()().raw + u" " + p().surname()().raw + u"[ "};
 		label += static_cast<core::u16str>(p().orcid()()) + u" ]";
 
 		ui->neighbours->addItem(QString::fromStdU16String(label));
-		const size_t mmm = p().publictions().size();
+		const size_t mmm = p().publictions()()->size();
 		if(mmm > cmax)
 		{
 			cmax = mmm;
-			coll = &(p().publictions());
+			coll = &(p().publictions()().data());
 		}
 	}
 

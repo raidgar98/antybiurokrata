@@ -20,8 +20,17 @@ namespace core
 			 public patterns::visits<json_repr_t>
 		{
 			using Log<persons_extractor_t>::log;
+			using wrap_person_t = std::shared_ptr<person_t>;
+			struct less_person_comparator
+			{
+				bool operator()(const wrap_person_t& p1, const wrap_person_t& p2) const
+				{
+					dassert{p1 && p2, "both pointers cannot be nullptr"_u8};
+					return *p1 < *p2;
+				}
+			};
 
-			std::set<person_t> persons;
+			std::set<wrap_person_t, less_person_comparator> persons;
 			publication_storage_t current_publication{nullptr};
 
 			virtual bool visit(bgpolsl_repr_t* ptr) override;

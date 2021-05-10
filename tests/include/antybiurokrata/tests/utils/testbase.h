@@ -28,7 +28,7 @@ namespace core
 			Any b{};
 			ss << a;
 			ss >> b;
-			return a == b;
+			return a() == b();
 		}
 	}	 // namespace testbase
 }	 // namespace core
