@@ -375,7 +375,8 @@ namespace patterns
 		 * @tparam class_member_t type of last member
 		 * @tparam class_t::*value reference to last member in class
 		*/
-		template<typename class_t, typename class_member_t, class_member_t class_t::*last> struct cser<last>
+		template<typename class_t, typename class_member_t, class_member_t class_t::*last> 
+		struct cser<last>
 		{
 			using value_t					 = class_t;
 			using is_serializable_class = std::true_type;
@@ -492,7 +493,8 @@ namespace patterns
 									logger> || std::is_same_v<stream_t, logger_piper> || std::derived_from<stream_t, std::ostream>;
 
 
-		template<typename stream_t, typename stream_action> struct stream_handler
+		template<typename stream_t, typename stream_action> 
+		struct stream_handler
 		{
 			stream_t& os;
 			bool last_result{true};
@@ -505,7 +507,8 @@ namespace patterns
 			}
 		};
 
-		template<typename stream_t, typename stream_action> struct stream_handler_with_last_result
+		template<typename stream_t, typename stream_action> 
+		struct stream_handler_with_last_result
 		{
 			stream_t& os;
 			bool last_result{true};
@@ -518,62 +521,97 @@ namespace patterns
 			}
 		};
 
-		template<typename stream_putter = put_to_stream, typename X = int> struct serialize
+		/**
+		 * @brief verifies whether class declared custom serialization methode
+		 * 
+		 * @tparam cser_t type to check
+		 */
+		template<typename cser_t> concept custom_serialization_req = requires{ typename cser_t::custom_serialize; };
+
+		/**
+		 * @brief serialization marker in stream
+		 * 
+		 * @tparam X cser - Ex.: cser<&my_ser::member_2>;
+		 */
+		template<typename X = int> 
+		struct serialize
 		{
 			const X& x;
-			serialize(const X& i_x) : x{i_x} {}
 
-			template<typename stream_t, auto XXX>
-			inline friend stream_t& operator<<(stream_t& os, const serialize<stream_putter, serial::cser<XXX>>& obj)
-			{
-				stream_handler<stream_t, stream_putter> vs{os};
-				obj.x.accept(&vs);
-				return os;
-			}
+			/**
+			 * @brief returns the stream handler for give stream
+			 * 
+			 * @tparam stream_t any stream type
+			 * @param os stream reference
+			 * @return constexpr auto handler
+			 */
+			template<typename stream_t>
+			constexpr static auto get_stream_handler(stream_t& os) { return stream_handler< stream_t, put_to_stream >{os}; }
+
+			/** @brief override of above for types with custom serializator */
+			template<typename stream_t>
+			requires custom_serialization_req<typename X::value_t>
+			constexpr static auto get_stream_handler(stream_t& os) { return stream_handler<stream_t, typename X::value_t::custom_serialize>{os}; }
 		};
 
-		template<typename stream_t, auto T> inline stream_t& operator<<(stream_t& os, const serial::cser<T>& obj)
+		template<typename stream_t, auto X>
+		inline stream_t& operator<<(stream_t& os, const serialize<serial::cser<X>>& obj)
 		{
-			return os << serialize /* < put_to_stream, serial::cser<T> > */ {obj};
+			auto vs = serialize<serial::cser<X>> :: get_stream_handler( os );
+			obj.x.accept(&vs);
+			return os;
 		}
 
-/*
+		template<typename stream_t, auto X> 
+		inline stream_t& operator<<(stream_t& os, const serial::cser<X>& obj)
+		{
+			serialize xx{obj};
+			return operator<< < stream_t, X >( os, xx );
+		}
 
-struct my_ser{ ser<&::_, int> a; };
-struct my_ser_c{ using custom_serial = my_serializer; ser<&::_, int> a; };
+		/**
+		 * @brief verifies whether class declared custom deserialization methode
+		 * 
+		 * @tparam cser_t type to check
+		 */
+		template<typename cser_t> concept custom_deserialization_req = requires{ typename cser_t::custom_deserialize; };
 
-TODO: implement custom serializers like:
-
-template<typename serialize_t = default_serializer, typename deserialize_t = default_deserializer>
-struct serialization_set
-{
-	using serialize = serialize_t;
-	using serialize = deserialize_t;
-};
-
-for ex. serializer, if typename custom_serial exists, use this instead of default
-for ex. sql_serializer, if typename customm_sql_serial exists... etc
-
-
-*/
-
-		template<typename stream_getter = get_from_stream, typename X = int> struct deserialize
+		/**
+		 * @brief deserialization marker in stream
+		 * 
+		 * @tparam X cser - Ex.: cser<&my_ser::member_2>;
+		 */
+		template<typename X = int> 
+		struct deserialize
 		{
 			X& x;
-			deserialize(X& i_x) : x{i_x} {}
 
-			template<typename stream_t, auto XXX>
-			inline friend stream_t& operator>>(stream_t& os, deserialize<stream_getter, serial::cser<XXX>>&& obj)
-			{
-				stream_handler<stream_t, stream_getter> vs{os};
-				obj.x.accept(&vs);
-				return os;
-			}
+			/**
+			 * @brief returns the stream handler for give stream
+			 * 
+			 * @tparam stream_t any stream type
+			 * @param os stream reference
+			 * @return constexpr auto handler
+			 */
+			template<typename stream_t>
+			constexpr static auto get_stream_handler(stream_t& os) { return stream_handler< stream_t, put_to_stream >{os}; }
+
+			/** @brief override of above for types with custom serializator */
+			template<typename stream_t>
+			requires custom_deserialization_req<typename X::value_t>
+			constexpr static auto get_stream_handler(stream_t& os) { return stream_handler<stream_t, typename X::value_t::custom_deserialize>{os}; }
 		};
 
-		template<typename stream_t, auto T> inline stream_t& operator>>(stream_t& os, serial::cser<T>& obj)
+		template<typename stream_t, auto X> inline stream_t& operator>>(stream_t& os, serial::cser<X>& obj)
 		{
-			return os >> deserialize /* < get_from_stream, serial::cser<T> > */ {obj};
+			return os >> deserialize{obj};
+		}
+
+		template<typename stream_t, auto X> 
+		inline stream_t& operator>>(stream_t& os, const serial::cser<X>& obj)
+		{
+			deserialize xx{obj};
+			return operator>> < stream_t, X >( os, xx );
 		}
 
 		/**
@@ -595,11 +633,22 @@ for ex. sql_serializer, if typename customm_sql_serial exists... etc
 				const size_t shevron			 = type_name.find('<');
 				const size_t double_dot_pos = type_name.find_last_of(':', shevron);
 				os << type_name.substr(double_dot_pos + 1) << "[";
+
 				stream_handler_with_last_result<stream_t, stream_prettier> vs{os};
 				obj.x.accept(&vs);
+
 				os << " ]";
 				return os;
 			}
 		};
 	};	  // namespace serial
 };		  // namespace patterns
+
+
+// template<class stream_t, class stream_putter, class XXX> 
+// inline stream_t &patterns::serial::operator<<(stream_t &os, const patterns::serial::serialize<stream_putter, XXX> &obj)
+// {
+// 	stream_handler<stream_t, stream_putter> vs{os};
+// 	obj.x.accept(&vs);
+// 	return os;
+// }
