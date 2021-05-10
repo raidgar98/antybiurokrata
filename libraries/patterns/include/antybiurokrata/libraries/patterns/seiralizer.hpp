@@ -364,8 +364,6 @@ namespace patterns
 			}
 		};
 
-		template<typename T> concept arrow_operator_req = requires(T x) { {x.operator->()}; };
-
 		/**
 		 * @brief ser implementation by specialization
 		 * 
