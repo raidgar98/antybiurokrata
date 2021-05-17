@@ -1,11 +1,15 @@
 #pragma once
 
-#include <antybiurokrata/types.hpp>
+#include <antybiurokrata/libraries/objects/objects.h>
 
 namespace core
 {
-	class summary : public Log<summary>
+	namespace reports
 	{
-		using Log<summary>::log;
-	};
+		class summary : public Log<summary>
+		{
+			using Log<summary>::log;
+		};
+
+	}	 // namespace reports
 }	 // namespace core
