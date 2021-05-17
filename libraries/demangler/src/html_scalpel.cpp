@@ -12,7 +12,8 @@ namespace core
 		// implicit conversion to wchar_t is required, because std does not suppert u16 for isaplha and isdigit :(
 		const auto is_correct = [](const wchar_t c) -> bool {
 			constexpr std::wstring_view accepted{L"-_ \t&#+/.,"};
-			return std::isalpha(c, plPL()) || std::isdigit(c, plPL()) || accepted.find(c) != std::wstring_view::npos;
+			return std::isalpha(c, plPL()) || std::isdigit(c, plPL())
+					 || accepted.find(c) != std::wstring_view::npos;
 		};
 
 		// initialize required varriables

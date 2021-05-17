@@ -9,7 +9,8 @@ namespace core
 {
 	namespace network
 	{
-		drogon::HttpRequestPtr scopus_adapter::prepare_request(const str& orcid, const size_t offset, const size_t count)
+		drogon::HttpRequestPtr scopus_adapter::prepare_request(const str& orcid, const size_t offset,
+																				 const size_t count)
 		{
 			const str forcid = "orcid(" + orcid + ")";
 
@@ -20,7 +21,8 @@ namespace core
 			req->setParameter("apiKey", "a4a3a6dec671a73561980f44712ef25b");
 			req->setParameter("view", "standard");
 			req->setParameter("httpAccept", "application/json");
-			if(count > 25ul) log.warn() << "max count is 25 for this endpoint expect errors!" << logger::endl;
+			if(count > 25ul)
+				log.warn() << "max count is 25 for this endpoint expect errors!" << logger::endl;
 			req->setParameter("count", std::to_string(count));
 			req->setParameter("start", std::to_string(offset));
 
@@ -36,14 +38,17 @@ namespace core
 			size_t count{25};
 			size_t total_results{0};
 
-			using jvalue			  = Json::Value;
-			const auto empty_array = jvalue{Json::ValueType::arrayValue};	 // alternative return if array is expected
-			const auto null_value
-				 = jvalue{Json::ValueType::nullValue};	  // alternative result if anything other that array is expected
+			using jvalue = Json::Value;
+			const auto empty_array
+				 = jvalue{Json::ValueType::arrayValue};	// alternative return if array is expected
+			const auto null_value = jvalue{
+				 Json::ValueType::
+					  nullValue};	 // alternative result if anything other that array is expected
 			auto cengine				= get_conversion_engine();
 			const u16str wide_orcid = cengine.from_bytes(orcid);
 
-			const auto safe_get = [&null_value, &cengine](const str& field, const jvalue& json) -> u16str {
+			const auto safe_get
+				 = [&null_value, &cengine](const str& field, const jvalue& json) -> u16str {
 				const jvalue& element = json.get(field, null_value);
 				if(element == null_value) return u16str();
 				else
@@ -52,9 +57,11 @@ namespace core
 
 			do {
 				if(total_results) offset += count;
-				const connection_handler::raw_response_t response = send_request(prepare_request(orcid, offset, count));
+				const connection_handler::raw_response_t response
+					 = send_request(prepare_request(orcid, offset, count));
 				dassert{response.first == drogon::ReqResult::Ok, "expected 200 response code"_u8};
-				log.info() << "successfully got response from `https://api.elsevier.com`" << logger::endl;
+				log.info() << "successfully got response from `https://api.elsevier.com`"
+							  << logger::endl;
 
 				std::shared_ptr<jvalue> json{nullptr};
 				try
@@ -63,7 +70,8 @@ namespace core
 				}
 				catch(const std::exception& e)
 				{
-					log.error() << "cought `std::exception` while gathering json. what(): " << logger::endl
+					log.error() << "cought `std::exception` while gathering json. what(): "
+									<< logger::endl
 									<< e.what() << logger::endl;
 					throw;
 				}
@@ -76,7 +84,8 @@ namespace core
 				dassert(json.get() != nullptr, "empty result or invalid json"_u8);
 
 				const jvalue& search_results = json->get("search-results", null_value);
-				dassert(search_results != null_value, "invalid input, no `search-results` field in json"_u8);
+				dassert(search_results != null_value,
+						  "invalid input, no `search-results` field in json"_u8);
 
 				const jvalue& jtr = search_results.get("opensearch:totalResults", null_value);
 				dassert(jtr != null_value, "expected totalResults to be a numeric string"_u8);
@@ -88,7 +97,8 @@ namespace core
 				}
 				else
 				{
-					log.info() << "got: " << std::min(offset + count, total_results) << " / " << total_results << logger::endl;
+					log.info() << "got: " << std::min(offset + count, total_results) << " / "
+								  << total_results << logger::endl;
 				}
 
 				const jvalue& entry = search_results.get("entry", empty_array);

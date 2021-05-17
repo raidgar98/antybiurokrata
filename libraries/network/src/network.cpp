@@ -23,7 +23,8 @@ namespace core
 			core::vdassert{this->connection.get() != nullptr, "connection shouldn't be nullptr!"_u8};
 		}
 
-		connection_handler::raw_response_t connection_handler::send_request(connection_handler::raw_request_t request)
+		connection_handler::raw_response_t connection_handler::send_request(
+			 connection_handler::raw_request_t request)
 		{
 			dassert{this->connection.get() != nullptr, "connection not set!"_u8};
 			return this->connection->sendRequest(request);

@@ -123,7 +123,10 @@ namespace patterns
 			 * @param os reference to stream
 			 * @param any const reference to stream
 			 */
-			template<typename stream_t, typename Any> put_to_stream(stream_t& os, const Any& any) { os << any << delimiter; }
+			template<typename stream_t, typename Any> put_to_stream(stream_t& os, const Any& any)
+			{
+				os << any << delimiter;
+			}
 		};
 
 		/** @brief This class is used by ser to serialize class members in pretty way */
@@ -139,7 +142,8 @@ namespace patterns
 			 * @param os reference to stream
 			 * @param any const reference to stream
 			 */
-			template<typename stream_t, typename Any> pretty_put_to_stream(stream_t& os, const Any& any, const bool put_delimiter)
+			template<typename stream_t, typename Any>
+			pretty_put_to_stream(stream_t& os, const Any& any, const bool put_delimiter)
 			{
 				os << (put_delimiter ? formated_delimiter : no_delimiter) << any;
 			}
@@ -189,7 +193,9 @@ namespace patterns
 		 * @tparam class_t::*value reference to member in class
 		 * @tparam T type of current member
 		*/
-		template<typename class_t, typename class_member_t, class_member_t class_t::*value, typename T> struct ser<value, T>
+		template<typename class_t, typename class_member_t, class_member_t class_t::*value,
+					typename T>
+		struct ser<value, T>
 		{
 			using is_serializable_class = std::true_type;
 			using value_type				 = T;
@@ -229,7 +235,8 @@ namespace patterns
 			 * @return ser& self
 			 */
 			template<template<auto X, typename... U> typename serial, auto X, typename... U>
-			requires serializable_class_type_req<serial, X, U...> ser(const serial<X, U...>& v) : val{v.val}
+			requires serializable_class_type_req<serial, X, U...> ser(const serial<X, U...>& v) :
+				 val{v.val}
 			{
 			}
 
@@ -241,7 +248,8 @@ namespace patterns
 			 * @return ser& self
 			 */
 			template<template<auto X, typename... U> typename serial, auto X, typename... U>
-			requires serializable_class_type_req<serial, X, U...> ser(serial<X, U...>&& v) : val{std::move(v.val)}
+			requires serializable_class_type_req<serial, X, U...> ser(serial<X, U...>&& v) :
+				 val{std::move(v.val)}
 			{
 			}
 
@@ -279,7 +287,8 @@ namespace patterns
 			 * @return ser& self
 			 */
 			template<template<auto X, typename... U> typename serial, auto X, typename... U>
-			requires serializable_class_type_req<serial, X, U...> ser& operator=(const serial<X, U...>& v)
+			requires serializable_class_type_req<serial, X, U...> ser& operator=(
+				 const serial<X, U...>& v)
 			{
 				val = v.val;
 				return *this;
@@ -328,7 +337,8 @@ namespace patterns
 			 * @param u data to set
 			 */
 			template<template<auto X, typename... U> typename serial, auto X, typename... U>
-			requires serializable_class_type_req<serial, X, U...> void operator()(const serial<X, U...>& u)
+			requires serializable_class_type_req<serial, X, U...> void operator()(
+				 const serial<X, U...>& u)
 			{
 				val = u.val;
 			}
@@ -371,7 +381,8 @@ namespace patterns
 		 * @tparam class_member_t type of last member
 		 * @tparam class_t::*value reference to last member in class
 		*/
-		template<typename class_t, typename class_member_t, class_member_t class_t::*last> struct cser<last>
+		template<typename class_t, typename class_member_t, class_member_t class_t::*last>
+		struct cser<last>
 		{
 			using value_t					 = class_t;
 			using is_serializable_class = std::true_type;
@@ -403,7 +414,11 @@ namespace patterns
 			 * @tparam U any types
 			 * @param u any values of types U
 			*/
-			template<typename... U> requires(std::is_constructible_v<class_t, U...>) cser(U&&... u) : val{std::forward<U>(u)...} {}
+			template<typename... U>
+			requires(std::is_constructible_v<class_t, U...>) cser(U&&... u) :
+				 val{std::forward<U>(u)...}
+			{
+			}
 
 			template<typename U> cser& operator=(U&& u)
 			{
@@ -412,12 +427,14 @@ namespace patterns
 			}
 
 			template<template<auto X, typename... U> typename serial, auto X, typename... U>
-			requires serializable_class_type_req<serial, X, U...> cser(serial<X, U...>&& u) : val{std::move(u.val)}
+			requires serializable_class_type_req<serial, X, U...> cser(serial<X, U...>&& u) :
+				 val{std::move(u.val)}
 			{
 			}
 
 			template<template<auto X, typename... U> typename serial, auto X, typename... U>
-			requires serializable_class_type_req<serial, X, U...> cser(const serial<X, U...>& u) : val{u.val}
+			requires serializable_class_type_req<serial, X, U...> cser(const serial<X, U...>& u) :
+				 val{u.val}
 			{
 			}
 
@@ -429,7 +446,8 @@ namespace patterns
 			}
 
 			template<template<auto X, typename... U> typename serial, auto X, typename... U>
-			requires serializable_class_type_req<serial, X, U...> cser operator=(const serial<X, U...>& u)
+			requires serializable_class_type_req<serial, X, U...> cser
+			operator=(const serial<X, U...>& u)
 			{
 				val = u.val;
 				return *this;
@@ -488,8 +506,9 @@ namespace patterns
 
 		template<typename stream_t>
 		concept allowed_stream_req
-			 = std::is_same_v<stream_t,
-									logger> || std::is_same_v<stream_t, logger_piper> || std::derived_from<stream_t, std::ostream>;
+			 = std::is_same_v<
+					 stream_t,
+					 logger> || std::is_same_v<stream_t, logger_piper> || std::derived_from<stream_t, std::ostream>;
 
 
 		template<typename stream_t, typename stream_action> struct stream_handler
@@ -523,7 +542,10 @@ namespace patterns
 		 * 
 		 * @tparam cser_t type to check
 		 */
-		template<typename cser_t> concept custom_serialization_req = requires { typename cser_t::custom_serialize; };
+		template<typename cser_t> concept custom_serialization_req = requires
+		{
+			typename cser_t::custom_serialize;
+		};
 
 		/**
 		 * @brief serialization marker in stream
@@ -548,20 +570,23 @@ namespace patterns
 
 			/** @brief override of above for types with custom serializator */
 			template<typename stream_t>
-			requires custom_serialization_req<typename X::value_t> constexpr static auto get_stream_handler(stream_t& os)
+			requires custom_serialization_req<typename X::value_t> constexpr static auto
+			get_stream_handler(stream_t& os)
 			{
 				return stream_handler<stream_t, typename X::value_t::custom_serialize>{os};
 			}
 		};
 
-		template<typename stream_t, auto X> inline stream_t& operator<<(stream_t& os, const serialize<serial::cser<X>>& obj)
+		template<typename stream_t, auto X>
+		inline stream_t& operator<<(stream_t& os, const serialize<serial::cser<X>>& obj)
 		{
 			auto vs = serialize<serial::cser<X>>::get_stream_handler(os);
 			obj.x.accept(&vs);
 			return os;
 		}
 
-		template<typename stream_t, auto X> inline stream_t& operator<<(stream_t& os, const serial::cser<X>& obj)
+		template<typename stream_t, auto X>
+		inline stream_t& operator<<(stream_t& os, const serial::cser<X>& obj)
 		{
 			serialize xx{obj};
 			return operator<<<stream_t, X>(os, xx);
@@ -572,7 +597,10 @@ namespace patterns
 		 * 
 		 * @tparam cser_t type to check
 		 */
-		template<typename cser_t> concept custom_deserialization_req = requires { typename cser_t::custom_deserialize; };
+		template<typename cser_t> concept custom_deserialization_req = requires
+		{
+			typename cser_t::custom_deserialize;
+		};
 
 		/**
 		 * @brief deserialization marker in stream
@@ -597,20 +625,23 @@ namespace patterns
 
 			/** @brief override of above for types with custom serializator */
 			template<typename stream_t>
-			requires custom_deserialization_req<typename X::value_t> constexpr static auto get_stream_handler(stream_t& os)
+			requires custom_deserialization_req<typename X::value_t> constexpr static auto
+			get_stream_handler(stream_t& os)
 			{
 				return stream_handler<stream_t, typename X::value_t::custom_deserialize>{os};
 			}
 		};
 
-		template<typename stream_t, auto X> inline stream_t& operator>>(stream_t& os, deserialize<serial::cser<X>>& obj)
+		template<typename stream_t, auto X>
+		inline stream_t& operator>>(stream_t& os, deserialize<serial::cser<X>>& obj)
 		{
 			auto vs = deserialize<serial::cser<X>>::get_stream_handler(os);
 			obj.x.accept(&vs);
 			return os;
 		}
 
-		template<typename stream_t, auto X> inline stream_t& operator>>(stream_t& os, serial::cser<X>& obj)
+		template<typename stream_t, auto X>
+		inline stream_t& operator>>(stream_t& os, serial::cser<X>& obj)
 		{
 			deserialize xx{obj};
 			return operator>><stream_t, X>(os, xx);
@@ -622,16 +653,18 @@ namespace patterns
 		 * @tparam T any cser
 		*/
 
-		template<typename stream_prettier = pretty_put_to_stream, typename X = int> struct pretty_print
+		template<typename stream_prettier = pretty_put_to_stream, typename X = int>
+		struct pretty_print
 		{
 			const X& x;
 			pretty_print(const X& i_x) : x{i_x} {}
 
-
 			template<typename stream_t, auto XXX>
-			inline friend stream_t& operator<<(stream_t& os, const pretty_print<stream_prettier, serial::cser<XXX>>& obj)
+			inline friend stream_t& operator<<(
+				 stream_t& os, const pretty_print<stream_prettier, serial::cser<XXX>>& obj)
 			{
-				const std::string type_name = boost::typeindex::type_id<typename serial::cser<XXX>::value_t>().pretty_name();
+				const std::string type_name
+					 = boost::typeindex::type_id<typename serial::cser<XXX>::value_t>().pretty_name();
 				const size_t shevron			 = type_name.find('<');
 				const size_t double_dot_pos = type_name.find_last_of(':', shevron);
 				os << type_name.substr(double_dot_pos + 1) << "[";
@@ -646,11 +679,3 @@ namespace patterns
 	};	  // namespace serial
 };		  // namespace patterns
 
-
-// template<class stream_t, class stream_putter, class XXX>
-// inline stream_t &patterns::serial::operator<<(stream_t &os, const patterns::serial::serialize<stream_putter, XXX> &obj)
-// {
-// 	stream_handler<stream_t, stream_putter> vs{os};
-// 	obj.x.accept(&vs);
-// 	return os;
-// }

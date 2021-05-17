@@ -11,7 +11,8 @@ namespace core
 	{
 		drogon::HttpRequestPtr orcid_adapter::prepare_request(const str& orcid)
 		{
-			const std::map<std::string, std::string> headers{{std::pair<std::string, std::string>{"Accept", "application/json"}}};
+			const std::map<std::string, std::string> headers{
+				 {std::pair<std::string, std::string>{"Accept", "application/json"}}};
 
 			drogon::HttpRequestPtr req = drogon::HttpRequest::newHttpRequest();
 			req->setMethod(drogon::Get);
@@ -30,10 +31,12 @@ namespace core
 			dassert{response.first == drogon::ReqResult::Ok, "expected 200 response code"_u8};
 			log.info() << "successfully got response from `https://pub.orcid.org`" << logger::endl;
 
-			using jvalue			  = Json::Value;
-			const auto empty_array = jvalue{Json::ValueType::arrayValue};	 // alternative return if array is expected
-			const auto null_value
-				 = jvalue{Json::ValueType::nullValue};	  // alternative result if anything other that array is expected
+			using jvalue = Json::Value;
+			const auto empty_array
+				 = jvalue{Json::ValueType::arrayValue};	// alternative return if array is expected
+			const auto null_value = jvalue{
+				 Json::ValueType::
+					  nullValue};	 // alternative result if anything other that array is expected
 
 			std::shared_ptr<jvalue> json{nullptr};
 			try
@@ -42,7 +45,8 @@ namespace core
 			}
 			catch(const std::exception& e)
 			{
-				log.error() << "cought `std::exception` while gathering json. what(): " << logger::endl << e.what() << logger::endl;
+				log.error() << "cought `std::exception` while gathering json. what(): " << logger::endl
+								<< e.what() << logger::endl;
 			}
 			catch(...)
 			{
@@ -98,12 +102,14 @@ namespace core
 						if(!double_title) /* i hope */ [[likely]]
 						{
 							const jvalue& title = pretitle.get("translated-title", null_value);
-							if(title != null_value) obj.translated_title = cengine.from_bytes(title["value"].asCString());
+							if(title != null_value)
+								obj.translated_title = cengine.from_bytes(title["value"].asCString());
 							log << "added translated tittle" << logger::endl;
 						}
 						else
 						{
-							const string_utils::split_words<u16str_v> splitter{obj.title, double_tittle_separator};
+							const string_utils::split_words<u16str_v> splitter{obj.title,
+																								double_tittle_separator};
 							auto it = splitter.begin();
 							u16str first_title{*it};
 							it++;
@@ -143,7 +149,8 @@ namespace core
 						else
 							to_emplace.second = cengine.from_bytes(eid_normalized["value"].asCString());
 
-						log << "added id: ( " << to_emplace.first << " ; " << to_emplace.second << " )" << logger::endl;
+						log << "added id: ( " << to_emplace.first << " ; " << to_emplace.second << " )"
+							 << logger::endl;
 						obj.ids.emplace_back(std::move(to_emplace));
 					}
 				}

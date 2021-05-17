@@ -63,7 +63,8 @@ namespace patterns
 		 * @tparam return_t what is returned after invokation
 		 * @tparam arg_t variadic type of arguments
 		 */
-		template<typename return_t = void, typename... arg_t> struct _functor : public visitable<_functor<return_t, arg_t...>>
+		template<typename return_t = void, typename... arg_t>
+		struct _functor : public visitable<_functor<return_t, arg_t...>>
 		{
 			/**
 			 * @brief This should be overrided in definition
@@ -78,7 +79,8 @@ namespace patterns
 		 * @tparam return_t type of returned value
 		 * @tparam arg_t optional arguments
 		 */
-		template<typename _Prev, typename return_t = void, typename... arg_t> struct functor : public _functor<return_t, arg_t...>
+		template<typename _Prev, typename return_t = void, typename... arg_t>
+		struct functor : public _functor<return_t, arg_t...>
 		{
 			using Prev = _Prev;
 		};
@@ -106,7 +108,8 @@ namespace patterns
 		 */
 		template<typename _Last>
 		using functor_collection_t
-			 = RCNS::recursive_concentrator<std::variant, do_nothing_functor_begin, do_nothing_functor_end<_Last>>::result;
+			 = RCNS::recursive_concentrator<std::variant, do_nothing_functor_begin,
+													  do_nothing_functor_end<_Last>>::result;
 
 	}	 // namespace functors
 
@@ -119,7 +122,8 @@ namespace patterns
 			using Supp		  = c_func<int>;
 			using variadic_t = std::variant<Supp, c_func<float>>;
 
-			template<template<typename _Supp> typename T> concept is_valid_processor_t = requires(T<Supp> var)
+			template<template<typename _Supp> typename T>
+			concept is_valid_processor_t = requires(T<Supp> var)
 			{
 				{
 					var.invoke(variadic_t{[](int) {}})

@@ -33,7 +33,8 @@ namespace core
 			std::set<wrap_person_t, less_person_comparator> persons;
 			publication_storage_t current_publication{nullptr};
 
-			static void shallow_copy_persons(const persons_extractor_t& input, persons_extractor_t& output)
+			static void shallow_copy_persons(const persons_extractor_t& input,
+														persons_extractor_t& output)
 			{
 				for(const auto& person: input.persons)
 				{

@@ -23,7 +23,9 @@ logger::logger(const std::string& preambula) : preambula{preambula} {}
 std::string logger::get_preambula(const uint16_t depth) const
 {
 	std::stringstream ss;
-	ss << "[" << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << "]";	// time
+	ss << "["
+		<< boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time())
+		<< "]";												 // time
 	ss << "[" << std::string(preambula) << "]";	 // logger name
 
 	const std::vector<boost::stacktrace::frame> frames{boost::stacktrace::stacktrace().as_vector()};
@@ -32,21 +34,22 @@ std::string logger::get_preambula(const uint16_t depth) const
 	{
 		const boost::stacktrace::frame& fr{frames[depth]};
 		if(fr.source_line() > 0)
-			ss << "[" << boost::filesystem::path(fr.source_file()).filename().c_str() << ":" << fr.source_line() << "]"
+			ss << "[" << boost::filesystem::path(fr.source_file()).filename().c_str() << ":"
+				<< fr.source_line() << "]"
 				<< "[" << fr.name() << "]";
 	}
 	return ss.str() + " ";
 }
 
-void logger::print_out(const std::string& msg, const format_function& _format) const
+void logger::print_out(const std::string& msg, const format_function& _format)
 {
-	if(not logger::dump_file.empty())
+	if(!logger::dump_file.empty())
 	{
 		std::ofstream file{logger::dump_file, std::ios::app};
 		if(file.good())
 		{
 			_format(file);
-			file << msg << std::endl;
+			file << msg;
 			logger::reset_color_scheme(file);
 			file << '\0';
 		}
@@ -54,7 +57,7 @@ void logger::print_out(const std::string& msg, const format_function& _format) c
 	}
 
 	_format(std::cout);
-	std::cout << msg << std::endl;
+	std::cout << msg;
 	logger::reset_color_scheme(std::cout);
 	std::cout << "";
 }
@@ -70,49 +73,56 @@ void logger::print_stacktrace() const
 void logger::dbg(const std::string& msg) const
 {
 	if(!log_on_current_log_level<logger::log_level::DEBUG>()) return;
-	print_out(get_preambula(2) + msg, debug_format);
+	print_out(get_preambula(2) + msg + logger::endl, debug_format);
 }
 
 void logger::info(const std::string& msg) const
 {
 	if(!log_on_current_log_level<logger::log_level::INFO>()) return;
-	print_out(get_preambula(2) + msg, info_format);
+	print_out(get_preambula(2) + msg + logger::endl, info_format);
 }
 
 void logger::warn(const std::string& msg) const
 {
 	if(!log_on_current_log_level<logger::log_level::WARN>()) return;
-	print_out(get_preambula(2) + msg, warn_format);
+	print_out(get_preambula(2) + msg + logger::endl, warn_format);
 }
 
 void logger::error(const std::string& msg) const
 {
 	if(!log_on_current_log_level<logger::log_level::ERROR>()) return;
-	print_out(get_preambula(2) + msg, erro_format);
+	print_out(get_preambula(2) + msg + logger::endl, erro_format);
 }
 
-logger::logger_piper logger::dbg() const { return _config_logger_piper(log_on_current_log_level<logger::log_level::DEBUG>()); }
+logger::logger_piper logger::dbg() const
+{
+	return _config_logger_piper(log_on_current_log_level<logger::log_level::DEBUG>());
+}
 
 logger::logger_piper logger::info() const
 {
-	return _config_logger_piper(log_on_current_log_level<logger::log_level::INFO>(), logger::info_format);
+	return _config_logger_piper(log_on_current_log_level<logger::log_level::INFO>(),
+										 logger::info_format);
 }
 
 logger::logger_piper logger::warn() const
 {
-	return _config_logger_piper(log_on_current_log_level<logger::log_level::WARN>(), logger::warn_format);
+	return _config_logger_piper(log_on_current_log_level<logger::log_level::WARN>(),
+										 logger::warn_format);
 }
 
 logger::logger_piper logger::error() const
 {
-	return _config_logger_piper(log_on_current_log_level<logger::log_level::ERROR>(), logger::erro_format);
+	return _config_logger_piper(log_on_current_log_level<logger::log_level::ERROR>(),
+										 logger::erro_format);
 }
 
 bool logger::set_dump_file(const std::string& file)
 {
 	logger logg = logger::_get_logger<logger>("logger");
 
-	if(boost::filesystem::exists(boost::filesystem::path(file))) logg.warn("File " + file + " will be deleted.");
+	if(boost::filesystem::exists(boost::filesystem::path(file)))
+		logg.warn("File " + file + " will be deleted.");
 
 	std::ofstream f(file);
 	if(f.good()) f << "";

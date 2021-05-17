@@ -43,7 +43,8 @@ namespace core
 
 			struct u16str_pretty_serial
 			{
-				template<typename stream_type> u16str_pretty_serial(stream_type& os, const u16str_v& view)
+				template<typename stream_type>
+				u16str_pretty_serial(stream_type& os, const u16str_v& view)
 				{
 					using patterns::serial::delimiter;
 					os << get_conversion_engine().to_bytes(view.data());
@@ -58,7 +59,8 @@ namespace core
 			 */
 			template<typename T, size_t N> struct array_serial
 			{
-				template<typename stream_type> array_serial(stream_type& os, const std::array<T, N>& data)
+				template<typename stream_type>
+				array_serial(stream_type& os, const std::array<T, N>& data)
 				{
 					using patterns::serial::delimiter;
 					for(size_t i = 0; i < N; i++) os << data[i] << delimiter;
@@ -92,7 +94,8 @@ namespace core
 			 */
 			template<typename T, size_t N> struct array_pretty_serial
 			{
-				template<typename stream_type> array_pretty_serial(stream_type& os, const std::array<T, N>& data)
+				template<typename stream_type>
+				array_pretty_serial(stream_type& os, const std::array<T, N>& data)
 				{
 					using patterns::serial::delimiter;
 					os << '[';
@@ -104,9 +107,11 @@ namespace core
 			/** @brief specialisation of pretty print designed for orcid */
 			template<> struct array_pretty_serial<uint16_t, 4>
 			{
-				template<typename stream_type> array_pretty_serial(stream_type& os, const std::array<uint16_t, 4>& data)
+				template<typename stream_type>
+				array_pretty_serial(stream_type& os, const std::array<uint16_t, 4>& data)
 				{
-					for(size_t i = 0; i < 4; i++) os << "-"[i == 0] << std::setw(4) << std::setfill('0') << std::to_string(data[i]);
+					for(size_t i = 0; i < 4; i++)
+						os << "-"[i == 0] << std::setw(4) << std::setfill('0') << std::to_string(data[i]);
 				}
 			};
 
@@ -117,7 +122,8 @@ namespace core
 			 */
 			template<typename T> struct shared_vector_serial
 			{
-				template<typename stream_type> shared_vector_serial(stream_type& os, const std::vector<std::shared_ptr<T>>& data)
+				template<typename stream_type>
+				shared_vector_serial(stream_type& os, const std::vector<std::shared_ptr<T>>& data)
 				{
 					using patterns::serial::delimiter;
 					os << data.size() << delimiter;
@@ -137,7 +143,8 @@ namespace core
 			 */
 			template<typename T> struct shared_vector_deserial
 			{
-				template<typename stream_type> shared_vector_deserial(stream_type& is, std::vector<std::shared_ptr<T>>& data)
+				template<typename stream_type>
+				shared_vector_deserial(stream_type& is, std::vector<std::shared_ptr<T>>& data)
 				{
 					using patterns::serial::delimiter;
 					size_t size;
@@ -169,11 +176,13 @@ namespace core
 			template<typename T> struct shared_vector_pretty_serial
 			{
 				template<typename stream_type>
-				shared_vector_pretty_serial(stream_type& os, const std::vector<std::shared_ptr<T>>& data)
+				shared_vector_pretty_serial(stream_type& os,
+													 const std::vector<std::shared_ptr<T>>& data)
 				{
 					os << '[';
 					for(size_t i = 0; i < data.size(); ++i)
-						if(data[i].get()) os << ","[i == 0] << ' ' << patterns::serial::pretty_print{*(data[i])};
+						if(data[i].get())
+							os << ","[i == 0] << ' ' << patterns::serial::pretty_print{*(data[i])};
 					os << " ]";
 				}
 			};
@@ -185,11 +194,13 @@ namespace core
 			 */
 			template<typename Key, typename Value> struct map_serial
 			{
-				template<typename stream_type> map_serial(stream_type& os, const std::map<Key, Value>& data)
+				template<typename stream_type>
+				map_serial(stream_type& os, const std::map<Key, Value>& data)
 				{
 					using patterns::serial::delimiter;
 					os << data.size() << delimiter;
-					for(const auto& pair: data) os << pair.first << delimiter << pair.second << delimiter;
+					for(const auto& pair: data)
+						os << pair.first << delimiter << pair.second << delimiter;
 				}
 			};
 
@@ -225,9 +236,11 @@ namespace core
 			 * 
 			 * @tparam T any type
 			 */
-			template<typename Key, typename Value, typename key_pretty_printer> struct map_pretty_serial
+			template<typename Key, typename Value, typename key_pretty_printer>
+			struct map_pretty_serial
 			{
-				template<typename stream_type> map_pretty_serial(stream_type& os, const std::map<Key, Value>& data)
+				template<typename stream_type>
+				map_pretty_serial(stream_type& os, const std::map<Key, Value>& data)
 				{
 					os << '[';
 					for(auto it = data.begin(); it != data.end(); it++)
@@ -247,7 +260,8 @@ namespace core
 			{
 				const enum_t& x;
 
-				template<typename stream_t> inline friend stream_t& operator<<(stream_t& os, const enum_printer& obj)
+				template<typename stream_t>
+				inline friend stream_t& operator<<(stream_t& os, const enum_printer& obj)
 				{
 					return os << cast_type(obj.x);
 				}
@@ -276,7 +290,8 @@ namespace core
 			 * @tparam X reference to previous member
 			 * @tparam T type in shared vector
 			 */
-			template<auto X, typename Key, typename Value> using map_ser = ser<X, std::map<Key, Value>>;
+			template<auto X, typename Key, typename Value>
+			using map_ser = ser<X, std::map<Key, Value>>;
 
 		}	 // namespace serial_definitions
 	}		 // namespace objects

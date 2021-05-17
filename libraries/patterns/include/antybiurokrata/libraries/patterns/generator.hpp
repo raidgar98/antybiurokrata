@@ -64,7 +64,10 @@ namespace patterns
 		generator(const generator&) = delete;
 		generator& operator=(const generator&) = delete;
 
-		generator(generator&& other) noexcept : m_coroutine{other.m_coroutine} { other.m_coroutine = {}; }
+		generator(generator&& other) noexcept : m_coroutine{other.m_coroutine}
+		{
+			other.m_coroutine = {};
+		}
 		generator& operator=(generator&& other) noexcept
 		{
 			if(this != &other)
@@ -82,7 +85,10 @@ namespace patterns
 		 public:
 			void operator++() { m_coroutine.resume(); }
 			const T& operator*() const { return *m_coroutine.promise().current_value; }
-			bool operator==(std::default_sentinel_t) const { return !m_coroutine || m_coroutine.done(); }
+			bool operator==(std::default_sentinel_t) const
+			{
+				return !m_coroutine || m_coroutine.done();
+			}
 
 			explicit gen_iterator(const Handle coroutine) : m_coroutine{coroutine} {}
 

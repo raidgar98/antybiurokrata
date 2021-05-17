@@ -79,8 +79,10 @@ namespace core
 					log << "orcid: " << orcid << logger::endl;
 					log << "year: " << year << logger::endl;
 					log << "title: " << title << logger::endl;
-					if(!translated_title.empty()) log << "translated_title: " << translated_title << logger::endl;
-					for(const auto& x: ids) log << "id: ( " << x.first << " ; " << x.second << " )" << logger::endl;
+					if(!translated_title.empty())
+						log << "translated_title: " << translated_title << logger::endl;
+					for(const auto& x: ids)
+						log << "id: ( " << x.first << " ; " << x.second << " )" << logger::endl;
 				}
 			};
 
@@ -92,7 +94,7 @@ namespace core
 		class connection_handler : public Log<connection_handler>
 		{
 			std::shared_ptr<typename detail::loop_holder_t> loop; /** @brief pointer to loop */
-			drogon::HttpClientPtr connection;							/** @brief drogon HTTP connection interface */
+			drogon::HttpClientPtr connection; /** @brief drogon HTTP connection interface */
 
 		 protected:
 			using Log<connection_handler>::log;

@@ -91,7 +91,8 @@ namespace patterns
 		 * @param p priority (by default: MEDIUM)
 		 * @return connection boost connection object
 		 */
-		connection register_slot(const slot_function_t& function, const Priority& p = Priority::MEDIUM)
+		connection register_slot(const slot_function_t& function,
+										 const Priority& p = Priority::MEDIUM)
 		{
 			return __signal.connect(function, static_cast<uint8_t>(p));
 			// return __signal.connect(p, function);

@@ -11,7 +11,8 @@
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
-	qRegisterMetaType<QSharedPointer<core::orm::persons_extractor_t>>("QSharedPointer<core::orm::persons_extractor_t>");
+	qRegisterMetaType<QSharedPointer<core::orm::persons_extractor_t>>(
+		 "QSharedPointer<core::orm::persons_extractor_t>");
 	QObject::connect(this, &MainWindow::send_neighbours, this, &MainWindow::collect_neighbours);
 	QObject::connect(this, &MainWindow::send_progress, this, &MainWindow::set_progress);
 }
@@ -27,13 +28,25 @@ void MainWindow::normalize_text(const QString& arg1, QLineEdit& line)
 	line.setText(new_text);
 }
 
-void MainWindow::on_orcid_1_textChanged(const QString& arg1) { this->normalize_text(arg1, *ui->orcid_1); }
+void MainWindow::on_orcid_1_textChanged(const QString& arg1)
+{
+	this->normalize_text(arg1, *ui->orcid_1);
+}
 
-void MainWindow::on_orcid_2_textChanged(const QString& arg1) { this->normalize_text(arg1, *ui->orcid_2); }
+void MainWindow::on_orcid_2_textChanged(const QString& arg1)
+{
+	this->normalize_text(arg1, *ui->orcid_2);
+}
 
-void MainWindow::on_orcid_3_textChanged(const QString& arg1) { this->normalize_text(arg1, *ui->orcid_3); }
+void MainWindow::on_orcid_3_textChanged(const QString& arg1)
+{
+	this->normalize_text(arg1, *ui->orcid_3);
+}
 
-void MainWindow::on_orcid_4_textChanged(const QString& arg1) { this->normalize_text(arg1, *ui->orcid_4); }
+void MainWindow::on_orcid_4_textChanged(const QString& arg1)
+{
+	this->normalize_text(arg1, *ui->orcid_4);
+}
 
 void MainWindow::set_progress(const size_t p) { ui->progress->setValue(p); }
 
@@ -52,9 +65,10 @@ void MainWindow::on_search_button_clicked()
 
 	const std::string resolv_name		= ui->name->text().toUpper().toStdString();
 	const std::string resolv_surname = ui->surname->text().toUpper().toStdString();
-	const std::string resolv_orcid	= QString(format_orcid_num(*ui->orcid_1) + "-" + format_orcid_num(*ui->orcid_2) + "-"
-															 + format_orcid_num(*ui->orcid_3) + "-" + format_orcid_num(*ui->orcid_4))
-													 .toStdString();
+	const std::string resolv_orcid
+		 = QString(format_orcid_num(*ui->orcid_1) + "-" + format_orcid_num(*ui->orcid_2) + "-"
+					  + format_orcid_num(*ui->orcid_3) + "-" + format_orcid_num(*ui->orcid_4))
+				 .toStdString();
 
 	// log << "orcid: " << resolv_orcid << logger::endl;
 	// if((resolv_name.empty() || resolv_surname.empty()) && resolv_orcid.empty()) return;
@@ -64,7 +78,8 @@ void MainWindow::on_search_button_clicked()
 		 [&](const core::str name, const core::str surname) {
 			 // bgpolsl
 			 core::network::bgpolsl_adapter bgadapter{};
-			 QSharedPointer<core::orm::persons_extractor_t> sh_bgperson_visitor{new core::orm::persons_extractor_t{}};
+			 QSharedPointer<core::orm::persons_extractor_t> sh_bgperson_visitor{
+				  new core::orm::persons_extractor_t{}};
 			 auto& bgperson_visitor = *sh_bgperson_visitor;
 			 core::orm::publications_extractor_t bgvisitor{bgperson_visitor};
 			 auto res	 = bgadapter.get_person(name, surname);
@@ -82,7 +97,8 @@ void MainWindow::on_search_button_clicked()
 				  std::jthread{[&] {
 					  // orcid
 					  core::orm::persons_extractor_t orcid_person_visitor;
-					  core::orm::persons_extractor_t::shallow_copy_persons(bgperson_visitor, orcid_person_visitor);
+					  core::orm::persons_extractor_t::shallow_copy_persons(bgperson_visitor,
+																							 orcid_person_visitor);
 
 					  for(auto& x: orcid_person_visitor.persons) (*x)().publictions()()->clear();
 					  core::orm::publications_extractor_t ovisitor{orcid_person_visitor};
@@ -98,7 +114,8 @@ void MainWindow::on_search_button_clicked()
 				  std::jthread{[&] {
 					  // scopus
 					  core::orm::persons_extractor_t scopus_person_visitor;
-					  core::orm::persons_extractor_t::shallow_copy_persons(bgperson_visitor, scopus_person_visitor);
+					  core::orm::persons_extractor_t::shallow_copy_persons(bgperson_visitor,
+																							 scopus_person_visitor);
 
 					  for(auto& x: scopus_person_visitor.persons) (*x)().publictions()()->clear();
 					  core::orm::publications_extractor_t svisitor{scopus_person_visitor};
@@ -133,7 +150,8 @@ void MainWindow::collect_neighbours(QSharedPointer<core::orm::persons_extractor_
 	clear_ui();
 
 	size_t cmax	 = 0;
-	using coll_t = std::remove_reference<decltype((**bgperson_visitor->persons.begin())().publictions()().data())>::type;
+	using coll_t = std::remove_reference<decltype(
+		 (**bgperson_visitor->persons.begin())().publictions()().data())>::type;
 	coll_t* coll = nullptr;
 
 	for(const auto& _p: bgperson_visitor->persons)
@@ -154,8 +172,9 @@ void MainWindow::collect_neighbours(QSharedPointer<core::orm::persons_extractor_
 	if(coll)
 		for(const auto& x: *coll)
 		{
-			const QString year			  = QString::fromStdString(std::to_string((*x)().year()));
-			const core::u16str full_name = core::u16str(u"[ ") + year.toStdU16String() + u" ] " + (*x)().title()().raw;
+			const QString year = QString::fromStdString(std::to_string((*x)().year()));
+			const core::u16str full_name
+				 = core::u16str(u"[ ") + year.toStdU16String() + u" ] " + (*x)().title()().raw;
 			ui->publications->addItem(QString::fromStdU16String(full_name));
 		}
 

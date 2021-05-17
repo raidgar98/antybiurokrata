@@ -44,7 +44,8 @@ namespace core
 			 * @param count size_t amount of items to retreive (recommended and bydefault [= 25])
 			 * @return drogon::HttpRequestPtr 
 			 */
-			drogon::HttpRequestPtr prepare_request(const str& orcid, const size_t offset = 0ul, const size_t count = 25ul);
+			drogon::HttpRequestPtr prepare_request(const str& orcid, const size_t offset = 0ul,
+																const size_t count = 25ul);
 		};
 	}	 // namespace network
 }	 // namespace core

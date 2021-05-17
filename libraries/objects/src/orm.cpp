@@ -46,7 +46,8 @@ namespace core
 
 				if(!safely_move()) continue;
 
-				if(orcid_t::value_t::is_valid_orcid_string(v)) (*person)().orcid(orcid_t::value_t::from_string(v));
+				if(orcid_t::value_t::is_valid_orcid_string(v))
+					(*person)().orcid(orcid_t::value_t::from_string(v));
 				else
 				{
 					log.warn() << "failed validation on orcid: " << v << logger::endl;
@@ -55,8 +56,10 @@ namespace core
 
 				auto pair = this->persons.emplace(person);
 				if(pair.second)
-					log.info() << "successfully added new author: " << patterns::serial::pretty_print{**pair.first} << logger::endl;
-				if(current_publication) (**pair.first)().publictions()()->push_back(current_publication);
+					log.info() << "successfully added new author: "
+								  << patterns::serial::pretty_print{**pair.first} << logger::endl;
+				if(current_publication)
+					(**pair.first)().publictions()()->push_back(current_publication);
 			}
 
 			return true;
@@ -71,7 +74,9 @@ namespace core
 			std::shared_ptr<person_t> person{new person_t{}};
 			person_t& pp{*person};
 
-			if(ptr->orcid.empty() || !objects::detail::detail_orcid_t::is_valid_orcid_string(ptr->orcid)) return false;
+			if(ptr->orcid.empty()
+				|| !objects::detail::detail_orcid_t::is_valid_orcid_string(ptr->orcid))
+				return false;
 			else
 				pp().orcid() = objects::detail::detail_orcid_t::from_string(ptr->orcid);
 
@@ -163,7 +168,8 @@ namespace core
 			if(!ptr->translated_title.empty())
 			{
 				pub().polish_title(ptr->translated_title);
-				if(demangler<>::is_polish(pub().title()()) && !demangler<>::is_polish(pub().polish_title()().data()))
+				if(demangler<>::is_polish(pub().title()())
+					&& !demangler<>::is_polish(pub().polish_title()().data()))
 					std::swap(pub().title(), pub().polish_title());
 
 				demangler<>::sanitize(pub().polish_title()().data());
@@ -182,9 +188,9 @@ namespace core
 
 			if(pub().ids()()->empty()) log.warn() << "orcid input has no ids" << logger::endl;
 
-			auto it = std::find_if(publications.begin(), publications.end(), [&pub](const publication_storage_t& pp) {
-				return *pp == pub;
-			});
+			auto it = std::find_if(publications.begin(),
+										  publications.end(),
+										  [&pub](const publication_storage_t& pp) { return *pp == pub; });
 			if(it == publications.end())
 			{
 				publications.emplace_back(spub);

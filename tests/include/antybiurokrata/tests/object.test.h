@@ -68,10 +68,12 @@ namespace tests
 		log.info() << "entering `orcid_tests` suite" << logger::endl;
 		logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
-		const auto validation_success
-			 = [](const u16str_v& v) { ut::expect(ut::eq(true, orcid_t::value_t::is_valid_orcid_string(v))); };
-		const auto validation_fail
-			 = [](const u16str_v& v) { ut::expect(ut::eq(false, orcid_t::value_t::is_valid_orcid_string(v))); };
+		const auto validation_success = [](const u16str_v& v) {
+			ut::expect(ut::eq(true, orcid_t::value_t::is_valid_orcid_string(v)));
+		};
+		const auto validation_fail = [](const u16str_v& v) {
+			ut::expect(ut::eq(false, orcid_t::value_t::is_valid_orcid_string(v)));
+		};
 
 		"case_01"_test = [&] {
 			validation_success(correct_01);
@@ -89,10 +91,14 @@ namespace tests
 
 		"case_02"_test = [&] {
 			orcid_t orcid{correct_01};
-			ut::expect(ut::eq(static_cast<str>(orcid()), get_conversion_engine().to_bytes(correct_01.data())));
+			ut::expect(ut::eq(static_cast<str>(orcid()),
+									get_conversion_engine().to_bytes(correct_01.data())));
 		};
 
-		"case_03"_test = [&] { ut::expect(ut::throws<core::exceptions::assert_exception<str>>([] { orcid_t{invalid_01}; })); };
+		"case_03"_test = [&] {
+			ut::expect(
+				 ut::throws<core::exceptions::assert_exception<str>>([] { orcid_t{invalid_01}; }));
+		};
 	};
 
 	const ut::suite polish_name_tests = [] {
@@ -103,7 +109,8 @@ namespace tests
 
 		"case_01"_test = [] {
 			const auto validate_data = [&](const str_v& x) {
-				ut::expect(core::get_conversion_engine().from_bytes(testbase::to_upper(x)) == (u16str_v)polish_name_t{x}());
+				ut::expect(core::get_conversion_engine().from_bytes(testbase::to_upper(x))
+							  == (u16str_v)polish_name_t{x}());
 			};
 
 			validate_data(correct_pn_01);
@@ -117,7 +124,8 @@ namespace tests
 
 		"case_02"_test = [] {
 			const auto expect_assertion = [](const str_v& x) {
-				ut::expect(ut::throws<core::exceptions::assert_exception<u16str>>([&] { polish_name_t{x}; }));
+				ut::expect(
+					 ut::throws<core::exceptions::assert_exception<u16str>>([&] { polish_name_t{x}; }));
 			};
 
 			expect_assertion(invalid_pn_01);
@@ -144,7 +152,9 @@ namespace tests
 
 		"case_01"_test = [] {
 			ut::expect(testbase::check_serialization<person_t>());
-			ut::expect(testbase::check_serialization<person_t>(names::correct_pn_01, names::correct_pn_02, orcid::correct_01));
+			ut::expect(testbase::check_serialization<person_t>(names::correct_pn_01,
+																				names::correct_pn_02,
+																				orcid::correct_01));
 		};
 	};
 }	 // namespace tests

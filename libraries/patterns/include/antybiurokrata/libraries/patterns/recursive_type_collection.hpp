@@ -36,7 +36,8 @@ namespace patterns
 		{
 			template<typename T, typename... Args> struct concatenator;
 
-			template<recursive_concentrator_c FArg, typename... Args> struct concatenator<_Storage<FArg, Args...>>
+			template<recursive_concentrator_c FArg, typename... Args>
+			struct concatenator<_Storage<FArg, Args...>>
 			{
 				using type = typename concatenator<_Storage<typename FArg::Prev, FArg, Args...>>::type;
 			};

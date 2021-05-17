@@ -31,7 +31,7 @@ namespace core
 		{
 			ENG  = 0, /** @brief this will just replace polish 'ąśćźżółę' to 'asczzole' */
 			HTML = 1, /** @brief this will replace polish letters to html codes (sanitizing) */
-			URL  = 2	 /**  @brief this will replace polish letters to unicode in UTF-8 transformation */
+			URL  = 2 /**  @brief this will replace polish letters to unicode in UTF-8 transformation */
 		};
 
 		/** @brief type used in internal map in letter_converter as key */
@@ -44,7 +44,8 @@ namespace core
 			const u16str html;
 			const u16str url;
 
-			translation_value_t(const u16char_t c, const u16str& s, const u16str& u) : eng{c}, html{s}, url{u} {};
+			translation_value_t(const u16char_t c, const u16str& s, const u16str& u) :
+				 eng{c}, html{s}, url{u} {};
 
 			/** @brief optimalized accessor */
 			template<conversion_t type> auto get() const
@@ -104,7 +105,10 @@ namespace core
 			}
 
 			/** @brief optimalized accessor */
-			template<conversion_t type> static str_v get(translation_key_t letter) { return translation.at(letter).get<type>(); }
+			template<conversion_t type> static str_v get(translation_key_t letter)
+			{
+				return translation.at(letter).get<type>();
+			}
 
 			template<conversion_t type> static char16_t reverse_get(const u16str_v& tag)
 			{
@@ -119,14 +123,16 @@ namespace core
 
 	/** @brief this narrows demangler to types used in project, no need to add support for more string types */
 	template<typename string_type>
-	concept acceptable_string_types_req = std::is_same_v<string_type, str> || std::is_same_v<string_type, u16str>;
+	concept acceptable_string_types_req
+		 = std::is_same_v<string_type, str> || std::is_same_v<string_type, u16str>;
 
 	/** @brief this narrows demangler to types used in project, no need to add support for more string view types */
 	template<typename string_view_type>
 	concept acceptable_string_view_types_req
 		 = std::is_same_v<string_view_type, str_v> || std::is_same_v<string_view_type, u16str_v>;
 
-	template<acceptable_string_types_req string_type = str, acceptable_string_view_types_req string_view_type = str_v>
+	template<acceptable_string_types_req string_type			  = str,
+				acceptable_string_view_types_req string_view_type = str_v>
 	class demangler : public Log<demangler<string_type, string_view_type>>
 	{
 		using Log<demangler>::log;
@@ -207,7 +213,8 @@ namespace core
 		 * @tparam type format of replacement
 		 * @param out input and output
 		 */
-		template<conv_t type> requires(type == conv_t::HTML || type == conv_t::URL) static void mangle(u16str& out)
+		template<conv_t type>
+		requires(type == conv_t::HTML || type == conv_t::URL) static void mangle(u16str& out)
 		{
 			if constexpr(type == conv_t::HTML) demangler<>::mangle_html(out);
 			else if constexpr(type == conv_t::URL)
@@ -260,8 +267,9 @@ namespace core
 
 			const std::locale loc{plPL()};
 			for(const u16char_t c: preprocessed)
-				if(std::isalnum<wchar_t>(static_cast<wchar_t>(c),
-												 loc) /* || u' ' == c */)	 // possiblility of problem with diffrence in double space
+				if(std::isalnum<wchar_t>(
+						 static_cast<wchar_t>(c),
+						 loc) /* || u' ' == c */)	 // possiblility of problem with diffrence in double space
 					ret += static_cast<u16char_t>(std::toupper<wchar_t>(static_cast<wchar_t>(c), loc));
 
 			out = std::move(ret);
@@ -287,7 +295,8 @@ namespace core
 			{
 				if(
 					 // if it's ENG, just check if it's in ASCII range, otherwise exclude ' _-' chars
-					 c <= std::numeric_limits<char_t>::max() and (conv_t::ENG == type or (u'_' != c and u' ' != c and u'-' != c)))
+					 c <= std::numeric_limits<char_t>::max()
+					 and (conv_t::ENG == type or (u'_' != c and u' ' != c and u'-' != c)))
 					 [[likely]]	  // in polish language most of letters are in <0;255> ASCII range
 				{
 					wout += c;

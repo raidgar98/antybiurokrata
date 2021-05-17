@@ -99,14 +99,17 @@ namespace core
 		 * @tparam T provides logger for all child exception
 		 * @tparam MsgType message type, ex: core::str, core::u16str
 		 */
-		template<typename T, typename MsgType> struct exception_base : /* public std::exception,*/ Log<exception_base<T, MsgType>>
+		template<typename T, typename MsgType>
+		struct exception_base : /* public std::exception,*/ Log<exception_base<T, MsgType>>
 		{
 			using Log<exception_base<T, MsgType>>::get_logger;
 
 			/** stores message */
 			const MsgType _what;
 
-			template<typename Any> requires std::is_convertible_v<Any, MsgType> explicit exception_base(const Any& msg) : _what{msg}
+			template<typename Any>
+			requires std::is_convertible_v<Any, MsgType> explicit exception_base(const Any& msg) :
+				 _what{msg}
 			{
 			}
 
@@ -120,14 +123,16 @@ namespace core
 		/**
 		 * @brief simplest exception
 		 */
-		template<typename MsgType> struct exception : public exception_base<exception<MsgType>, MsgType>
+		template<typename MsgType>
+		struct exception : public exception_base<exception<MsgType>, MsgType>
 		{
 		};
 
 		/**
 		 * @brief default exception, that is raised on failed check
 		 */
-		template<typename MsgType> struct assert_exception : public exception_base<assert_exception<MsgType>, MsgType>
+		template<typename MsgType>
+		struct assert_exception : public exception_base<assert_exception<MsgType>, MsgType>
 		{
 			using exception_base<assert_exception<MsgType>, MsgType>::exception_base;
 		};
@@ -135,9 +140,11 @@ namespace core
 		/**
 		 * @brief same as exception, but additionally prints reason to stdout, usefull, if extended log is required
 		 */
-		template<typename MsgType> struct tee_exception : public exception_base<tee_exception<MsgType>, MsgType>
+		template<typename MsgType>
+		struct tee_exception : public exception_base<tee_exception<MsgType>, MsgType>
 		{
-			template<typename U> explicit tee_exception(const U& msg) : exception_base<tee_exception<MsgType>, MsgType>{msg}
+			template<typename U>
+			explicit tee_exception(const U& msg) : exception_base<tee_exception<MsgType>, MsgType>{msg}
 			{
 				this->get_logger().error(this->what());
 			}
@@ -159,7 +166,8 @@ namespace core
 		 * @tparam _ExceptionType exception to throw if check failed
 		 */
 		template<template<typename Msg> typename _ExceptionType = exception, bool __log_pass = false>
-		requires supported_exception<_ExceptionType> struct require : Log<require<_ExceptionType, __log_pass>>
+		requires supported_exception<_ExceptionType> struct require :
+			 Log<require<_ExceptionType, __log_pass>>
 		{
 			using Log<require<_ExceptionType, __log_pass>>::get_logger;
 
@@ -173,11 +181,13 @@ namespace core
 			 * @param argv optional exception arguments
 			 */
 			template<typename MsgType, typename... ExceptionArgs>
-			explicit require(const bool _check, const MsgType& msg = "no message provided", ExceptionArgs&&... argv)
+			explicit require(const bool _check, const MsgType& msg = "no message provided",
+								  ExceptionArgs&&... argv)
 			{
 				if(_check) [[likely]]	// be optimist :)
 				{
-					if constexpr(__log_pass) get_logger() << "passed: `" << msg << "`\n";	// << logger::endl;
+					if constexpr(__log_pass)
+						get_logger() << "passed: `" << msg << "`\n";	  // << logger::endl;
 				}
 				else [[unlikely]]
 				{
@@ -239,7 +249,10 @@ namespace core
 				 * @param start_here position to start searching
 				 * @param sep separator of words
 				 */
-				iterator_base(svt v, const size_t start_here, const cht sep) : view{v}, pos{start_here}, separator{sep} {}
+				iterator_base(svt v, const size_t start_here, const cht sep) :
+					 view{v}, pos{start_here}, separator{sep}
+				{
+				}
 
 				iterator_base& operator=(const iterator_base&) = default;
 				iterator_base& operator=(iterator_base&&) = default;
@@ -254,8 +267,14 @@ namespace core
 
 				virtual ~iterator_base() {}
 
-				inline friend bool operator==(const iterator_base& it1, const iterator_base& it2) { return (it1.pos == it2.pos); }
-				inline friend bool operator!=(const iterator_base& it1, const iterator_base& it2) { return !(it1 == it2); }
+				inline friend bool operator==(const iterator_base& it1, const iterator_base& it2)
+				{
+					return (it1.pos == it2.pos);
+				}
+				inline friend bool operator!=(const iterator_base& it1, const iterator_base& it2)
+				{
+					return !(it1 == it2);
+				}
 
 			 protected:
 				svt view;
@@ -298,7 +317,8 @@ namespace core
 		 * word2
 		 * word3
 		 */
-		template<typename string_view_type> struct split_words : public split_words_base<string_view_type>
+		template<typename string_view_type>
+		struct split_words : public split_words_base<string_view_type>
 		{
 			using svt = split_words_base<string_view_type>::svt;
 
@@ -308,7 +328,10 @@ namespace core
 				using svt	  = typename it_base::svt;
 
 				/** @brief calculates next_pos, basing on pos */
-				void get_next_pos() { this->next_pos = this->view.find_first_of(this->separator, this->pos + 1ul); }
+				void get_next_pos()
+				{
+					this->next_pos = this->view.find_first_of(this->separator, this->pos + 1ul);
+				}
 
 			 protected:
 				/** @brief defines how to move between words */
@@ -327,7 +350,12 @@ namespace core
 				}
 			};
 
-			iterator begin() const { return iterator{this->view, (this->view.size() == 0 ? svt::npos : 0ul), this->separator}; }
+			iterator begin() const
+			{
+				return iterator{this->view,
+									 (this->view.size() == 0 ? svt::npos : 0ul),
+									 this->separator};
+			}
 			iterator end() const { return iterator{this->view, svt::npos, this->separator}; }
 		};
 
@@ -346,7 +374,8 @@ namespace core
 		 * word2
 		 * word1
 		 */
-		template<typename string_view_type> struct split_words_rev : public split_words_base<string_view_type>
+		template<typename string_view_type>
+		struct split_words_rev : public split_words_base<string_view_type>
 		{
 			using svt = split_words_base<string_view_type>::svt;
 
@@ -359,7 +388,8 @@ namespace core
 				void set_prev_pos()
 				{
 					this->next_pos = this->pos;
-					if(this->next_pos != svt::npos) this->pos = this->view.find_last_of(this->separator, this->pos - 1ul);
+					if(this->next_pos != svt::npos)
+						this->pos = this->view.find_last_of(this->separator, this->pos - 1ul);
 				}
 
 			 protected:
@@ -380,7 +410,9 @@ namespace core
 
 			iterator begin() const
 			{
-				return iterator{this->view, (this->view.size() == 0 ? svt::npos : this->view.size()), this->separator};
+				return iterator{this->view,
+									 (this->view.size() == 0 ? svt::npos : this->view.size()),
+									 this->separator};
 			}
 			iterator end() const { return iterator{this->view, svt::npos, this->separator}; }
 		};
@@ -388,5 +420,7 @@ namespace core
 
 }	 // namespace core
 
-template<> typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str_v& v);
-template<> typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str& v);
+template<>
+typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str_v& v);
+template<>
+typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str& v);

@@ -49,8 +49,9 @@ template<> void core::demangler<>::mangle_html(core::u16str& out)
 		if(!valid_html_tag(tag)) result += tag;
 		else
 		{
-			const u16char_t decoded = detail::depolonizator::reverse_get<conv_t::HTML>(tag);	  // do lookup for specified tag
-			if(decoded == u'\0') result += tag;																  // if not found add tag
+			const u16char_t decoded = detail::depolonizator::reverse_get<conv_t::HTML>(
+				 tag);									  // do lookup for specified tag
+			if(decoded == u'\0') result += tag;	  // if not found add tag
 			else
 				result += decoded;	// if found add decoded charachter
 		}
@@ -132,7 +133,8 @@ template<> void core::demangler<>::mangle_url(core::u16str& out)
 			current_tag = tag;
 			continue;
 		}
-		else if(current_tag.empty() && !tag.empty() && !rest.empty())	 // Ex.: "aa#3Faaaa" and "3Faaaa"
+		else if(current_tag.empty() && !tag.empty()
+				  && !rest.empty())	 // Ex.: "aa#3Faaaa" and "3Faaaa"
 		{
 			result += tag + rest;
 			continue;
@@ -144,8 +146,9 @@ template<> void core::demangler<>::mangle_url(core::u16str& out)
 		if(!valid_url_tag(current_tag)) result += current_tag;
 		else
 		{
-			const u16char_t decoded = detail::depolonizator::reverse_get<conv_t::URL>(current_tag);	// do lookup for specified tag
-			if(decoded == u'\0') result += tag;																			// if not found add tag :(
+			const u16char_t decoded = detail::depolonizator::reverse_get<conv_t::URL>(
+				 current_tag);							  // do lookup for specified tag
+			if(decoded == u'\0') result += tag;	  // if not found add tag :(
 			else
 				result += decoded;	// if found add decoded charachter
 		}

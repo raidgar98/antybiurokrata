@@ -78,7 +78,8 @@ namespace core
 				 * @return true if string is valid
 				 * @return false if string is not valid
 				 */
-				static bool is_valid_orcid_string(const u16str_v& data, str* conversion_output = nullptr);
+				static bool is_valid_orcid_string(const u16str_v& data,
+															 str* conversion_output = nullptr);
 
 				/**
 				 * @brief implementation of std::string -> detail_orcid_t conversion
@@ -93,11 +94,15 @@ namespace core
 				{
 					return o1.identifier() == o2.identifier();
 				}
-				friend inline bool operator!=(const detail_orcid_t& o1, const detail_orcid_t& o2) { return !(o1 == o2); }
+				friend inline bool operator!=(const detail_orcid_t& o1, const detail_orcid_t& o2)
+				{
+					return !(o1 == o2);
+				}
 				friend inline bool operator<(const detail_orcid_t& o1, const detail_orcid_t& o2)
 				{
 					for(size_t i = 0; i < detail_orcid_t::words_in_orcid_num; ++i)
-						if(o1.identifier()[i] != o2.identifier()[i]) return o1.identifier()[i] < o2.identifier()[i];
+						if(o1.identifier()[i] != o2.identifier()[i])
+							return o1.identifier()[i] < o2.identifier()[i];
 
 					return false;	 // they are same
 				}
@@ -156,22 +161,32 @@ namespace core
 				}
 
 				/** @brief 1) Construct a new detail detail_string_holder_t object from string view; forwards to 2 */
-				explicit detail_string_holder_t(const str_v& v) : detail_string_holder_t{str{v.data()}} {}
+				explicit detail_string_holder_t(const str_v& v) : detail_string_holder_t{str{v.data()}}
+				{
+				}
 
 				/** @brief 2) Construct a new detail detail_string_holder_t object from string; forwards to 3 */
-				explicit detail_string_holder_t(const str& v) : detail_string_holder_t{core::get_conversion_engine().from_bytes(v)} {}
+				explicit detail_string_holder_t(const str& v) :
+					 detail_string_holder_t{core::get_conversion_engine().from_bytes(v)}
+				{
+				}
 
 				/** @brief 3) Construct a new detail detail_string_holder_t object from u16string_view */
 				explicit detail_string_holder_t(const u16str_v& v) { set(v); }
 
 				/** @brief 4) Construct a new detail detail_string_holder_t object from u16string; forwards to 3 */
-				explicit detail_string_holder_t(const u16str& v) : detail_string_holder_t{u16str_v{v}} {}
+				explicit detail_string_holder_t(const u16str& v) : detail_string_holder_t{u16str_v{v}}
+				{
+				}
 
 				/** @brief 1) forward to assign operator 2 */
 				detail_string_holder_t& operator=(const str_v& v) { return (*this = str{v.data()}); }
 
 				/** @brief 2) forward to assign operator 3 */
-				detail_string_holder_t& operator=(const str& v) { return (*this = core::get_conversion_engine().from_bytes(v)); }
+				detail_string_holder_t& operator=(const str& v)
+				{
+					return (*this = core::get_conversion_engine().from_bytes(v));
+				}
 
 				/** @brief 3) actually constructs object */
 				detail_string_holder_t& operator=(const u16str_v& v)
@@ -197,15 +212,18 @@ namespace core
 					return core::demangler<u16str, u16str_v>{data()}.process<conv_t>().get_copy();
 				}
 
-				inline friend bool operator==(const detail_string_holder_t& s1, const detail_string_holder_t& s2)
+				inline friend bool operator==(const detail_string_holder_t& s1,
+														const detail_string_holder_t& s2)
 				{
 					return s1.data() == s2.data();
 				}
-				inline friend bool operator!=(const detail_string_holder_t& s1, const detail_string_holder_t& s2)
+				inline friend bool operator!=(const detail_string_holder_t& s1,
+														const detail_string_holder_t& s2)
 				{
 					return !(s1 == s2);
 				}
-				inline friend bool operator<(const detail_string_holder_t& s1, const detail_string_holder_t& s2)
+				inline friend bool operator<(const detail_string_holder_t& s1,
+													  const detail_string_holder_t& s2)
 				{
 					return s1.data() < s2.data();
 				}
@@ -254,7 +272,8 @@ namespace core
 
 			struct id_type_stringinizer
 			{
-				inline static const u16str enum_to_string[] = {u"IDT", u"DOI", u"EISSN", u"PISSN", u"EID", u"WOSUID", u"ISBN"};
+				inline static const u16str enum_to_string[]
+					 = {u"IDT", u"DOI", u"EISSN", u"PISSN", u"EID", u"WOSUID", u"ISBN"};
 				constexpr static size_t length{sizeof(enum_to_string) / sizeof(str)};
 
 				const id_type id;
@@ -276,7 +295,8 @@ namespace core
 					return id_type::NOT_FOUND;
 				}
 
-				template<typename stream_t> inline friend stream_t& operator<<(stream_t& os, const id_type_stringinizer& x)
+				template<typename stream_t>
+				inline friend stream_t& operator<<(stream_t& os, const id_type_stringinizer& x)
 				{
 					return os << get_conversion_engine().to_bytes(get(x.id));
 				}
@@ -305,11 +325,13 @@ namespace core
 				dser<&detail_publication_t::year, ids_storage_t> ids;
 
 				bool compare(const detail_publication_t&) const;
-				inline friend bool operator==(const detail_publication_t& me, const detail_publication_t& other)
+				inline friend bool operator==(const detail_publication_t& me,
+														const detail_publication_t& other)
 				{
 					return me.compare(other);
 				}
-				inline friend bool operator!=(const detail_publication_t& me, const detail_publication_t& other)
+				inline friend bool operator!=(const detail_publication_t& me,
+														const detail_publication_t& other)
 				{
 					return !(me == other);
 				}
@@ -345,7 +367,10 @@ namespace core
 					else
 						return (p1.name()() == p2.name()()) && (p1.surname()() == p2.surname()());
 				}
-				friend inline bool operator!=(const detail_person_t& p1, const detail_person_t& p2) { return !(p1 == p2); }
+				friend inline bool operator!=(const detail_person_t& p1, const detail_person_t& p2)
+				{
+					return !(p1 == p2);
+				}
 
 				friend inline bool operator<(const detail_person_t& p1, const detail_person_t& p2)
 				{
@@ -368,12 +393,14 @@ namespace core
 	}	 // namespace objects
 }	 // namespace core
 
-template<typename stream_type> inline stream_type& operator<<(stream_type& os, const core::objects::detail::id_type& id)
+template<typename stream_type>
+inline stream_type& operator<<(stream_type& os, const core::objects::detail::id_type& id)
 {
 	return os << static_cast<int>(id);
 }
 
-template<typename stream_type> inline stream_type& operator>>(stream_type& is, core::objects::detail::id_type& id)
+template<typename stream_type>
+inline stream_type& operator>>(stream_type& is, core::objects::detail::id_type& id)
 {
 	int x;
 	is >> x;

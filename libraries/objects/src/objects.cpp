@@ -29,7 +29,8 @@ namespace core
 			return result.str();
 		}
 
-		bool detail::detail_orcid_t::is_valid_orcid_string(const u16str_v& data, str* conversion_output)
+		bool detail::detail_orcid_t::is_valid_orcid_string(const u16str_v& data,
+																			str* conversion_output)
 		{
 			const static std::regex orcid_validator_regex{"(\\d{4}-){3}\\d{4}"};
 			const str conv{get_conversion_engine().to_bytes(u16str(data))};
@@ -73,7 +74,8 @@ namespace core
 
 		detail::polish_unifier::polish_unifier(u16str& x) noexcept
 		{
-			for(u16char_t& c: x) c = static_cast<u16char_t>(std::toupper(static_cast<wchar_t>(c), plPL()));
+			for(u16char_t& c: x)
+				c = static_cast<u16char_t>(std::toupper(static_cast<wchar_t>(c), plPL()));
 		}
 
 		bool detail::detail_publication_t::compare(const detail::detail_publication_t& that) const

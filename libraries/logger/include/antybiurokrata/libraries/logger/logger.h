@@ -29,7 +29,10 @@
  * @tparam T any class
  * @return std::string stringinized T
  */
-template<typename T> inline std::string get_class_name() { return boost::typeindex::type_id<T>().pretty_name(); }
+template<typename T> inline std::string get_class_name()
+{
+	return boost::typeindex::type_id<T>().pretty_name();
+}
 
 /**
  * @brief This class provides logging system fitted for every class
@@ -89,14 +92,16 @@ class logger
 	{
 		std::string name, orig_name = get_class_name<T>();
 		const size_t pos{orig_name.find_last_of(':')};
-		if(pos != std::string::npos && orig_name.find('<') == std::string::npos) name = orig_name.substr(pos + 1ul);
+		if(pos != std::string::npos && orig_name.find('<') == std::string::npos)
+			name = orig_name.substr(pos + 1ul);
 		else
 			name = orig_name;
 		constexpr std::string_view allowed_chars{"<>::_, "};
 		for(const char c: name)
 			if(std::isalnum(c) == 0 && allowed_chars.find(c) == std::string_view::npos)
 			{
-				log_with_global_logger("unknown class name: " + orig_name + " -> " + name + logger::endl);
+				log_with_global_logger("unknown class name: " + orig_name + " -> " + name
+											  + logger::endl);
 				return logger(alternative);
 			}
 		return logger(name);
@@ -120,7 +125,7 @@ class logger
 			ss = std::shared_ptr<ss_t>{new ss_t{std::move(xss)}, [&](ss_t* ptr) {
 													if(ptr)
 													{
-														if(will_be_printed) std::cout << ptr->str();
+														if(will_be_printed) logger::print_out( ptr->str() );
 														delete ptr;
 													}
 												}};
@@ -142,8 +147,9 @@ class logger
 		 = [](std::ostream& os) -> std::ostream& { return os << rang::bg::reset << rang::fg::gray; };
 	inline static format_function info_color_scheme
 		 = [](std::ostream& os) -> std::ostream& { return os << rang::bg::reset << rang::fg::blue; };
-	inline static format_function warn_color_scheme
-		 = [](std::ostream& os) -> std::ostream& { return os << rang::bg::reset << rang::fg::yellow; };
+	inline static format_function warn_color_scheme = [](std::ostream& os) -> std::ostream& {
+		return os << rang::bg::reset << rang::fg::yellow;
+	};
 	inline static format_function erro_color_scheme
 		 = [](std::ostream& os) -> std::ostream& { return os << rang::bg::reset << rang::fg::red; };
 
@@ -200,15 +206,19 @@ class logger
 	 */
 	std::string get_preambula(const uint16_t depth) const;
 	logger(const std::string& preambula);
-	void print_out(const std::string&, const format_function& _format = logger::reset_color_scheme) const;
+	static void print_out(const std::string&,
+						const format_function& _format = logger::reset_color_scheme);
 
-	logger_piper _config_logger_piper(const bool print_out = true, const format_function& fun = debug_format) const
+	logger_piper _config_logger_piper(const bool print_out		 = true,
+												 const format_function& fun = debug_format) const
 	{
 		std::stringstream ss;
 		fun(ss);
 		ss << get_preambula(4);
 		return logger_piper{std::move(ss), print_out};
 	}
+
+	friend class logger_piper;
 };
 
 /**
@@ -236,7 +246,8 @@ template<typename T> class Log
  * @param v any object
  * @return logger::logger_piper&  returning self
  */
-template<typename T> inline typename logger::logger_piper operator<<(logger::logger_piper src, const T& v)
+template<typename T>
+inline typename logger::logger_piper operator<<(logger::logger_piper src, const T& v)
 {
 	*src.ss << v;
 	return src;
