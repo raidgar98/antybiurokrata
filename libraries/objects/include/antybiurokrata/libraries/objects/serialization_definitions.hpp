@@ -43,11 +43,14 @@ namespace core
 
 			struct u16str_pretty_serial
 			{
+				constexpr static std::string_view formated_delimiter{", "};
+				constexpr static std::string_view no_delimiter{" "};
+
 				template<typename stream_type>
-				u16str_pretty_serial(stream_type& os, const u16str_v& view)
+				u16str_pretty_serial(stream_type& os, const u16str_v& view, const bool put_delimiter)
 				{
-					using patterns::serial::delimiter;
-					os << get_conversion_engine().to_bytes(view.data());
+					std::cout << "#######################################";
+					os << (put_delimiter ? formated_delimiter : no_delimiter) << get_conversion_engine().to_bytes(view.data());
 				}
 			};
 

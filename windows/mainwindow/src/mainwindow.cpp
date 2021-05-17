@@ -93,41 +93,41 @@ void MainWindow::on_search_button_clicked()
 				 x.accept(&bgvisitor);
 			 }
 
-			 std::initializer_list<std::jthread>{
-				  std::jthread{[&] {
-					  // orcid
-					  core::orm::persons_extractor_t orcid_person_visitor;
-					  core::orm::persons_extractor_t::shallow_copy_persons(bgperson_visitor,
-																							 orcid_person_visitor);
+			//  std::initializer_list<std::jthread>{
+			// 	  std::jthread{[&] {
+			// 		  // orcid
+			// 		  core::orm::persons_extractor_t orcid_person_visitor;
+			// 		  core::orm::persons_extractor_t::shallow_copy_persons(bgperson_visitor,
+			// 																				 orcid_person_visitor);
 
-					  for(auto& x: orcid_person_visitor.persons) (*x)().publictions()()->clear();
-					  core::orm::publications_extractor_t ovisitor{orcid_person_visitor};
-					  core::network::orcid_adapter oadapter{};
-					  for(const auto& _person: orcid_person_visitor.persons)
-					  {
-						  auto& person = *_person;
-						  auto ret		= oadapter.get_person(person().orcid()());
-						  emit set_progress((i++ / size) * 100.0);
-						  for(auto& x: *ret) x.accept(&ovisitor);
-					  }
-				  }},
-				  std::jthread{[&] {
-					  // scopus
-					  core::orm::persons_extractor_t scopus_person_visitor;
-					  core::orm::persons_extractor_t::shallow_copy_persons(bgperson_visitor,
-																							 scopus_person_visitor);
+			// 		  for(auto& x: orcid_person_visitor.persons) (*x)().publictions()()->clear();
+			// 		  core::orm::publications_extractor_t ovisitor{orcid_person_visitor};
+			// 		  core::network::orcid_adapter oadapter{};
+			// 		  for(const auto& _person: orcid_person_visitor.persons)
+			// 		  {
+			// 			  auto& person = *_person;
+			// 			  auto ret		= oadapter.get_person(person().orcid()());
+			// 			  emit set_progress((i++ / size) * 100.0);
+			// 			  for(auto& x: *ret) x.accept(&ovisitor);
+			// 		  }
+			// 	  }},
+			// 	  std::jthread{[&] {
+			// 		  // scopus
+			// 		  core::orm::persons_extractor_t scopus_person_visitor;
+			// 		  core::orm::persons_extractor_t::shallow_copy_persons(bgperson_visitor,
+			// 																				 scopus_person_visitor);
 
-					  for(auto& x: scopus_person_visitor.persons) (*x)().publictions()()->clear();
-					  core::orm::publications_extractor_t svisitor{scopus_person_visitor};
-					  core::network::scopus_adapter sadapter{};
-					  for(const auto& _person: scopus_person_visitor.persons)
-					  {
-						  auto& person = *_person;
-						  auto ret		= sadapter.get_person(person().orcid()());
-						  emit set_progress((i++ / size) * 100.0);
-						  for(auto& x: *ret) x.accept(&svisitor);
-					  }
-				  }}};
+			// 		  for(auto& x: scopus_person_visitor.persons) (*x)().publictions()()->clear();
+			// 		  core::orm::publications_extractor_t svisitor{scopus_person_visitor};
+			// 		  core::network::scopus_adapter sadapter{};
+			// 		  for(const auto& _person: scopus_person_visitor.persons)
+			// 		  {
+			// 			  auto& person = *_person;
+			// 			  auto ret		= sadapter.get_person(person().orcid()());
+			// 			  emit set_progress((i++ / size) * 100.0);
+			// 			  for(auto& x: *ret) x.accept(&svisitor);
+			// 		  }
+			// 	  }}};
 
 			 emit send_neighbours(sh_bgperson_visitor);
 		 },
@@ -157,6 +157,7 @@ void MainWindow::collect_neighbours(QSharedPointer<core::orm::persons_extractor_
 	for(const auto& _p: bgperson_visitor->persons)
 	{
 		auto& p = *_p;
+		log.dbg() << patterns::serial::pretty_print{p} << logger::endl;
 		core::u16str label{p().name()().raw + u" " + p().surname()().raw + u"[ "};
 		label += static_cast<core::u16str>(p().orcid()()) + u" ]";
 
@@ -177,6 +178,8 @@ void MainWindow::collect_neighbours(QSharedPointer<core::orm::persons_extractor_
 				 = core::u16str(u"[ ") + year.toStdU16String() + u" ] " + (*x)().title()().raw;
 			ui->publications->addItem(QString::fromStdU16String(full_name));
 		}
+
+	
 
 	emit send_progress(100);
 }
