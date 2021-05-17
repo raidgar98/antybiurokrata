@@ -55,7 +55,8 @@ int main(int argc, char* argv[])
 	for(const auto& _p: bgperson_visitor.persons)
 	{
 		auto& p = *_p;
-		global_logger.dbg() << patterns::serial::pretty_print{p} << logger::endl;
+		global_logger.dbg() << p << logger::endl;
+		// global_logger.dbg() << patterns::serial::pretty_print{p} << logger::endl;
 	}
 
 	// core::objects::detail::string_holder_t ss{"aaaa"_u8};

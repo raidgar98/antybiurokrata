@@ -29,6 +29,7 @@ namespace core
 
 				using custom_serialize	 = array_serial<uint16_t, words_in_orcid_num>;
 				using custom_deserialize = array_deserial<uint16_t, words_in_orcid_num>;
+				using custom_pretty_print = array_pretty_serial<uint16_t, words_in_orcid_num>;
 
 				/** @brief default constructor */
 				explicit detail_orcid_t() = default;

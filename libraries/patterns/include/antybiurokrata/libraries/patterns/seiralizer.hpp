@@ -125,7 +125,6 @@ namespace patterns
 			 */
 			template<typename stream_t, typename Any> put_to_stream(stream_t& os, const Any& any)
 			{
-				std::cout << "****************" << boost::typeindex::type_id<Any>().pretty_name() << "****************\n";
 				os << any << delimiter;
 			}
 		};
@@ -504,7 +503,19 @@ namespace patterns
 			}
 		};
 
-		template<typename stream_t, typename stream_action> struct stream_handler_with_last_result
+		struct pretty_printer_separator
+		{
+			constexpr static std::string_view formated_delimiter{", "};
+			constexpr static std::string_view no_delimiter{" "};
+
+			template<typename stream_t>
+			pretty_printer_separator(stream_t& ss, const bool put_delimiter)
+			{
+				ss << (put_delimiter ? formated_delimiter : no_delimiter);
+			}
+		};
+
+		template<typename stream_t, typename stream_action, typename last_result_action = pretty_printer_separator> struct stream_handler_with_last_result
 		{
 			stream_t& os;
 			bool last_result{true};
@@ -512,7 +523,11 @@ namespace patterns
 
 			template<typename Any> bool visit(Any* input) const
 			{
-				if(input) { stream_action{os, input->val, this->last_result}; }
+				if(input)
+				{
+					last_result_action{os, this->last_result};
+					stream_action{os, input->val}; 
+				}
 				return input != nullptr;
 			}
 		};
@@ -644,42 +659,11 @@ namespace patterns
 		 * 
 		 * @tparam T any cser
 		*/
-		template<typename X> 
-		struct pretty_print
+		template<typename X, typename pretty_printer_default> 
+		struct pretty_print_impl
 		{
 			const X& x;
 
-			/** @brief This class is used by ser to serialize class members in pretty way */
-			struct pretty_put_to_stream
-			{
-				constexpr static std::string_view formated_delimiter{", "};
-				constexpr static std::string_view no_delimiter{" "};
-
-				/**
-				 * @brief Construct specialize this constructor for more complex types if required
-				 * 
-				 * @tparam stream_t any stream
-				 * @tparam Any any value_type
-				 * @param os reference to stream
-				 * @param any const reference to stream
-				 */
-				// template<typename stream_t, typename Any>
-				// pretty_put_to_stream(stream_t& os, const Any& any, const bool put_delimiter)
-				// {
-				// 	std::cout << "&&&&&&&&&&&7";
-				// 	os << (put_delimiter ? formated_delimiter : no_delimiter) << any;
-				// }
-
-				// template<typename stream_t, auto XXX>
-				template<typename stream_t, typename XXX>
-				// requires serializable_class_type_req<serial::cser, XXX>
-				// pretty_put_to_stream(stream_t& os, const serial::cser<XXX>& any, const bool put_delimiter)
-				pretty_put_to_stream(stream_t& os, const XXX& any, const bool put_delimiter)
-				{
-					std::cout << "@@@@@@@@@@@@@@@@@@@";
-					os << (put_delimiter ? formated_delimiter : no_delimiter) << pretty_print{any};
-				}
-			};
 
 			/**
 			 * @brief returns the stream handler for give stream
@@ -691,7 +675,7 @@ namespace patterns
 			template<typename stream_t>
 			constexpr static auto get_stream_handler(stream_t& os)
 			{
-				return stream_handler_with_last_result<stream_t, pretty_put_to_stream>{os};
+				return stream_handler_with_last_result<stream_t, pretty_printer_default>{os};
 			}
 
 			/** @brief override of above for types with custom serializator */
@@ -700,30 +684,54 @@ namespace patterns
 			//  typename X::value_t::custom_pretty_print
 			constexpr static auto get_stream_handler(stream_t& os)
 			{
-				std::cout << "$$$$$$$$$$$$$$$$$$$";
 				return stream_handler_with_last_result<stream_t, typename X::value_t::custom_pretty_print>{os};
 			}
 		};
 
+		template<typename T> struct pretty_print{ const T& x; };
+
+		/** @brief This class is used by ser to serialize class members in pretty way */
+		struct pretty_put_to_stream;
+
 		template<typename stream_t, auto X>
 		inline stream_t& operator<<(stream_t& os, const pretty_print<serial::cser<X>>& obj)
 		{
-			std::cout << "YYYYYYYYYYYYYYYYYY";
 				const std::string type_name
 					= boost::typeindex::type_id<typename serial::cser<X>::value_t>().pretty_name();
 				const size_t shevron			 = type_name.find('<');
 				const size_t double_dot_pos = type_name.find_last_of(':', shevron);
 				os << type_name.substr(double_dot_pos + 1) << "[";
 
-				auto vs = pretty_print<serial::cser<X>>::get_stream_handler(os);
+				auto vs = pretty_print_impl<serial::cser<X>, pretty_put_to_stream>::get_stream_handler(os);
 				obj.x.accept(&vs);
 
 				os << " ]";
 				return os;
 		}
 
-		template<typename stream_t, typename X>
-		inline stream_t& operator<<(stream_t& os, const pretty_print<X>& obj) { std::cout << "XXXXXXXXXX"; return os << obj.x; }
+		struct pretty_put_to_stream
+		{
+			/**
+			 * @brief Construct specialize this constructor for more complex types if required
+			 * 
+			 * @tparam stream_t any stream
+			 * @tparam X any value_type
+			 * @param os reference to stream
+			 * @param any const reference to printed obj
+			 */
+			template<typename stream_t, auto X>
+			pretty_put_to_stream(stream_t& os, const serial::cser<X>& any)
+			{
+				operator<< <stream_t, X>( os, pretty_print{any} );
+			}
+
+			template<typename stream_t, typename T>
+			pretty_put_to_stream(stream_t& os, const T& any)
+			{
+				os << any;
+			}
+		};
+
 	};	  // namespace serial
 };		  // namespace patterns
 
