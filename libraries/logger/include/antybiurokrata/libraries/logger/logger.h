@@ -125,7 +125,7 @@ class logger
 			ss = std::shared_ptr<ss_t>{new ss_t{std::move(xss)}, [&](ss_t* ptr) {
 													if(ptr)
 													{
-														if(will_be_printed) logger::print_out( ptr->str() );
+														if(will_be_printed) logger::print_out(ptr->str());
 														delete ptr;
 													}
 												}};
@@ -207,7 +207,7 @@ class logger
 	std::string get_preambula(const uint16_t depth) const;
 	logger(const std::string& preambula);
 	static void print_out(const std::string&,
-						const format_function& _format = logger::reset_color_scheme);
+								 const format_function& _format = logger::reset_color_scheme);
 
 	logger_piper _config_logger_piper(const bool print_out		 = true,
 												 const format_function& fun = debug_format) const

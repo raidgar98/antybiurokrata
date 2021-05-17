@@ -180,7 +180,8 @@ namespace core
 				{
 					os << '[';
 					for(size_t i = 0; i < data.size(); ++i)
-						if(data[i].get()) os << ","[i == 0] << ' ' << patterns::serial::pretty_print{*(data[i])};
+						if(data[i].get())
+							os << ","[i == 0] << ' ' << patterns::serial::pretty_print{*(data[i])};
 					os << " ]";
 				}
 			};

@@ -515,7 +515,9 @@ namespace patterns
 			}
 		};
 
-		template<typename stream_t, typename stream_action, typename last_result_action = pretty_printer_separator> struct stream_handler_with_last_result
+		template<typename stream_t, typename stream_action,
+					typename last_result_action = pretty_printer_separator>
+		struct stream_handler_with_last_result
 		{
 			stream_t& os;
 			bool last_result{true};
@@ -526,7 +528,7 @@ namespace patterns
 				if(input)
 				{
 					last_result_action{os, this->last_result};
-					stream_action{os, input->val}; 
+					stream_action{os, input->val};
 				}
 				return input != nullptr;
 			}
@@ -643,8 +645,7 @@ namespace patterns
 		}
 
 
-
-/**
+		/**
 		 * @brief verifies whether class declared custom serialization methode
 		 * 
 		 * @tparam cser_t type to check
@@ -659,8 +660,7 @@ namespace patterns
 		 * 
 		 * @tparam T any cser
 		*/
-		template<typename X, typename pretty_printer_default> 
-		struct pretty_print_impl
+		template<typename X, typename pretty_printer_default> struct pretty_print_impl
 		{
 			const X& x;
 
@@ -672,8 +672,7 @@ namespace patterns
 			 * @param os stream reference
 			 * @return constexpr auto handler
 			 */
-			template<typename stream_t>
-			constexpr static auto get_stream_handler(stream_t& os)
+			template<typename stream_t> constexpr static auto get_stream_handler(stream_t& os)
 			{
 				return stream_handler_with_last_result<stream_t, pretty_printer_default>{os};
 			}
@@ -681,14 +680,18 @@ namespace patterns
 			/** @brief override of above for types with custom serializator */
 			template<typename stream_t>
 			requires custom_pretty_print_req<typename X::value_t>
-			//  typename X::value_t::custom_pretty_print
-			constexpr static auto get_stream_handler(stream_t& os)
+				 //  typename X::value_t::custom_pretty_print
+				 constexpr static auto get_stream_handler(stream_t& os)
 			{
-				return stream_handler_with_last_result<stream_t, typename X::value_t::custom_pretty_print>{os};
+				return stream_handler_with_last_result<stream_t,
+																	typename X::value_t::custom_pretty_print>{os};
 			}
 		};
 
-		template<typename T> struct pretty_print{ const T& x; };
+		template<typename T> struct pretty_print
+		{
+			const T& x;
+		};
 
 		/** @brief This class is used by ser to serialize class members in pretty way */
 		struct pretty_put_to_stream;
@@ -696,17 +699,17 @@ namespace patterns
 		template<typename stream_t, auto X>
 		inline stream_t& operator<<(stream_t& os, const pretty_print<serial::cser<X>>& obj)
 		{
-				const std::string type_name
-					= boost::typeindex::type_id<typename serial::cser<X>::value_t>().pretty_name();
-				const size_t shevron			 = type_name.find('<');
-				const size_t double_dot_pos = type_name.find_last_of(':', shevron);
-				os << type_name.substr(double_dot_pos + 1) << "[";
+			const std::string type_name
+				 = boost::typeindex::type_id<typename serial::cser<X>::value_t>().pretty_name();
+			const size_t shevron			 = type_name.find('<');
+			const size_t double_dot_pos = type_name.find_last_of(':', shevron);
+			os << type_name.substr(double_dot_pos + 1) << "[";
 
-				auto vs = pretty_print_impl<serial::cser<X>, pretty_put_to_stream>::get_stream_handler(os);
-				obj.x.accept(&vs);
+			auto vs = pretty_print_impl<serial::cser<X>, pretty_put_to_stream>::get_stream_handler(os);
+			obj.x.accept(&vs);
 
-				os << " ]";
-				return os;
+			os << " ]";
+			return os;
 		}
 
 		struct pretty_put_to_stream
@@ -722,11 +725,10 @@ namespace patterns
 			template<typename stream_t, auto X>
 			pretty_put_to_stream(stream_t& os, const serial::cser<X>& any)
 			{
-				operator<< <stream_t, X>( os, pretty_print{any} );
+				operator<<<stream_t, X>(os, pretty_print{any});
 			}
 
-			template<typename stream_t, typename T>
-			pretty_put_to_stream(stream_t& os, const T& any)
+			template<typename stream_t, typename T> pretty_put_to_stream(stream_t& os, const T& any)
 			{
 				os << any;
 			}
@@ -734,4 +736,3 @@ namespace patterns
 
 	};	  // namespace serial
 };		  // namespace patterns
-

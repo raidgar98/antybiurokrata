@@ -27,8 +27,8 @@ namespace core
 				constexpr static size_t words_in_orcid_num{4ul};
 				array_ser<&detail_orcid_t::_, uint16_t, words_in_orcid_num> identifier;
 
-				using custom_serialize	 = array_serial<uint16_t, words_in_orcid_num>;
-				using custom_deserialize = array_deserial<uint16_t, words_in_orcid_num>;
+				using custom_serialize	  = array_serial<uint16_t, words_in_orcid_num>;
+				using custom_deserialize  = array_deserial<uint16_t, words_in_orcid_num>;
 				using custom_pretty_print = array_pretty_serial<uint16_t, words_in_orcid_num>;
 
 				/** @brief default constructor */
@@ -132,8 +132,8 @@ namespace core
 				inner_t* operator->() { return &(data()); }
 				const inner_t* operator->() const { return &(data()); }
 
-				using custom_serialize	 = u16str_serial;
-				using custom_deserialize = u16str_deserial;
+				using custom_serialize	  = u16str_serial;
+				using custom_deserialize  = u16str_deserial;
 				using custom_pretty_print = u16str_pretty_serial;
 
 				/** @brief default constructor */
@@ -315,7 +315,8 @@ namespace core
 
 				using custom_serialize	 = map_serial<id_type, string_holder_t>;
 				using custom_deserialize = map_deserial<id_type, string_holder_t>;
-				using custom_pretty_print = map_pretty_serial<id_type, string_holder_t, id_type_stringinizer>;
+				using custom_pretty_print
+					 = map_pretty_serial<id_type, string_holder_t, id_type_stringinizer>;
 			};
 			using ids_storage_t = cser<&detail_ids_storage_t::data>;
 
@@ -350,8 +351,8 @@ namespace core
 				inner_t* operator->() { return &(data()); }
 				const inner_t* operator->() const { return &(data()); }
 
-				using custom_serialize	 = shared_vector_serial<publication_t>;
-				using custom_deserialize = shared_vector_deserial<publication_t>;
+				using custom_serialize	  = shared_vector_serial<publication_t>;
+				using custom_deserialize  = shared_vector_deserial<publication_t>;
 				using custom_pretty_print = shared_vector_pretty_serial<publication_t>;
 			};
 			using publications_storage_t = cser<&detail_publications_storage_t::data>;

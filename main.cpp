@@ -31,36 +31,10 @@ int main(int argc, char* argv[])
 	::signal(SIGABRT, &my_signal_handler);
 
 	std::locale::global(core::plPL());
-	// QApplication a(argc, argv);
-	// MainWindow w;
-	// w.show();
-	// return a.exec();
-
-	core::network::bgpolsl_adapter bgadapter{};
-	std::shared_ptr<core::orm::persons_extractor_t> sh_bgperson_visitor{
-		new core::orm::persons_extractor_t{}};
-	auto& bgperson_visitor = *sh_bgperson_visitor;
-	core::orm::publications_extractor_t bgvisitor{bgperson_visitor};
-	auto res	 = bgadapter.get_person(argv[1], argv[2]);
-	double size = res->size() * 3;
-	double i	 = 0;
-	for(auto& x: *res)
-	{
-		using namespace std::chrono_literals;
-		// emit set_progress((i++ / size) * 100.0);
-		// std::this_thread::sleep_for(0.1s);
-		x.accept(&bgvisitor);
-	}
-
-	for(const auto& _p: bgperson_visitor.persons)
-	{
-		auto& p = *_p;
-		global_logger.dbg() << p << logger::endl;
-		// global_logger.dbg() << patterns::serial::pretty_print{p} << logger::endl;
-	}
-
-	// core::objects::detail::string_holder_t ss{"aaaa"_u8};
-	// global_logger.dbg() << patterns::serial::pretty_print{ ss } << logger::endl;
+	QApplication a(argc, argv);
+	MainWindow w;
+	w.show();
+	return a.exec();
 
 	return 0;
 }
