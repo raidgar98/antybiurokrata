@@ -304,19 +304,26 @@ namespace core
 				}
 			};
 
+			struct ids_unifier
+			{
+				ids_unifier(u16str& x) noexcept;
+			};
+
+			using ids_string_t = string_holder_custom_t<default_validator, ids_unifier>;
+
 			struct detail_ids_storage_t : public serial_helper_t
 			{
-				map_ser<&serial_helper_t::_, id_type, string_holder_t> data;
+				map_ser<&serial_helper_t::_, id_type, ids_string_t> data;
 
 				using ser_data_t = decltype(data);
 				using inner_t	  = typename ser_data_t::value_type;
 				inner_t* operator->() { return &(data()); }
 				const inner_t* operator->() const { return &(data()); }
 
-				using custom_serialize	 = map_serial<id_type, string_holder_t>;
-				using custom_deserialize = map_deserial<id_type, string_holder_t>;
+				using custom_serialize	 = map_serial<id_type, ids_string_t>;
+				using custom_deserialize = map_deserial<id_type, ids_string_t>;
 				using custom_pretty_print
-					 = map_pretty_serial<id_type, string_holder_t, id_type_stringinizer>;
+					 = map_pretty_serial<id_type, ids_string_t, id_type_stringinizer>;
 			};
 			using ids_storage_t = cser<&detail_ids_storage_t::data>;
 
@@ -328,32 +335,49 @@ namespace core
 				dser<&detail_publication_t::polish_title, uint16_t> year;
 				dser<&detail_publication_t::year, ids_storage_t> ids;
 
-				bool compare(const detail_publication_t&) const;
+				/**
+				 * @brief compares two me with other
+				 * 
+				 * @return int 0 = equal, 1 = greate, -1 = lesser
+				 */
+				int compare(const detail_publication_t&) const;
 				inline friend bool operator==(const detail_publication_t& me,
 														const detail_publication_t& other)
 				{
-					return me.compare(other);
+					return me.compare(other) == 0;
 				}
 				inline friend bool operator!=(const detail_publication_t& me,
 														const detail_publication_t& other)
 				{
 					return !(me == other);
 				}
+
+				inline friend bool operator<(const detail_publication_t& me,
+														const detail_publication_t& other)
+				{
+					return me.compare(other) < 0;
+				}
+
+				inline friend bool operator>(const detail_publication_t& me,
+														const detail_publication_t& other)
+				{
+					return me.compare(other) > 0;
+				}
 			};
 			using publication_t = cser<&detail_publication_t::ids>;
 
 			struct detail_publications_storage_t : public serial_helper_t
 			{
-				svec_ser<&serial_helper_t::_, publication_t> data{};
+				sset_ser<&serial_helper_t::_, publication_t> data{};
 
 				using ser_data_t = decltype(data);
 				using inner_t	  = typename ser_data_t::value_type;
 				inner_t* operator->() { return &(data()); }
 				const inner_t* operator->() const { return &(data()); }
 
-				using custom_serialize	  = shared_vector_serial<publication_t>;
-				using custom_deserialize  = shared_vector_deserial<publication_t>;
-				using custom_pretty_print = shared_vector_pretty_serial<publication_t>;
+				using custom_serialize	  = shared_set_serial<publication_t>;
+				using custom_deserialize  = shared_set_deserial<publication_t>;
+				using custom_pretty_print = shared_set_pretty_serial<publication_t>;
 			};
 			using publications_storage_t = cser<&detail_publications_storage_t::data>;
 

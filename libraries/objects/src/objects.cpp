@@ -74,25 +74,45 @@ namespace core
 
 		detail::polish_unifier::polish_unifier(u16str& x) noexcept
 		{
+			const auto ll = plPL();
 			for(u16char_t& c: x)
-				c = static_cast<u16char_t>(std::toupper(static_cast<wchar_t>(c), plPL()));
+				c = static_cast<u16char_t>(std::toupper(static_cast<wchar_t>(c), ll));
 		}
 
-		bool detail::detail_publication_t::compare(const detail::detail_publication_t& that) const
+		detail::ids_unifier::ids_unifier(u16str& x) noexcept
 		{
+			const auto ll = plPL();
+			for(u16char_t& c: x)
+			{
+				const wchar_t wc = c;
+				if( std::iswalnum(wc) ) c = static_cast<u16char_t>(std::toupper(wc, ll));
+			}
+		}
+
+		int detail::detail_publication_t::compare(const detail::detail_publication_t& that) const
+		{
+			static const auto calc = [](const auto& x1, const auto& x2)
+			{
+				if(x1 < x2) return -1;
+				else if(x2 < x1) return 1;
+				else return 0;
+			};
 			const detail::detail_publication_t& me = *this;	  // alias, to make it handy
+
 			if(me.ids()()->size() > 0 && that.ids()()->size() > 0)
 			{
 				for(const auto& pair: me.ids()().data())
 				{
 					const auto found = that.ids()()->find(pair.first);
 					if(found != that.ids()()->end()) /* if found */
-						return pair.second() == found->second();
+						return calc(pair.second(), found->second());
 				}
 			}
 
 			// worst case
-			return (me.year == that.year) && (me.title()() == that.title()());
+			const int r_year = calc(me.year, that.year);
+			if(r_year == 0) return calc(me.title()(), that.title()());
+			else return r_year;
 		}
 
 	}	 // namespace objects

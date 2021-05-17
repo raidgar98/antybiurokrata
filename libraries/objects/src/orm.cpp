@@ -9,6 +9,8 @@ namespace core
 		bool persons_extractor_t::visit(bgpolsl_repr_t* ptr)
 		{
 			dassert(ptr, "pointer cannot be nullptr!"_u8);
+			if(current_publication->val.title()().data() != u"6THINTERNATIONALCONFERENCEONELECTROMAGNETICPROCESSINGOFMATERIALSEPMDRESDENGERMANYOCTOBER19232009"_u16) return true;
+
 
 			const u16str_v affiliation{ptr->affiliation};	// alias
 			std::shared_ptr<person_t> person;
@@ -59,8 +61,14 @@ namespace core
 					log.info() << "successfully added new author: "
 								  << patterns::serial::pretty_print{**pair.first} << logger::endl;
 				if(current_publication)
-					(**pair.first)().publictions()()->push_back(current_publication);
+					(**pair.first)().publictions()()->emplace(current_publication);
+
+			{
+				log.dbg() << patterns::serial::pretty_print{*person} << logger::endl;
+				// for(const auto& pub : (**pair.first)().publictions()().data()) log.dbg() << patterns::serial::pretty_print{*pub} << logger::endl;
+				std::cout << "BREAK!" << std::endl;
 			}
+		}
 
 			return true;
 		}
@@ -68,6 +76,7 @@ namespace core
 		bool persons_extractor_t::visit(json_repr_t* ptr)
 		{
 			dassert(ptr, "pointer cannot be nullptr!"_u8);
+			if(current_publication->val.title()().data() != u"6THINTERNATIONALCONFERENCEONELECTROMAGNETICPROCESSINGOFMATERIALSEPMDRESDENGERMANYOCTOBER19232009"_u16) return true;
 
 			int i = 0;
 
@@ -85,7 +94,13 @@ namespace core
 			auto found = persons.find(person);
 			dassert(found != persons.end(), "unknown person for given orcid!"_u8);
 
-			(**found)().publictions()()->emplace_back(current_publication);
+			{
+				log.dbg() << patterns::serial::pretty_print{*person} << logger::endl;
+				// for(const auto& pub : (**found)().publictions()().data()) log.dbg() << patterns::serial::pretty_print{*pub} << logger::endl;
+				std::cout << "BREAK!" << std::endl;
+			}
+
+			(**found)().publictions()()->emplace(current_publication);
 			return true;
 		}
 

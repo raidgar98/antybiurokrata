@@ -1,6 +1,7 @@
 #include <antybiurokrata/libraries/patterns/seiralizer.hpp>
 #include <iomanip>
 #include <array>
+#include <set>
 #include <map>
 
 namespace core
@@ -11,6 +12,17 @@ namespace core
 		{
 			using namespace patterns::serial;
 			using patterns::serial::serial_helper_t;
+
+			template<typename T>
+			struct shared_compare 
+			{
+				using sT = std::shared_ptr<T>;
+				bool operator()(const sT& s1, const sT& s2) const
+				{
+					dassert(s1 && s2, "one of pointers is nullptr!"_u8);
+					return *s1 < *s2;
+				}
+			};
 
 			struct u16str_serial
 			{
@@ -168,20 +180,74 @@ namespace core
 			};
 
 			/**
-			 * @brief definition of pretty printing shared vector
+			 * @brief definition of deserializing shared set
 			 * 
 			 * @tparam T any type
 			 */
-			template<typename T> struct shared_vector_pretty_serial
+			template<typename T> struct shared_set_deserial
 			{
 				template<typename stream_type>
-				shared_vector_pretty_serial(stream_type& os,
-													 const std::vector<std::shared_ptr<T>>& data)
+				shared_set_deserial(stream_type& is, std::set<std::shared_ptr<T>, shared_compare<T> >& data)
+				{
+					using patterns::serial::delimiter;
+					size_t size;
+					is >> size;
+					is.ignore(1, delimiter);
+					if(size == 0) return;
+					for(size_t i = 0; i < size; i++)
+					{
+						int proto_bool;
+						is >> proto_bool;
+						is.ignore(1, delimiter);
+						if(proto_bool)
+						{
+							std::shared_ptr<T> ptr{new T{}};
+							is >> *ptr;
+							data.emplace(ptr);
+						}
+						is.ignore(1, delimiter);
+					}
+				}
+			};
+
+			/**
+			 * @brief definition of serializing shared vector
+			 * 
+			 * @tparam T any type
+			*/
+			template<typename T> struct shared_set_serial
+			{
+				template<typename stream_type>
+				shared_set_serial(stream_type& is, std::set<std::shared_ptr<T>, shared_compare<T> >& data)
+				{
+					using patterns::serial::delimiter;
+					is << data.size() << delimiter;
+					for(auto x: data)
+					{
+						if(x.get()) is << 1 << delimiter << *x;
+						else is << 0;
+
+						is << delimiter;
+					}
+				}
+			};
+
+			/**
+			 * @brief definition of pretty printing shared collection
+			 * 
+			 * @tparam Coll any collection
+			 */
+			template<typename Coll> struct shared_collection_pretty_serial
+			{
+				template<typename stream_type>
+				shared_collection_pretty_serial(stream_type& os,
+													 const Coll& data)
 				{
 					os << '[';
-					for(size_t i = 0; i < data.size(); ++i)
-						if(data[i].get())
-							os << ","[i == 0] << ' ' << patterns::serial::pretty_print{*(data[i])};
+					// for(size_t i = 0; i < data.size(); ++i)
+					for(auto it = data.begin(); it != data.end(); ++it)
+						if(it->get())
+							os << ","[it == data.begin()] << ' ' << patterns::serial::pretty_print{*(*it)};
 					os << " ]";
 				}
 			};
@@ -282,6 +348,16 @@ namespace core
 			 * @tparam T type in shared vector
 			 */
 			template<auto X, typename T> using svec_ser = ser<X, std::vector<std::shared_ptr<T>>>;
+			template<typename T> using shared_vector_pretty_serial = shared_collection_pretty_serial<std::vector<std::shared_ptr<T>> >;
+			
+			/**
+			 * @brief alias for serializing shared set
+			 * 
+			 * @tparam X reference to previous member
+			 * @tparam T type in shared set
+			 */
+			template<auto X, typename T> using sset_ser = ser<X, std::set<std::shared_ptr<T>, shared_compare<T> >>;
+			template<typename T> using shared_set_pretty_serial = shared_collection_pretty_serial< std::set<std::shared_ptr<T>, shared_compare<T> > >;
 
 			/**
 			 * @brief alias for serializing shared vector
