@@ -79,7 +79,8 @@ namespace patterns
 	 * @warning do not use this class, it's internal
 	 * @tparam arg_type type of sending data with signal
 	 */
-	template<class arg_type = empty_data_t> class observable_impl
+	template<class arg_type = empty_data_t>
+	class observable_impl
 	{
 		using slot_function_t = std::function<void(arg_type)>;
 
@@ -104,7 +105,8 @@ namespace patterns
 		 * 
 		 * @param arg data to send
 		 */
-		void invoke(const arg_type& arg) { __signal(arg); }
+		std::enable_if<!std::is_same_v<arg_type, void>, void> invoke(const arg_type& arg) { __signal(arg); }
+		std::enable_if<std::is_same_v<arg_type, void>, void> invoke() { __signal(); }
 
 	 private:
 		/** signal holder */
@@ -117,9 +119,10 @@ namespace patterns
 	 * @tparam arg_type type of sending data with signal
 	 * @tparam __owner required to set friendship
 	 */
-	template<class arg_type, class __owner> class observable : protected observable_impl<arg_type>
+	template<class arg_type, class __owner> 
+	class observable : public observable_impl<arg_type>
 	{
-		/** required to make possible invoking by owner */
+		/** @brief required to make possible invoking by owner */
 		friend __owner;
 
 	 protected:
@@ -130,5 +133,25 @@ namespace patterns
 		 */
 		void operator()(const arg_type& arg) { invoke(arg); }
 	};
+
+	/**
+	 * @brief specialization of class above, for argument-free calls
+	 * 
+	 * @tparam __owner required to set friendship
+	 */
+	template<class __owner>
+	class observable<void, __owner> : public observable_impl<void>
+	{
+		/** @brief required to make possible invoking by owner */
+		friend __owner;
+
+	protected:
+
+		/** @brief same as some_signal.invoke(), just fancier */
+		void operator()() { invoke(); }
+	}
+
+	/** @brief [S]hort observable */
+	template<typename __owner> using sobservable = observable_impl<void, __owner>;
 
 };	  // namespace patterns
