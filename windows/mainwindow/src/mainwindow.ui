@@ -60,7 +60,7 @@
           <property name="currentIndex">
            <number>0</number>
           </property>
-          <widget class="QWidget" name="name_tab">
+          <widget class="QWidget" name="orcid_tab">
            <property name="minimumSize">
             <size>
              <width>276</width>
@@ -263,7 +263,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="orcid_tab">
+          <widget class="QWidget" name="name_tab">
            <attribute name="title">
             <string>Imię i Nazwisko</string>
            </attribute>

@@ -32,34 +32,47 @@ namespace core
 	{
 	 protected:
 		using Log<engine>::log;
-		template<typename T> using container = std::unique_ptr<T>;
+		template<typename T> using container = std::shared_ptr<T>;
 
 		// internal types
 		using sobservable								 = patterns::sobservable<engine>;
 		template<typename arg> using observable = patterns::observable<arg, engine>;
-		using summary_t								 = int*;
+		using summary_t								 = container<orm::persons_extractor_t>;
 		using error_summary_t						 = int*;
 		using stop_token_t							 = std::stop_token;
 		using worker_function_t						 = std::function<void(const stop_token_t&, bool&)>;
 
-		/**
-		 * @brief get the friendly lambda object for this class
-		 * 
-		 * @tparam X pointer to function
-		 * @tparam Argv any argument tpes
-		 * @param that pointer to this class
-		 * @param args any arguments
-		 * @return worker_function_t 
-		 */
-		template<auto X, typename... Argv>
-		inline friend worker_function_t get_friendly_lambda(engine* that, Argv&&... args)
+		struct process_functor_t;
+		struct process_name_and_surname_functor_t;
+		friend struct process_functor_t;
+		friend struct process_name_and_surname_functor_t;
+		struct process_functor_t
 		{
-			return [&](const stop_token_t& token, bool& x) {
-				dassert(that != nullptr, "given pointer to class, cannot be nullptr"_u8);
-				(that->*X)(token, std::forward<Argv>(args)...);
-				x = true;
-			};
-		}
+			engine* that;
+			str orcid;
+
+			process_functor_t(engine* i_that, const str& i_orcid) : that{i_that}, orcid{i_orcid} {}
+
+			virtual void operator()(const stop_token_t& token, bool& ready)
+			{
+				that->process(token, orcid);
+				ready = true;
+			}
+		};
+		struct process_name_and_surname_functor_t : public process_functor_t
+		{
+			str name;
+			str surname;
+
+			process_name_and_surname_functor_t(engine* i_that, const str& i_orcid, const str& i_name, const str& i_surname)
+				:process_functor_t{i_that, i_orcid}, name{i_name}, surname{i_surname} {}
+
+			virtual void operator()(const stop_token_t& token, bool& ready) override
+			{
+				that->process_name_and_surname(token, name, surname, orcid);
+				ready = true;
+			}
+		};
 
 		/** @brief storage for persons extractors */
 		container<orm::persons_extractor_t> m_persons_reference;

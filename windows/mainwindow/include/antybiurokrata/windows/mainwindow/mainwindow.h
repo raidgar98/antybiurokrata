@@ -18,6 +18,7 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	Q_OBJECT
 
 	using Log<MainWindow>::log;
+	using persons_extractor_storage_t = std::weak_ptr<core::orm::persons_extractor_t>;
 	core::engine eng;
 
  public:
@@ -26,7 +27,7 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
  signals:
 
-	void send_neighbours(QSharedPointer<core::orm::persons_extractor_t>);
+	void send_neighbours(persons_extractor_storage_t);
 	void send_progress(const size_t);
 
  private slots:
@@ -42,7 +43,7 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
  public slots:
 
-	void collect_neighbours(QSharedPointer<core::orm::persons_extractor_t>);
+	void collect_neighbours(persons_extractor_storage_t);
 	void set_progress(const size_t);
 
  private:

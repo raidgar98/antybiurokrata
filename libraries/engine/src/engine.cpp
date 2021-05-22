@@ -1,6 +1,8 @@
 #include <antybiurokrata/libraries/engine/engine.h>
 #include <antybiurokrata/libraries/global_adapters.hpp>
 
+#include <condition_variable>
+
 namespace ga = core::network::global_adapters;
 using namespace core;
 
@@ -48,14 +50,13 @@ bool engine::is_last_summary_avaiable() const { return m_last_summary.get() != n
 
 void engine::start(const str& orcid)
 {
-	setup_new_thread(get_friendly_lambda<&engine::process>(this, orcid));
+	setup_new_thread(process_functor_t{this, orcid});
 }
 
 
 void engine::start(const str& name, const str& surname)
 {
-	setup_new_thread(
-		 get_friendly_lambda<&engine::process_name_and_surname>(this, name, surname, str{}));
+	setup_new_thread(process_name_and_surname_functor_t{ this, str{}, name, surname } );
 }
 
 
@@ -86,6 +87,10 @@ void engine::process(const std::stop_token& stop_token, const str& orcid) noexce
 	{
 		on_error(prepare_error_summary(e));
 	}
+	catch(const core::exceptions::exception<u16str>& e)
+	{
+		log.error() << "wide error!: " << e.what() << logger::endl;
+	}
 	catch(...)
 	{
 		on_error(prepare_error_summary());
@@ -103,6 +108,10 @@ void engine::process_name_and_surname(const std::stop_token& stop_token, const s
 	{
 		on_error(prepare_error_summary(e));
 	}
+	catch(const core::exceptions::exception<u16str>& e)
+	{
+		log.error() << "wide error!: " << e.what() << logger::endl;
+	}
 	catch(...)
 	{
 		on_error(prepare_error_summary());
@@ -113,22 +122,86 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 								  const str& orcid)
 {
 	auto conv = get_conversion_engine();
-	const u16str w_name{conv.from_bytes(name)};
-	const u16str w_surname{conv.from_bytes(surname)};
-	const u16str w_orcid{conv.from_bytes(orcid)};
-	const auto stop = [&]() -> bool {
+	const objects::polish_name_t w_name{conv.from_bytes(name)};
+	const objects::polish_name_t w_surname{conv.from_bytes(surname)};
+	orm::persons_extractor_t orcid_visitor{};
+	orm::persons_extractor_t scopus_visitor{};
+	str w_orcid{orcid};
+
+	const auto stop = [&]() {
 		if(stop_token.stop_requested()) dassert(false, "stopped on request!"_u8);
-		else [[likely]]
-			return true;
-		return false; /* <- dead code */
 	};
 
-	dassert{objects::detail::polish_validator{w_name}, "given name is not valid polish name"_u8};
-	dassert{objects::detail::polish_validator{w_surname},
-			  "given surname is not valid polish name"_u8};
+	{ // local scope to delete synchronization objects, after usage
+		std::mutex mtx_orcid;
+		std::condition_variable cv_orcid;
+		auto& inner_persons_extractor = m_persons_reference;
+		auto& inner_publications_extractor = m_publications_reference;
 
-	stop();
+		const auto bgpolsl_getter = [&]() {
+			inner_persons_extractor.reset(new orm::persons_extractor_t{});
+			inner_publications_extractor.reset(new orm::publications_extractor_t{*inner_persons_extractor});
 
+			// on_start();
 
-	on_finish(nullptr);
+			auto publications_raw = ga::polsl.get_person(name, surname);
+
+			// on_calculated_progress(persons_data->size());
+
+			for(auto& pub_raw: *publications_raw)
+			{
+				// on_progress(1)
+				pub_raw.accept(&(*inner_publications_extractor));
+			}
+
+			if(w_orcid.empty())
+			{
+				for(const auto& p: inner_persons_extractor->persons)
+				{
+					const auto& person = (*p);
+					if(person().name == w_name && person().surname == w_surname)
+					{
+						w_orcid = objects::orcid_t::value_t::to_string(person().orcid()());
+						cv_orcid.notify_all();
+						return;
+					}
+				}
+			}
+			dassert(false, "person not found!?"_u8);
+		};
+
+		const auto orcid_getter = [&]() {
+			std::unique_lock<std::mutex> lk{mtx_orcid};
+			if(w_orcid.empty()) cv_orcid.wait(lk);	  // wait just once
+			dassert(!w_orcid.empty(), "orcid not set!"_u8);
+			network::orcid_adapter::result_t orcid_ret = ga::orcid.get_person(w_orcid);
+
+			orm::persons_extractor_t::shallow_copy_persons(*inner_persons_extractor, orcid_visitor);
+			orm::publications_extractor_t pub_visitor{ orcid_visitor };
+			for(auto& x : *orcid_ret) x.accept(&pub_visitor);
+		};
+
+		const auto scopus_getter = [&]() {
+			std::unique_lock<std::mutex> lk{mtx_orcid};
+			if(w_orcid.empty()) cv_orcid.wait(lk);	  // wait just once
+			dassert(!w_orcid.empty(), "orcid not set!"_u8);
+			network::scopus_adapter::result_t scopus_ret = ga::scopus.get_person(w_orcid);
+
+			orm::persons_extractor_t::shallow_copy_persons(*inner_persons_extractor, scopus_visitor);
+			orm::publications_extractor_t pub_visitor{ scopus_visitor };
+			for(auto& x : *scopus_ret) x.accept(&pub_visitor);
+		};
+
+		{
+			stop();
+			std::jthread th1{bgpolsl_getter};
+			stop();
+			std::jthread th2{orcid_getter};
+			stop();
+			std::jthread th3{scopus_getter};
+			stop();
+		}
+	}
+
+	on_finish(m_persons_reference);
 }

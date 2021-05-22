@@ -42,7 +42,8 @@ namespace core
 					(*np)().name	 = (*person)().name;
 					(*np)().surname = (*person)().surname;
 					(*np)().orcid	 = (*person)().orcid;
-					output.persons.emplace(np);
+					auto pair = output.persons.emplace(np);
+					if(pair.second) (*pair.first->get())().publictions()()->clear();
 				}
 			}
 
