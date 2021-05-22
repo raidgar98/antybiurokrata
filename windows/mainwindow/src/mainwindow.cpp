@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 		 "QSharedPointer<core::orm::persons_extractor_t>");
 	QObject::connect(this, &MainWindow::send_neighbours, this, &MainWindow::collect_neighbours);
 	QObject::connect(this, &MainWindow::send_progress, this, &MainWindow::set_progress);
+	eng.on_progress.register_slot([&](const size_t progress) { this->send_progress(progress); });
 }
 
 MainWindow::~MainWindow() { delete ui; }

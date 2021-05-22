@@ -13,8 +13,7 @@ namespace core
 			using namespace patterns::serial;
 			using patterns::serial::serial_helper_t;
 
-			template<typename T>
-			struct shared_compare 
+			template<typename T> struct shared_compare
 			{
 				using sT = std::shared_ptr<T>;
 				bool operator()(const sT& s1, const sT& s2) const
@@ -187,7 +186,8 @@ namespace core
 			template<typename T> struct shared_set_deserial
 			{
 				template<typename stream_type>
-				shared_set_deserial(stream_type& is, std::set<std::shared_ptr<T>, shared_compare<T> >& data)
+				shared_set_deserial(stream_type& is,
+										  std::set<std::shared_ptr<T>, shared_compare<T>>& data)
 				{
 					using patterns::serial::delimiter;
 					size_t size;
@@ -218,14 +218,16 @@ namespace core
 			template<typename T> struct shared_set_serial
 			{
 				template<typename stream_type>
-				shared_set_serial(stream_type& is, std::set<std::shared_ptr<T>, shared_compare<T> >& data)
+				shared_set_serial(stream_type& is,
+										std::set<std::shared_ptr<T>, shared_compare<T>>& data)
 				{
 					using patterns::serial::delimiter;
 					is << data.size() << delimiter;
 					for(auto x: data)
 					{
 						if(x.get()) is << 1 << delimiter << *x;
-						else is << 0;
+						else
+							is << 0;
 
 						is << delimiter;
 					}
@@ -240,8 +242,7 @@ namespace core
 			template<typename Coll> struct shared_collection_pretty_serial
 			{
 				template<typename stream_type>
-				shared_collection_pretty_serial(stream_type& os,
-													 const Coll& data)
+				shared_collection_pretty_serial(stream_type& os, const Coll& data)
 				{
 					os << '[';
 					// for(size_t i = 0; i < data.size(); ++i)
@@ -348,16 +349,21 @@ namespace core
 			 * @tparam T type in shared vector
 			 */
 			template<auto X, typename T> using svec_ser = ser<X, std::vector<std::shared_ptr<T>>>;
-			template<typename T> using shared_vector_pretty_serial = shared_collection_pretty_serial<std::vector<std::shared_ptr<T>> >;
-			
+			template<typename T>
+			using shared_vector_pretty_serial
+				 = shared_collection_pretty_serial<std::vector<std::shared_ptr<T>>>;
+
 			/**
 			 * @brief alias for serializing shared set
 			 * 
 			 * @tparam X reference to previous member
 			 * @tparam T type in shared set
 			 */
-			template<auto X, typename T> using sset_ser = ser<X, std::set<std::shared_ptr<T>, shared_compare<T> >>;
-			template<typename T> using shared_set_pretty_serial = shared_collection_pretty_serial< std::set<std::shared_ptr<T>, shared_compare<T> > >;
+			template<auto X, typename T>
+			using sset_ser = ser<X, std::set<std::shared_ptr<T>, shared_compare<T>>>;
+			template<typename T>
+			using shared_set_pretty_serial
+				 = shared_collection_pretty_serial<std::set<std::shared_ptr<T>, shared_compare<T>>>;
 
 			/**
 			 * @brief alias for serializing shared vector

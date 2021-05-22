@@ -37,7 +37,7 @@
  * int main()
  * {
  * 	MySuperButton btn;
- * 	btn.on_click.register([](const postion& pos){ std::cout << "clicked on: ( " << pos.x << " ; " << pos.y << " )\n"; }, patterns::PRIORITY::LOW);
+ * 	btn.on_click.register([](const postion& pos){ std::cout << "clicked on: ( " << pos.x << " ; " << pos.y << " )\n"; });
  * 	btn.click({10, 10}); // prints: "hello from MySuperButton::click\nclicked on: ( 10 ; 10 )\n"
  * 	return 0;
  * }
@@ -56,21 +56,43 @@ namespace patterns
 	using boost::signals2::connection;
 	using boost::signals2::signal;
 
-	/**
-	 * @brief avaiable priorities for signals
-	 */
-	enum class Priority : uint8_t
+	/** @brief empty struct, alternative to void */
+	struct empty_data_t
 	{
-		HIGH	 = 3,
-		MEDIUM = 2,
-		LOW	 = 1
 	};
 
 	/**
-	 * @brief empty struct
+	 * @brief holds signal object and provides basic methode of calling
+	 * 
+	 * @tparam arg_type argument for signal to send
 	 */
-	struct empty_data_t
+	template<class arg_type> struct observable_impl_data_holder
 	{
+		using slot_function_t = std::function<void(arg_type)>;
+
+	 protected:
+		/**
+		 * @brief calling this function sends signal
+		 * 
+		 * @param arg data to send
+		 */
+		void invoke(const arg_type& arg) { this->__signal(arg); }
+
+		/** @brief signal holder */
+		signal<void(arg_type)> __signal;
+	};
+
+	/** @brief specialization for void parameter */
+	template<> struct observable_impl_data_holder<void>
+	{
+		using slot_function_t = std::function<void()>;
+
+	 protected:
+		/** @brief calling this function sends signal */
+		void invoke() { this->__signal(); }
+
+		/** @brief signal holder */
+		signal<void()> __signal;
 	};
 
 	/**
@@ -80,37 +102,21 @@ namespace patterns
 	 * @tparam arg_type type of sending data with signal
 	 */
 	template<class arg_type = empty_data_t>
-	class observable_impl
+	class observable_impl : public observable_impl_data_holder<arg_type>
 	{
-		using slot_function_t = std::function<void(arg_type)>;
+		using slot_function_t = typename observable_impl_data_holder<arg_type>::slot_function_t;
 
 	 public:
 		/**
 		 * @brief registers function to call when singal is invoked
 		 * 
 		 * @param function function to call
-		 * @param p priority (by default: MEDIUM)
 		 * @return connection boost connection object
 		 */
-		connection register_slot(const slot_function_t& function,
-										 const Priority& p = Priority::MEDIUM)
+		connection register_slot(const slot_function_t& function)
 		{
-			return __signal.connect(function, static_cast<uint8_t>(p));
-			// return __signal.connect(p, function);
+			return this->__signal.connect(function);
 		}
-
-	 protected:
-		/**
-		 * @brief calling this function sends signal
-		 * 
-		 * @param arg data to send
-		 */
-		std::enable_if<!std::is_same_v<arg_type, void>, void> invoke(const arg_type& arg) { __signal(arg); }
-		std::enable_if<std::is_same_v<arg_type, void>, void> invoke() { __signal(); }
-
-	 private:
-		/** signal holder */
-		signal<void(arg_type)> __signal;
 	};
 
 	/**
@@ -119,8 +125,7 @@ namespace patterns
 	 * @tparam arg_type type of sending data with signal
 	 * @tparam __owner required to set friendship
 	 */
-	template<class arg_type, class __owner> 
-	class observable : public observable_impl<arg_type>
+	template<class arg_type, class __owner> class observable : public observable_impl<arg_type>
 	{
 		/** @brief required to make possible invoking by owner */
 		friend __owner;
@@ -139,19 +144,17 @@ namespace patterns
 	 * 
 	 * @tparam __owner required to set friendship
 	 */
-	template<class __owner>
-	class observable<void, __owner> : public observable_impl<void>
+	template<class __owner> class observable<void, __owner> : public observable_impl<void>
 	{
 		/** @brief required to make possible invoking by owner */
 		friend __owner;
 
-	protected:
-
+	 protected:
 		/** @brief same as some_signal.invoke(), just fancier */
 		void operator()() { invoke(); }
-	}
+	};
 
 	/** @brief [S]hort observable */
-	template<typename __owner> using sobservable = observable_impl<void, __owner>;
+	template<typename __owner> using sobservable = observable<void, __owner>;
 
 };	  // namespace patterns

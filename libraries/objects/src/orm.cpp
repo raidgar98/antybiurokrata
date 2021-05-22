@@ -58,9 +58,8 @@ namespace core
 				if(pair.second)
 					log.info() << "successfully added new author: "
 								  << patterns::serial::pretty_print{**pair.first} << logger::endl;
-				if(current_publication)
-					(**pair.first)().publictions()()->emplace(current_publication);
-		}
+				if(current_publication) (**pair.first)().publictions()()->emplace(current_publication);
+			}
 
 			return true;
 		}

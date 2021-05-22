@@ -75,8 +75,7 @@ namespace core
 		detail::polish_unifier::polish_unifier(u16str& x) noexcept
 		{
 			const auto ll = plPL();
-			for(u16char_t& c: x)
-				c = static_cast<u16char_t>(std::toupper(static_cast<wchar_t>(c), ll));
+			for(u16char_t& c: x) c = static_cast<u16char_t>(std::toupper(static_cast<wchar_t>(c), ll));
 		}
 
 		detail::ids_unifier::ids_unifier(u16str& x) noexcept
@@ -85,17 +84,18 @@ namespace core
 			for(u16char_t& c: x)
 			{
 				const wchar_t wc = c;
-				if( std::iswalnum(wc) ) c = static_cast<u16char_t>(std::toupper(wc, ll));
+				if(std::iswalnum(wc)) c = static_cast<u16char_t>(std::toupper(wc, ll));
 			}
 		}
 
 		int detail::detail_publication_t::compare(const detail::detail_publication_t& that) const
 		{
-			static const auto calc = [](const auto& x1, const auto& x2)
-			{
+			static const auto calc = [](const auto& x1, const auto& x2) {
 				if(x1 < x2) return -1;
-				else if(x2 < x1) return 1;
-				else return 0;
+				else if(x2 < x1)
+					return 1;
+				else
+					return 0;
 			};
 			const detail::detail_publication_t& me = *this;	  // alias, to make it handy
 
@@ -111,12 +111,15 @@ namespace core
 
 			// worst case
 			const int r_year = calc(me.year, that.year);
-			if(r_year == 0) 
+			if(r_year == 0)
 			{
 				const int r_title = calc(me.title()(), that.title()());
 				if(r_title == 0) return calc(me.polish_title()(), that.polish_title()());
-				else return r_title;
-			}else return r_year;
+				else
+					return r_title;
+			}
+			else
+				return r_year;
 		}
 
 	}	 // namespace objects

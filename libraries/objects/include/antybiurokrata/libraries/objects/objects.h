@@ -353,13 +353,13 @@ namespace core
 				}
 
 				inline friend bool operator<(const detail_publication_t& me,
-														const detail_publication_t& other)
+													  const detail_publication_t& other)
 				{
 					return me.compare(other) < 0;
 				}
 
 				inline friend bool operator>(const detail_publication_t& me,
-														const detail_publication_t& other)
+													  const detail_publication_t& other)
 				{
 					return me.compare(other) > 0;
 				}

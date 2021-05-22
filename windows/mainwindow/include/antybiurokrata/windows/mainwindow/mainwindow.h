@@ -4,7 +4,7 @@
 #include <QListWidgetItem>
 #include <QtWidgets/QMainWindow>
 
-#include <antybiurokrata/libraries/orm/orm.h>
+#include <antybiurokrata/libraries/engine/engine.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -18,6 +18,7 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	Q_OBJECT
 
 	using Log<MainWindow>::log;
+	core::engine eng;
 
  public:
 	MainWindow(QWidget* parent = nullptr);
