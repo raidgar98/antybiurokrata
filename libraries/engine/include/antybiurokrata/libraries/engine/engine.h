@@ -15,8 +15,10 @@
 #include <antybiurokrata/libraries/logger/logger.h>
 #include <antybiurokrata/libraries/orm/orm.h>
 
+
 namespace core
 {
+
 	/**
 	 * @brief encapsulates all purpose of this project
 	 * 
@@ -37,17 +39,44 @@ namespace core
 		template<typename arg> using observable = patterns::observable<arg, engine>;
 		using summary_t								 = int*;
 		using error_summary_t						 = int*;
+		using stop_token_t							 = std::stop_token;
+		using worker_function_t						 = std::function<void(const stop_token_t&, bool&)>;
+
+		/**
+		 * @brief get the friendly lambda object for this class
+		 * 
+		 * @tparam X pointer to function
+		 * @tparam Argv any argument tpes
+		 * @param that pointer to this class
+		 * @param args any arguments
+		 * @return worker_function_t 
+		 */
+		template<auto X, typename... Argv>
+		inline friend worker_function_t get_friendly_lambda(engine* that, Argv&&... args)
+		{
+			return [&](const stop_token_t& token, bool& x) {
+				dassert(that != nullptr, "given pointer to class, cannot be nullptr"_u8);
+				(that->*X)(token, std::forward<Argv>(args)...);
+				x = true;
+			};
+		}
 
 		/** @brief storage for persons extractors */
 		container<orm::persons_extractor_t> m_persons_reference;
-		container<orm::persons_extractor_t> m_persons_compare;
 
 		/** @brief storage for publications extractors */
 		container<orm::publications_extractor_t> m_publications_reference;
-		container<orm::publications_extractor_t> m_publications_compare;
 
 		/** @brief storage for last summary (cache a bit) */
 		container<summary_t> m_last_summary;
+
+		/** 
+		 * @brief handler for working thread 
+		 * 
+		 * @remark first actual worker
+		 * @attention second asks: 'is it finished?' true = yes, false = no
+		 */
+		container<std::pair<container<std::jthread>, bool>> m_worker;
 
 	 public:
 		/** @brief sends how many items will be processed */
@@ -72,16 +101,22 @@ namespace core
 		 * @brief proxy to start(u16str, u16str), but get name and surname with orcid API
 		 * 
 		 * @param orcid orcid string
+		 * 
+		 * @remark this function automatically detaches to new thread
+		 * @exception assert_exception if worker is already running
 		 */
-		void start(const u16str& orcid);
+		void start(const str& orcid);
 
 		/**
 		 * @brief produces summary
 		 * 
 		 * @param name utf-8 polish name
 		 * @param surname utf-8 polish surname
+		 * 
+		 * @remark this function automatically detaches to new thread
+		 * @exception assert_exception if worker is already running
 		 */
-		void start(const u16str& name, const u16str& surname);
+		void start(const str& name, const str& surname);
 
 	 protected:
 		/**
@@ -93,31 +128,55 @@ namespace core
 		 * 
 		 * @exception not_found_exception if cannot extract name AND surname from ORCID
 		 */
-		void get_name_and_surname(u16str_v orcid, u16str& out_name, u16str& out_surname) const;
+		void get_name_and_surname(const str& orcid, str& out_name, str& out_surname) const;
 
 		/**
 		 * @brief proxy to process(u16str, u16str) but extracts name and surname from orcid and catches all errors
 		 * 
-		 * @param orcid 
+		 * @param orcid valid orcis string
 		 */
-		void process(const u16str& orcid) noexcept;
+		void process(const stop_token_t&, const str& orcid) noexcept;
 
 		/**
 		 * @brief proxy to process_impl(u16str, u16str) and catches all exceptions
 		 * 
 		 * @param name valid name
 		 * @param surname valid surname
+		 * @param orcid [optional] valid orcid
 		 */
-		void process(const u16str& name, const u16str& surname) noexcept;
+		void process_name_and_surname(const stop_token_t&, const str& name, const str& surname,
+												const str& orcid = str{}) noexcept;
 
 		/**
 		 * @brief do all the work with creating summary as result
 		 * 
 		 * @param name valid name
 		 * @param surname valid surname
+		 * @param orcid [optional] valid orcid
 		 * 
 		 * @exception assert_exception if checks fails (lot's of checks, no sense to desctipt all of them)
 		 */
-		void process_impl(const u16str& name, const u16str& surname);
+		void process_impl(const stop_token_t&, const str& name, const str& surname,
+								const str& orcid = str{});
+
+		/** @brief if cannot create new thread throws assert_exception */
+		void check_is_new_worker_possible() const;
+
+		/** @brief safely constructs new thread */
+		void setup_new_thread(worker_function_t fun);
+
+		/**
+		 * @brief prepares error summary, based on exception
+		 * 
+		 * @return error_summary_t 
+		 */
+		error_summary_t prepare_error_summary(const core::exceptions::exception<str>& ex);
+
+		/**
+		 * @brief prepares error summary, for unknown exception
+		 * 
+		 * @return error_summary_t 
+		 */
+		error_summary_t prepare_error_summary();
 	};
 }	 // namespace core

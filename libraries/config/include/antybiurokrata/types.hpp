@@ -126,6 +126,7 @@ namespace core
 		template<typename MsgType>
 		struct exception : public exception_base<exception<MsgType>, MsgType>
 		{
+			using exception_base<exception<MsgType>, MsgType>::exception_base;
 		};
 
 		/**
@@ -135,6 +136,12 @@ namespace core
 		struct assert_exception : public exception_base<assert_exception<MsgType>, MsgType>
 		{
 			using exception_base<assert_exception<MsgType>, MsgType>::exception_base;
+		};
+
+		template<typename MsgType>
+		struct not_found_exception : public exception_base<not_found_exception<MsgType>, MsgType>
+		{
+			using exception_base<not_found_exception<MsgType>, MsgType>::exception_base;
 		};
 
 		/**

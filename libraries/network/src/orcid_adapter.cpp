@@ -1,5 +1,5 @@
 // Project Includes
-#include <antybiurokrata/libraries/orcid_adapter/orcid_adapter.h>
+#include <antybiurokrata/libraries/global_adapters.hpp>
 #include <antybiurokrata/libraries/demangler/demangler.h>
 
 // STL
@@ -9,6 +9,12 @@ namespace core
 {
 	namespace network
 	{
+
+		namespace global_adapters
+		{
+			orcid_adapter orcid{};
+		}
+
 		drogon::HttpRequestPtr orcid_adapter::prepare_request(const str& orcid)
 		{
 			const std::map<std::string, std::string> headers{
@@ -20,6 +26,142 @@ namespace core
 			req->setPath("/v3.0/" + orcid + "/works");
 
 			return req;
+		}
+
+		drogon::HttpRequestPtr orcid_adapter::prepare_request_for_person(const str& orcid)
+		{
+			drogon::HttpRequestPtr result = prepare_request(orcid);
+			result->setPath("/v3.0/" + orcid + "/person");
+			return result;
+		}
+
+		void orcid_adapter::get_name_and_surname(const str& orcid, str& out_name, str& out_surname)
+		{
+			auto try_split = [&](const str_v& view) -> bool {
+				core::string_utils::split_words<str_v> splitter{view, ' '};
+				auto first	= splitter.begin();
+				auto second = splitter.begin();
+				second++;
+				if(first != splitter.end() && !(*first).empty() && second != splitter.end()
+					&& !(*second).empty())
+				{
+					out_name		= *first;
+					out_surname = *second;
+					return true;
+				}
+				else
+					return false;
+			};
+
+			const connection_handler::raw_response_t response
+				 = send_request(prepare_request_for_person(orcid));
+			dassert{response.first == drogon::ReqResult::Ok, "expected 200 response code"_u8};
+			log.info() << "successfully got response from `https://pub.orcid.org`" << logger::endl;
+
+			using jvalue			  = Json::Value;
+			const auto null_value  = jvalue{Json::ValueType::nullValue};
+			const auto empty_array = jvalue{Json::ValueType::arrayValue};
+			std::shared_ptr<jvalue> json{nullptr};
+
+			try
+			{
+				json = response.second->getJsonObject();
+			}
+			catch(const std::exception& e)
+			{
+				log.error() << "cought `std::exception` while gathering json. what(): " << logger::endl
+								<< e.what() << logger::endl;
+			}
+			catch(...)
+			{
+				log.error() << "cought unknown exception while gathering json" << logger::endl;
+			}
+
+			dassert(json.get() != nullptr, "empty result or invalid json"_u8);
+
+			const jvalue& name = json->get("name", null_value);
+			if(name != null_value) [[likely]]
+			{
+				const jvalue& given_names = name.get("given-names", null_value);
+				const jvalue& family_name = name.get("family-name", null_value);
+				str to_split{};
+
+				if(family_name == null_value && given_names != null_value)
+				{
+					const jvalue& value = given_names.get("value", null_value);
+					if(value != null_value && value.isString()) to_split = value.asCString();
+				}
+				else if(given_names == null_value && family_name != null_value) [[unlikely]]
+				{
+					const jvalue& value = family_name.get("value", null_value);
+					if(value != null_value && value.isString()) to_split = value.asCString();
+				}
+				else if(given_names != null_value && family_name != null_value) [[likely]]
+				{
+					const jvalue& name	 = given_names.get("value", null_value);
+					const jvalue& surname = family_name.get("value", null_value);
+					if(name != null_value && surname != null_value) [[likely]]
+					{
+						dassert(name.isString(), "name is not a string"_u8);
+						dassert(surname.isString(), "surname is not a string"_u8);
+						out_name		= name.asCString();
+						out_surname = surname.asCString();
+						return;
+					}
+				}
+				if(!to_split.empty() && try_split(to_split)) return;
+			}
+
+			const jvalue& addresses = json->get("addresses", null_value);
+			if(addresses != null_value)
+			{
+				const jvalue& address_arr = addresses.get("address", empty_array);
+				if(address_arr.isArray())
+				{
+					for(const jvalue& item: address_arr)
+					{
+						const jvalue& source = item.get("source", null_value);
+						if(source != null_value)
+						{
+							const jvalue& source_name = source.get("source-name", null_value);
+							if(source_name != null_value)
+							{
+								const jvalue& value = source_name.get("value", null_value);
+								if(value != null_value && value.isString())
+								{
+									const str x{value.asCString()};
+									if(try_split(x)) return;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			constexpr str_v not_found{"cannot extract name from given orcid"};
+			const jvalue& external_identifiers = json->get("external-identifiers", null_value);
+			dassert(external_identifiers != null_value, not_found);
+			const jvalue& external_identifier
+				 = external_identifiers.get("external-identifier", empty_array);
+			dassert(external_identifier.isArray() && external_identifier.size() > 0, not_found);
+			for(const jvalue& item: external_identifier)
+			{
+				const jvalue& source = item.get("source", null_value);
+				if(source != null_value)
+				{
+					const jvalue& assertion_name = source.get("assertion-origin-name", null_value);
+					if(assertion_name != null_value)
+					{
+						const jvalue& value = assertion_name.get("value", null_value);
+						if(value != null_value && value.isString())
+						{
+							const str x{value.asCString()};
+							if(try_split(x)) return;
+						}
+					}
+				}
+			}
+			dassert(false, not_found);
 		}
 
 		orcid_adapter::result_t orcid_adapter::get_person(const str& orcid)

@@ -136,7 +136,7 @@ namespace patterns
 		 * 
 		 * @param arg data to send
 		 */
-		void operator()(const arg_type& arg) { invoke(arg); }
+		void operator()(const arg_type& arg) { observable_impl_data_holder<arg_type>::invoke(arg); }
 	};
 
 	/**

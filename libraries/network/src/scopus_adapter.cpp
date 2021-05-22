@@ -1,5 +1,5 @@
 // Project Includes
-#include <antybiurokrata/libraries/scopus_adapter/scopus_adapter.h>
+#include <antybiurokrata/libraries/global_adapters.hpp>
 #include <antybiurokrata/libraries/demangler/demangler.h>
 
 // STL
@@ -9,6 +9,11 @@ namespace core
 {
 	namespace network
 	{
+		namespace global_adapters
+		{
+			scopus_adapter scopus{};
+		}
+
 		drogon::HttpRequestPtr scopus_adapter::prepare_request(const str& orcid, const size_t offset,
 																				 const size_t count)
 		{

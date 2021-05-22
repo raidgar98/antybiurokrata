@@ -1,5 +1,5 @@
 // Project Includes
-#include <antybiurokrata/libraries/bgpolsl_adapter/bgpolsl_adapter.h>
+#include <antybiurokrata/libraries/global_adapters.hpp>
 #include <antybiurokrata/libraries/html_scalpel/html_scalpel.h>
 #include <antybiurokrata/libraries/demangler/demangler.h>
 
@@ -11,6 +11,11 @@ namespace core
 {
 	namespace network
 	{
+		namespace global_adapters
+		{
+			bgpolsl_adapter polsl{};
+		}
+
 		namespace detail
 		{
 			void bgpolsl_repr_t::print() const

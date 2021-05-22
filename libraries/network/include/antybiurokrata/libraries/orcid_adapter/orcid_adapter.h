@@ -35,6 +35,15 @@ namespace core
 			 */
 			[[nodiscard]] result_t get_person(const str& orcid);
 
+			/**
+			 * @brief gets name and surname object for given orcid
+			 * 
+			 * @param orcid orcid string 
+			 * @param out_name output for name
+			 * @param out_surname output for surname
+			 */
+			void get_name_and_surname(const str& orcid, str& out_name, str& out_surname);
+
 		 private:
 			/**
 			 * @brief prepares request for given orcid string (headers, paths, etc...)
@@ -43,6 +52,14 @@ namespace core
 			 * @return drogon::HttpRequestPtr 
 			 */
 			drogon::HttpRequestPtr prepare_request(const str& orcid);
+
+			/**
+			 * @brief prepares request for gathering personal data
+			 * 
+			 * @param orcid string
+			 * @return drogon::HttpRequestPtr 
+			 */
+			drogon::HttpRequestPtr prepare_request_for_person(const str& orcid);
 		};
 	}	 // namespace network
 }	 // namespace core

@@ -32,10 +32,19 @@ namespace core
 		bool detail::detail_orcid_t::is_valid_orcid_string(const u16str_v& data,
 																			str* conversion_output)
 		{
-			const static std::regex orcid_validator_regex{"(\\d{4}-){3}\\d{4}"};
 			const str conv{get_conversion_engine().to_bytes(u16str(data))};
 			if(conversion_output) *conversion_output = conv;
-			return std::regex_match(conv, orcid_validator_regex);
+			return is_valid_orcid_string(conv);
+		}
+
+
+		bool detail::detail_orcid_t::is_valid_orcid_string(const str_v& data)
+		{
+			const static std::regex orcid_validator_regex{"([0-9]{4}-){3}[0-9]{4}"};
+			if(data.empty() || data.size() > (words_in_orcid_num * 4) + (words_in_orcid_num - 1))
+				return false;
+			const str x{data};
+			return std::regex_match(x, orcid_validator_regex);
 		}
 
 		detail::detail_orcid_t detail::detail_orcid_t::from_string(const u16str_v& data)
@@ -46,6 +55,21 @@ namespace core
 
 			size_t i = 0;
 			for(str_v part: string_utils::split_words<str_v>{conv, '-'})
+			{
+				dassert(i < detail_orcid_t::words_in_orcid_num, "out of range"_u8);
+				result.identifier()[i++] = static_cast<uint16_t>(std::stoi(part.data()));
+			}
+
+			return result;
+		}
+
+		detail::detail_orcid_t detail::detail_orcid_t::from_string(const str_v& data)
+		{
+			dassert{is_valid_orcid_string(data), "given string is not valid ORCID number"_u8};
+			detail_orcid_t result{};
+
+			size_t i = 0;
+			for(str_v part: string_utils::split_words<str_v>{data, '-'})
 			{
 				dassert(i < detail_orcid_t::words_in_orcid_num, "out of range"_u8);
 				result.identifier()[i++] = static_cast<uint16_t>(std::stoi(part.data()));
@@ -69,6 +93,7 @@ namespace core
 
 				if(!is_letter && !is_allowed_char) return false;
 			}
+
 			return !bad_last;
 		}
 

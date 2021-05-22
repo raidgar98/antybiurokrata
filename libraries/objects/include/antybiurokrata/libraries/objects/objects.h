@@ -83,6 +83,15 @@ namespace core
 															 str* conversion_output = nullptr);
 
 				/**
+				 * @brief checks is given string is proper as orcid
+				 * 
+				 * @param data orcid string to check
+				 * @return true if string is valid
+				 * @return false if string is not valid
+				 */
+				static bool is_valid_orcid_string(const str_v& data);
+
+				/**
 				 * @brief implementation of std::string -> detail_orcid_t conversion
 				 * 
 				 * @param data orcid string 
@@ -90,6 +99,15 @@ namespace core
 				 * @throw assert_exception thrown if string is not valid
 				*/
 				static detail_orcid_t from_string(const u16str_v& data);
+
+				/**
+				 * @brief implementation of std::string -> detail_orcid_t conversion
+				 * 
+				 * @param data orcid string 
+				 * @return detail_orcid_t 
+				 * @throw assert_exception thrown if string is not valid
+				*/
+				static detail_orcid_t from_string(const str_v& data);
 
 				friend inline bool operator==(const detail_orcid_t& o1, const detail_orcid_t& o2)
 				{
@@ -148,7 +166,9 @@ namespace core
 				{
 					using namespace core;
 
-					if(v.size() == 0) return;
+					dassert(validate(v),
+							  "incoming data: `"_u16 + u16str{v}
+									+ "` cannot be set, it does not meet requirements!"_u16);
 					const bool has_hashes{v.find(u'#') != u16str_v::npos};
 					const bool has_ampersands{v.find(u'&') != u16str_v::npos};
 					const bool has_percents{v.find(u'%') != u16str_v::npos};
@@ -230,6 +250,7 @@ namespace core
 					return s1.data() < s2.data();
 				}
 
+				// static bool validate(const u16str_v& x) { const bool val = static_cast<bool>(validator{x}); std::cout << "valid: " << val << std::endl; return val; }
 				static bool validate(const u16str_v& x) { return static_cast<bool>(validator{x}); }
 
 			 private:
