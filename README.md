@@ -30,8 +30,6 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 <!-- 	- [Web Of Science](https://developer.clarivate.com/apis/wos) // => failed: cannot access API -->
 🞎 add more tests
 
-🞎 implement multithreading
-
 🞎 design CLI
 
 🞎 implement configs
@@ -76,6 +74,7 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 
 🗹 design GUI
 
+🗹 implement multithreading
 
 ## Setup
 ---

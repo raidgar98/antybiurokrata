@@ -48,15 +48,12 @@ const engine::summary_t& engine::get_last_summary() const
 bool engine::is_last_summary_avaiable() const { return m_last_summary.get() != nullptr; }
 
 
-void engine::start(const str& orcid)
-{
-	setup_new_thread(process_functor_t{this, orcid});
-}
+void engine::start(const str& orcid) { setup_new_thread(process_functor_t{this, orcid}); }
 
 
 void engine::start(const str& name, const str& surname)
 {
-	setup_new_thread(process_name_and_surname_functor_t{ this, str{}, name, surname } );
+	setup_new_thread(process_name_and_surname_functor_t{this, str{}, name, surname});
 }
 
 
@@ -132,15 +129,16 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 		if(stop_token.stop_requested()) dassert(false, "stopped on request!"_u8);
 	};
 
-	{ // local scope to delete synchronization objects, after usage
+	{	 // local scope to delete synchronization objects, after usage
 		std::mutex mtx_orcid;
 		std::condition_variable cv_orcid;
-		auto& inner_persons_extractor = m_persons_reference;
+		auto& inner_persons_extractor		  = m_persons_reference;
 		auto& inner_publications_extractor = m_publications_reference;
 
 		const auto bgpolsl_getter = [&]() {
 			inner_persons_extractor.reset(new orm::persons_extractor_t{});
-			inner_publications_extractor.reset(new orm::publications_extractor_t{*inner_persons_extractor});
+			inner_publications_extractor.reset(
+				 new orm::publications_extractor_t{*inner_persons_extractor});
 
 			// on_start();
 
@@ -177,8 +175,8 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 			network::orcid_adapter::result_t orcid_ret = ga::orcid.get_person(w_orcid);
 
 			orm::persons_extractor_t::shallow_copy_persons(*inner_persons_extractor, orcid_visitor);
-			orm::publications_extractor_t pub_visitor{ orcid_visitor };
-			for(auto& x : *orcid_ret) x.accept(&pub_visitor);
+			orm::publications_extractor_t pub_visitor{orcid_visitor};
+			for(auto& x: *orcid_ret) x.accept(&pub_visitor);
 		};
 
 		const auto scopus_getter = [&]() {
@@ -188,8 +186,8 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 			network::scopus_adapter::result_t scopus_ret = ga::scopus.get_person(w_orcid);
 
 			orm::persons_extractor_t::shallow_copy_persons(*inner_persons_extractor, scopus_visitor);
-			orm::publications_extractor_t pub_visitor{ scopus_visitor };
-			for(auto& x : *scopus_ret) x.accept(&pub_visitor);
+			orm::publications_extractor_t pub_visitor{scopus_visitor};
+			for(auto& x: *scopus_ret) x.accept(&pub_visitor);
 		};
 
 		{

@@ -15,9 +15,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 	QObject::connect(this, &MainWindow::send_neighbours, this, &MainWindow::collect_neighbours);
 	QObject::connect(this, &MainWindow::send_progress, this, &MainWindow::set_progress);
 	// eng.on_progress.register_slot([&](const size_t progress) { this->send_progress(progress); });
-	eng.on_finish.register_slot([&](std::shared_ptr<core::orm::persons_extractor_t> ptr){
+	eng.on_finish.register_slot([&](std::shared_ptr<core::orm::persons_extractor_t> ptr) {
 		core::dassert(ptr.get(), "person_extractior cannot be nullptr!"_u8);
-		emit send_neighbours( persons_extractor_storage_t{ ptr } );
+		emit send_neighbours(persons_extractor_storage_t{ptr});
 	});
 }
 
@@ -62,7 +62,7 @@ void MainWindow::on_search_button_clicked()
 		return QString::fromStdString(ss.str());
 	};
 
-
+	// QListWidgetItem <- override #TODO
 	// clear_ui();
 	ui->neighbours->addItem("please wait...");
 	ui->publications->addItem("please wait...");
@@ -75,8 +75,10 @@ void MainWindow::on_search_button_clicked()
 				 .toStdString();
 
 	/** @note second check looks, like useless, but it's in case new tab appear */
-	if(ui->tabWidget->currentIndex() == 0) /* ORCID */ eng.start( resolv_orcid );
-	else if(ui->tabWidget->currentIndex() == 1) /* Name and surname */ eng.start(resolv_name, resolv_surname);
+	if(ui->tabWidget->currentIndex() == 0) /* ORCID */
+		eng.start(resolv_orcid);
+	else if(ui->tabWidget->currentIndex() == 1) /* Name and surname */
+		eng.start(resolv_name, resolv_surname);
 }
 
 void MainWindow::on_generate_report_clicked() {}
@@ -92,6 +94,7 @@ void MainWindow::on_neighbours_itemChanged(QListWidgetItem* item) {}
 void MainWindow::collect_neighbours(persons_extractor_storage_t bgperson_visitor)
 {
 	clear_ui();
+
 
 	size_t cmax	 = 0;
 	using coll_t = std::remove_reference<decltype(

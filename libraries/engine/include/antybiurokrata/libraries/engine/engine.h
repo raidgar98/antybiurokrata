@@ -64,8 +64,12 @@ namespace core
 			str name;
 			str surname;
 
-			process_name_and_surname_functor_t(engine* i_that, const str& i_orcid, const str& i_name, const str& i_surname)
-				:process_functor_t{i_that, i_orcid}, name{i_name}, surname{i_surname} {}
+			process_name_and_surname_functor_t(engine* i_that, const str& i_orcid, const str& i_name,
+														  const str& i_surname) :
+				 process_functor_t{i_that, i_orcid},
+				 name{i_name}, surname{i_surname}
+			{
+			}
 
 			virtual void operator()(const stop_token_t& token, bool& ready) override
 			{
