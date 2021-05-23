@@ -1,0 +1,1 @@
+#include <antybiurokrata/windows/publication_widget_item/publication_widget_item.h>

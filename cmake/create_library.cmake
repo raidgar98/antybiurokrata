@@ -48,3 +48,28 @@ MACRO(create_qt_library libname)
 	endforeach()
 
 ENDMACRO()
+
+MACRO(create_qt_library_no_ui libname)
+    set(CMAKE_AUTOUIC ON)
+	set(CMAKE_AUTOMOC ON)
+	set(CMAKE_AUTORCC ON)
+
+	GET_ALL_FILES(header_list *.h(pp)? *.ui )
+	MESSAGE("while creating Qt library `${libname}` found headers: [ ${header_list} ]")
+
+	add_library(${libname} STATIC src/${libname}.cpp ${header_list})
+	target_include_directories( ${libname} PUBLIC include )
+
+	set(variadic ${ARGN})
+	list(LENGTH variadic var_length)
+	target_link_libraries( ${libname} Qt5::Widgets Qt5::Core ${variadic} )
+
+	foreach( pack ${variadic} )
+		message("for ${libname} adding pack: ${pack} with includes: ${${pack}_INCLUDE_DIRECTORIES}")
+		if(pack STREQUAL "Drogon::Drogon")
+			continue()
+		endif()
+		include_directories(${${pack}_INCLUDE_DIRECTORIES})
+	endforeach()
+
+ENDMACRO()

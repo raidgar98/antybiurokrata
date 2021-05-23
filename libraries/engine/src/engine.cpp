@@ -121,6 +121,10 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 	auto conv = get_conversion_engine();
 	const objects::polish_name_t w_name{conv.from_bytes(name)};
 	const objects::polish_name_t w_surname{conv.from_bytes(surname)};
+	log.info() << patterns::serial::pretty_print{w_name} << logger::endl;
+	log.info() << w_name().raw << logger::endl;
+	log.info() << patterns::serial::pretty_print{w_surname} << logger::endl;
+	log.info() << w_surname().raw << logger::endl;
 	orm::persons_extractor_t orcid_visitor{};
 	orm::persons_extractor_t scopus_visitor{};
 	str w_orcid{orcid};
@@ -152,17 +156,16 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 				pub_raw.accept(&(*inner_publications_extractor));
 			}
 
-			if(w_orcid.empty())
+			if(!w_orcid.empty()) return;
+
+			for(const auto& p: inner_persons_extractor->persons)
 			{
-				for(const auto& p: inner_persons_extractor->persons)
+				const auto& person = (*p);
+				if(person().name == w_name && person().surname == w_surname)
 				{
-					const auto& person = (*p);
-					if(person().name == w_name && person().surname == w_surname)
-					{
-						w_orcid = objects::orcid_t::value_t::to_string(person().orcid()());
-						cv_orcid.notify_all();
-						return;
-					}
+					w_orcid = objects::orcid_t::value_t::to_string(person().orcid()());
+					cv_orcid.notify_all();
+					return;
 				}
 			}
 			dassert(false, "person not found!?"_u8);

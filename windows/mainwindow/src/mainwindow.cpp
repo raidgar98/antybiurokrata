@@ -1,5 +1,6 @@
 #include <antybiurokrata/windows/info_dialog/info_dialog.h>
 #include <antybiurokrata/windows/mainwindow/mainwindow.h>
+#include <antybiurokrata/windows/account_widget_item/account_widget_item.h>
 
 #include <antybiurokrata/libraries/bgpolsl_adapter/bgpolsl_adapter.h>
 #include <antybiurokrata/libraries/orcid_adapter/orcid_adapter.h>
@@ -108,7 +109,9 @@ void MainWindow::collect_neighbours(persons_extractor_storage_t bgperson_visitor
 		core::u16str label{p().name()().raw + u" " + p().surname()().raw + u"[ "};
 		label += static_cast<core::u16str>(p().orcid()()) + u" ]";
 
-		ui->neighbours->addItem(QString::fromStdU16String(label));
+        account_widget_item *item = new account_widget_item();
+        item->setText(QString::fromStdU16String(label));
+        ui->neighbours->addItem(item);
 		const size_t mmm = p().publictions()()->size();
 		if(mmm > cmax)
 		{

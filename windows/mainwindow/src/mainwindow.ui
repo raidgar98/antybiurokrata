@@ -98,7 +98,7 @@
                <string/>
               </property>
               <property name="text">
-               <string notr="true"/>
+               <string notr="true">0000</string>
               </property>
               <property name="maxLength">
                <number>4</number>
@@ -148,7 +148,7 @@
                <string/>
               </property>
               <property name="text">
-               <string notr="true"/>
+               <string notr="true">0001</string>
               </property>
               <property name="maxLength">
                <number>4</number>
@@ -198,7 +198,7 @@
                <string/>
               </property>
               <property name="text">
-               <string notr="true"/>
+               <string notr="true">7667</string>
               </property>
               <property name="maxLength">
                <number>4</number>
@@ -248,7 +248,7 @@
                <string/>
               </property>
               <property name="text">
-               <string notr="true"/>
+               <string notr="true">6697</string>
               </property>
               <property name="maxLength">
                <number>4</number>
@@ -279,6 +279,9 @@
               <property name="locale">
                <locale language="Polish" country="Poland"/>
               </property>
+              <property name="text">
+               <string>aDriaN</string>
+              </property>
               <property name="maxLength">
                <number>50</number>
               </property>
@@ -294,6 +297,9 @@
               </property>
               <property name="inputMask">
                <string/>
+              </property>
+              <property name="text">
+               <string>smagÓr</string>
               </property>
               <property name="maxLength">
                <number>100</number>
