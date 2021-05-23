@@ -6,5 +6,4 @@
 struct account_widget_item : public QListWidgetItem
 {
 	using QListWidgetItem::QListWidgetItem;
-
 };

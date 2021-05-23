@@ -109,9 +109,9 @@ void MainWindow::collect_neighbours(persons_extractor_storage_t bgperson_visitor
 		core::u16str label{p().name()().raw + u" " + p().surname()().raw + u"[ "};
 		label += static_cast<core::u16str>(p().orcid()()) + u" ]";
 
-        account_widget_item *item = new account_widget_item();
-        item->setText(QString::fromStdU16String(label));
-        ui->neighbours->addItem(item);
+		account_widget_item* item = new account_widget_item();
+		item->setText(QString::fromStdU16String(label));
+		ui->neighbours->addItem(item);
 		const size_t mmm = p().publictions()()->size();
 		if(mmm > cmax)
 		{
