@@ -18,7 +18,8 @@ namespace core
 				using sT = std::shared_ptr<T>;
 				bool operator()(const sT& s1, const sT& s2) const
 				{
-					dassert(s1 && s2, "one of pointers is nullptr!"_u8);
+					check_nullptr{s1.get()};
+					check_nullptr{s2.get()};
 					return *s1 < *s2;
 				}
 			};

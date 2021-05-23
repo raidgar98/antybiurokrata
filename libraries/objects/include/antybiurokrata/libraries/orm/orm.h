@@ -25,7 +25,8 @@ namespace core
 			{
 				bool operator()(const wrap_person_t& p1, const wrap_person_t& p2) const
 				{
-					dassert{p1 && p2, "both pointers cannot be nullptr"_u8};
+					check_nullptr{p1};
+					check_nullptr{p2};
 					return *p1 < *p2;
 				}
 			};

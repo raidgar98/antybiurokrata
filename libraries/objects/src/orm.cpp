@@ -8,7 +8,7 @@ namespace core
 	{
 		bool persons_extractor_t::visit(bgpolsl_repr_t* ptr)
 		{
-			dassert(ptr, "pointer cannot be nullptr!"_u8);
+			check_nullptr{ptr};
 
 			const u16str_v affiliation{ptr->affiliation};	// alias
 			std::shared_ptr<person_t> person;
@@ -66,7 +66,7 @@ namespace core
 
 		bool persons_extractor_t::visit(json_repr_t* ptr)
 		{
-			dassert(ptr, "pointer cannot be nullptr!"_u8);
+			check_nullptr{ptr};
 
 			int i = 0;
 
@@ -90,7 +90,7 @@ namespace core
 
 		bool publications_extractor_t::visit(bgpolsl_repr_t* ptr)
 		{
-			dassert(ptr, "pointer cannot be nullptr!"_u8);
+			check_nullptr{ptr};
 
 			publication_storage_t spub{new publication_t{}};
 			publication_t& pub = *spub;
@@ -142,7 +142,7 @@ namespace core
 
 		bool publications_extractor_t::visit(json_repr_t* ptr)
 		{
-			dassert(ptr, "pointer cannot be nullptr!"_u8);
+			check_nullptr{ptr};
 
 			publication_storage_t spub{new publication_t{}};
 			publication_t& pub = *spub;

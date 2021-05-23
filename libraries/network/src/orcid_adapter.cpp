@@ -77,7 +77,7 @@ namespace core
 				log.error() << "cought unknown exception while gathering json" << logger::endl;
 			}
 
-			dassert(json.get() != nullptr, "empty result or invalid json"_u8);
+			check_nullptr{json};
 
 			const jvalue& name = json->get("name", null_value);
 			if(name != null_value) [[likely]]
@@ -195,7 +195,7 @@ namespace core
 				log.error() << "cought unknown exception while gathering json" << logger::endl;
 			}
 
-			dassert(json.get() != nullptr, "empty result or invalid json"_u8);
+			check_nullptr{json};
 
 			const jvalue& array = json->get("group", empty_array);
 			dassert(array.isArray(), "it's not array"_u8);

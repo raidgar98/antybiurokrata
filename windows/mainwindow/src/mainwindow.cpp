@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 	QObject::connect(this, &MainWindow::switch_activation, this, &MainWindow::set_activation);
 
 	eng.on_finish.register_slot([&](std::shared_ptr<core::orm::persons_extractor_t> ptr) {
-		core::dassert(ptr.get(), "person_extractior cannot be nullptr!"_u8);
+		core::check_nullptr{ptr};
 		emit send_neighbours(persons_extractor_storage_t{ptr});
 	});
 
@@ -122,7 +122,7 @@ void MainWindow::set_activation(const bool activate)
 
 void MainWindow::load_publications(account_widget_item* account)
 {
-	core::dassert(account != nullptr, "given item cannot be nullptr!"_u8);
+	core::check_nullptr{account};
 	if(account->m_person.expired()) return;
 	auto& coll = (*account->m_person.lock().get())().publictions()().data();
 	ui->publications->clear();
@@ -150,7 +150,7 @@ void MainWindow::collect_neighbours(persons_extractor_storage_t bgperson_visitor
 
 void MainWindow::on_neighbours_itemClicked(QListWidgetItem* item)
 {
-	core::dassert{item != nullptr, "item cannot be nullptr!"_u8};
+	core::check_nullptr{item};
 	if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
 		load_publications(account);
 	else
@@ -159,7 +159,7 @@ void MainWindow::on_neighbours_itemClicked(QListWidgetItem* item)
 
 void MainWindow::on_neighbours_itemChanged(QListWidgetItem* item)
 {
-	core::dassert{item != nullptr, "item cannot be nullptr!"_u8};
+	core::check_nullptr{item};
 	if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
 		load_publications(account);
 	else
@@ -168,7 +168,7 @@ void MainWindow::on_neighbours_itemChanged(QListWidgetItem* item)
 
 void MainWindow::on_neighbours_itemDoubleClicked(QListWidgetItem* item)
 {
-	core::dassert{item != nullptr, "item cannot be nullptr!"_u8};
+	core::check_nullptr{item};
 	if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
 	{
 		if(account->m_person.expired()) return;
@@ -184,7 +184,7 @@ void MainWindow::on_neighbours_itemDoubleClicked(QListWidgetItem* item)
 
 void MainWindow::on_publications_itemDoubleClicked(QListWidgetItem* item)
 {
-	core::dassert{item != nullptr, "item cannot be nullptr!"_u8};
+	core::check_nullptr{item};
 	if(publication_widget_item* publication = dynamic_cast<publication_widget_item*>(item))
 	{
 		dassert{!publication->m_publication.expired(), "this publication is empty!"_u8};

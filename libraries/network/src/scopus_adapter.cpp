@@ -86,7 +86,7 @@ namespace core
 					throw;
 				}
 
-				dassert(json.get() != nullptr, "empty result or invalid json"_u8);
+				check_nullptr{json};
 
 				const jvalue& search_results = json->get("search-results", null_value);
 				dassert(search_results != null_value,

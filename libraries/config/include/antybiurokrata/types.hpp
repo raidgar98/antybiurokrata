@@ -14,6 +14,7 @@
 #include <antybiurokrata/libraries/patterns/seiralizer.hpp>
 
 // STL
+#include <memory>
 #include <locale>
 #include <concepts>
 #include <stdexcept>
@@ -144,6 +145,12 @@ namespace core
 			using exception_base<not_found_exception<MsgType>, MsgType>::exception_base;
 		};
 
+		template<typename MsgType>
+		struct pointer_is_null : public exception_base<pointer_is_null<MsgType>, MsgType>
+		{
+			using exception_base<pointer_is_null<MsgType>, MsgType>::exception_base;
+		};
+
 		/**
 		 * @brief same as exception, but additionally prints reason to stdout, usefull, if extended log is required
 		 */
@@ -205,6 +212,57 @@ namespace core
 			}
 		};
 
+		/**
+		 * @brief struct for checking is pointer nullptr
+		 */
+		struct require_not_nullptr
+		{
+			constexpr static str_v c_require_not_nullptr{"given pointer is equal to nullptr!"};
+			using spec_require = require<pointer_is_null>;
+
+			template<typename T> require_not_nullptr(T* ptr) { check_impl(ptr); }
+			template<typename T> require_not_nullptr(const T* ptr) { check_impl(ptr); }
+
+			template<typename T, typename Deleter>
+			require_not_nullptr(const std::unique_ptr<T, Deleter>& ptr)
+			{
+				check_impl(ptr.get());
+			}
+			template<typename T, typename Deleter>
+			require_not_nullptr(const std::unique_ptr<T[], Deleter>& ptr)
+			{
+				check_impl(ptr.get());
+			}
+
+			template<typename T> require_not_nullptr(const std::shared_ptr<T>& ptr)
+			{
+				check_impl(ptr.get());
+			}
+			template<typename T> require_not_nullptr(const std::shared_ptr<T[]>& ptr)
+			{
+				check_impl(ptr.get());
+			}
+
+			template<typename T> require_not_nullptr(const std::weak_ptr<T>& ptr)
+			{
+				check_impl(ptr.get());
+			}
+			template<typename T> require_not_nullptr(const std::weak_ptr<T[]>& ptr)
+			{
+				check_impl(ptr.get());
+			}
+
+		 private:
+			template<typename T> void check_impl(T* ptr) const
+			{
+				spec_require{ptr != nullptr, c_require_not_nullptr};
+			}
+			template<typename T> void check_impl(const T* ptr) const
+			{
+				spec_require{ptr != nullptr, c_require_not_nullptr};
+			}
+		};
+
 	};	  // namespace exceptions
 
 	/**
@@ -220,6 +278,9 @@ namespace core
 
 	/** [ v(erbouse) d(efault) asssert ] */
 	using vdassert = exceptions::require<exceptions::assert_exception, true>;
+
+	/** checks, whether given pointer is nullptr abnd throws exception if yes */
+	using check_nullptr = exceptions::require_not_nullptr;
 
 	/** @brief this namespace contains string utilities */
 	namespace string_utils
