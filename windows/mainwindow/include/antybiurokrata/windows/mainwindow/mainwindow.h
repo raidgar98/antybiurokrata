@@ -42,20 +42,19 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	void on_search_button_clicked();
 	void on_generate_report_clicked();
 
-    void on_neighbours_itemDoubleClicked(QListWidgetItem* item);
-    void on_neighbours_itemClicked(QListWidgetItem *item);
-    void on_neighbours_itemChanged(QListWidgetItem *item);
+	void on_neighbours_itemDoubleClicked(QListWidgetItem* item);
+	void on_neighbours_itemClicked(QListWidgetItem* item);
+	void on_neighbours_itemChanged(QListWidgetItem* item);
 
-    void on_publications_itemDoubleClicked(QListWidgetItem *item);
+	void on_publications_itemDoubleClicked(QListWidgetItem* item);
 
-public slots:
+ public slots:
 
 	void collect_neighbours(persons_extractor_storage_t);
 	void set_progress(const size_t);
 	void set_activation(const bool);
 
  private:
-
 	void load_publications(account_widget_item* item);
 	void normalize_text(const QString& arg1, QLineEdit& line, QLineEdit* next = nullptr);
 	void clear_ui();

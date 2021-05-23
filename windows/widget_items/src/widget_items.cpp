@@ -23,12 +23,12 @@ void account_widget_item::apply_text()
 	}
 }
 
-void publication_widget_item::apply_text() 
+void publication_widget_item::apply_text()
 {
 	if(!m_publication.expired())
 	{
 
-		auto& p = (*m_publication.lock().get())();
+		auto& p			= (*m_publication.lock().get())();
 		QString result = QString::fromStdString(std::to_string(p.year()));
 		result.insert(0, "[ ");
 		result += " ] ";
