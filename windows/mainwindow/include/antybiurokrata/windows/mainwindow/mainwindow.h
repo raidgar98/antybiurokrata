@@ -5,6 +5,7 @@
 #include <QtWidgets/QMainWindow>
 
 #include <antybiurokrata/libraries/engine/engine.h>
+#include <antybiurokrata/windows/widget_items/widget_items.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -40,9 +41,12 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
 	void on_search_button_clicked();
 	void on_generate_report_clicked();
-	void on_neighbours_itemChanged(QListWidgetItem* item);
 
-    void on_neighbours_itemDoubleClicked(QListWidgetItem *item);
+    void on_neighbours_itemDoubleClicked(QListWidgetItem* item);
+    void on_neighbours_itemClicked(QListWidgetItem *item);
+    void on_neighbours_itemChanged(QListWidgetItem *item);
+
+    void on_publications_itemDoubleClicked(QListWidgetItem *item);
 
 public slots:
 
@@ -51,7 +55,9 @@ public slots:
 	void set_activation(const bool);
 
  private:
-	void normalize_text(const QString& arg1, QLineEdit& line);
+
+	void load_publications(account_widget_item* item);
+	void normalize_text(const QString& arg1, QLineEdit& line, QLineEdit* next = nullptr);
 	void clear_ui();
 
 	std::list<std::shared_ptr<std::jthread>> jobs;

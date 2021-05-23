@@ -101,7 +101,7 @@
                <string notr="true">0000</string>
               </property>
               <property name="maxLength">
-               <number>4</number>
+               <number>99</number>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -151,7 +151,7 @@
                <string notr="true">0001</string>
               </property>
               <property name="maxLength">
-               <number>4</number>
+               <number>99</number>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -201,7 +201,7 @@
                <string notr="true">7667</string>
               </property>
               <property name="maxLength">
-               <number>4</number>
+               <number>99</number>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -251,7 +251,7 @@
                <string notr="true">6697</string>
               </property>
               <property name="maxLength">
-               <number>4</number>
+               <number>99</number>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>

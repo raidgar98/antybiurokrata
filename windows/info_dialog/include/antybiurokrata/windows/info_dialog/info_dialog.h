@@ -12,7 +12,7 @@ class info_dialog : public QDialog
 	Q_OBJECT
 
  public:
-	explicit info_dialog(QWidget* parent = nullptr);
+	explicit info_dialog(const QString& to_display, QWidget* parent = nullptr);
 	~info_dialog();
 
  private:
