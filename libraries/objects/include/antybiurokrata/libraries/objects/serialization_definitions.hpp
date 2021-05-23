@@ -18,8 +18,8 @@ namespace core
 				using sT = std::shared_ptr<T>;
 				bool operator()(const sT& s1, const sT& s2) const
 				{
-					check_nullptr{s1.get()};
-					check_nullptr{s2.get()};
+					check_nullptr{s1};
+					check_nullptr{s2};
 					return *s1 < *s2;
 				}
 			};
