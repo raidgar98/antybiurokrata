@@ -266,6 +266,7 @@ namespace core
 			using string_holder_t			= string_holder_custom_t<>;
 			template<auto X> using u16ser = dser<X, string_holder_t>;
 
+			/** @brief provides validation for polish names */
 			struct polish_validator
 			{
 				const u16str_v& x;
@@ -273,13 +274,18 @@ namespace core
 				operator bool() const noexcept;
 			};
 
+			/** @brief provides unification for polish names (capitalizing) */
 			struct polish_unifier
 			{
 				polish_unifier(u16str& x) noexcept;
 			};
 
+			/** @brief aliasing for handy usage */
 			using polish_name_t = string_holder_custom_t<polish_validator, polish_unifier>;
 
+			constexpr uint8_t max_uint_8_t = std::numeric_limits<uint8_t>::max();
+
+			/** @brief supported id's in parsed json / html documents */
 			enum class id_type : uint8_t
 			{
 				IDT	 = 0,
@@ -290,47 +296,24 @@ namespace core
 				WOSUID = 5,
 				ISBN	 = 6,
 
-				NOT_FOUND = 99
+				NOT_FOUND = max_uint_8_t
 			};
 
-			struct id_type_stringinizer
+			struct id_type_translation_unit
 			{
-				inline static const u16str enum_to_string[]
+				using enum_t		= id_type;
+				using base_enum_t = uint8_t;
+				inline static const u16str translation[]
 					 = {u"IDT", u"DOI", u"EISSN", u"PISSN", u"EID", u"WOSUID", u"ISBN"};
-				constexpr static size_t length{sizeof(enum_to_string) / sizeof(str)};
-
-				const id_type id;
-
-				static u16str get(const id_type x)
-				{
-					const size_t index = static_cast<size_t>(x);
-					dassert(index < length, "invalid id_type"_u8);
-					return id_type_stringinizer::enum_to_string[index];
-				}
-
-				static id_type get(u16str x)
-				{
-					std::for_each(x.begin(), x.end(), [](u16char_t& c) { c = std::toupper(c); });
-					for(size_t i = 0; i < length; ++i)
-						if(x == enum_to_string[i]) return static_cast<id_type>(i);
-					// dassert(false, "invalid string: "_u16 + x);
-					global_logger.warn() << "invalid string: " << x << logger::endl;
-					return id_type::NOT_FOUND;
-				}
-
-				template<typename stream_t>
-				inline friend stream_t& operator<<(stream_t& os, const id_type_stringinizer& x)
-				{
-					return os << get_conversion_engine().to_bytes(get(x.id));
-				}
+				constexpr static size_t length = sizeof(translation) / sizeof(u16str);
 			};
-
 			struct ids_unifier
 			{
 				ids_unifier(u16str& x) noexcept;
 			};
 
-			using ids_string_t = string_holder_custom_t<default_validator, ids_unifier>;
+			using ids_string_t			= string_holder_custom_t<default_validator, ids_unifier>;
+			using id_type_stringinizer = enum_stringinizer<id_type_translation_unit>;
 
 			struct detail_ids_storage_t : public serial_helper_t
 			{
@@ -433,6 +416,43 @@ namespace core
 				}
 			};
 			using person_t = cser<&detail_person_t::publictions>;
+
+			//////////////////////////////////////////////////////////////////////
+
+			enum class match_type : uint8_t
+			{
+				ORCID,
+				SCOPUS,
+
+				NOT_FOUND = max_uint_8_t
+			};
+
+			struct match_type_translation_unit
+			{
+				using enum_t									  = match_type;
+				using base_enum_t								  = uint8_t;
+				inline static const u16str translation[] = {u"ORCID", u"SCOPUS"};
+				constexpr static size_t length			  = sizeof(translation) / sizeof(u16str);
+			};
+
+			using match_type_stringinizer = enum_stringinizer<match_type_translation_unit>;
+
+			struct detail_matches_storage_t : public serial_helper_t
+			{
+				map_ser<&serial_helper_t::_, match_type, ids_string_t> data;	// TODO:	generalize shared_vector to vector and define std::shared_ptr as custom serial
+																									//			then change type to vec_ser<match_type>
+
+				using ser_data_t = decltype(data);
+				using inner_t	  = typename ser_data_t::value_type;
+				inner_t* operator->() { return &(data()); }
+				const inner_t* operator->() const { return &(data()); }
+
+				using custom_serialize	 = map_serial<id_type, ids_string_t>;
+				using custom_deserialize = map_deserial<id_type, ids_string_t>;
+				using custom_pretty_print
+					 = map_pretty_serial<id_type, ids_string_t, id_type_stringinizer>;
+			};
+			using ids_storage_t = cser<&detail_ids_storage_t::data>;
 		}	 // namespace detail
 
 		using typename detail::id_type;

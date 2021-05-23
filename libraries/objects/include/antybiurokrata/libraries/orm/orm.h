@@ -10,9 +10,17 @@ namespace core
 {
 	namespace orm
 	{
+		using shared_person_t = std::shared_ptr<objects::person_t>;
+		struct less_person_comparator
+		{
+			bool operator()(const shared_person_t& p1, const shared_person_t& p2) const;
+		};
+
 		using namespace core::objects;
 		using namespace core::network::detail;
 		using publication_storage_t = std::shared_ptr<publication_t>;
+		using persons_storage_t		 = std::set<shared_person_t, less_person_comparator>;
+
 
 		struct persons_extractor_t :
 			 Log<persons_extractor_t>,
@@ -20,33 +28,12 @@ namespace core
 			 public patterns::visits<json_repr_t>
 		{
 			using Log<persons_extractor_t>::log;
-			using wrap_person_t = std::shared_ptr<person_t>;
-			struct less_person_comparator
-			{
-				bool operator()(const wrap_person_t& p1, const wrap_person_t& p2) const
-				{
-					check_nullptr{p1};
-					check_nullptr{p2};
-					return *p1 < *p2;
-				}
-			};
 
-			std::set<wrap_person_t, less_person_comparator> persons;
+			persons_storage_t persons;
 			publication_storage_t current_publication{nullptr};
 
 			static void shallow_copy_persons(const persons_extractor_t& input,
-														persons_extractor_t& output)
-			{
-				for(const auto& person: input.persons)
-				{
-					wrap_person_t np{new person_t{}};
-					(*np)().name	 = (*person)().name;
-					(*np)().surname = (*person)().surname;
-					(*np)().orcid	 = (*person)().orcid;
-					auto pair		 = output.persons.emplace(np);
-					if(pair.second) (*pair.first->get())().publictions()()->clear();
-				}
-			}
+														persons_extractor_t& output);
 
 			virtual bool visit(bgpolsl_repr_t* ptr) override;
 			virtual bool visit(json_repr_t* ptr) override;

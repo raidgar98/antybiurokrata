@@ -204,5 +204,28 @@ namespace core
 				log.warn() << "adding person with orcid: `" << ptr->orcid << "` failed" << logger::endl;
 			return true;
 		}
+
+		void persons_extractor_t::shallow_copy_persons(const persons_extractor_t& input,
+																	  persons_extractor_t& output)
+		{
+			for(const auto& person: input.persons)
+			{
+				shared_person_t np{new person_t{}};
+				(*np)().name	 = (*person)().name;
+				(*np)().surname = (*person)().surname;
+				(*np)().orcid	 = (*person)().orcid;
+				auto pair		 = output.persons.emplace(np);
+				if(pair.second) (*pair.first->get())().publictions()()->clear();
+			}
+		}
+
+
+		bool less_person_comparator::operator()(const shared_person_t& p1, const shared_person_t& p2) const
+		{
+			check_nullptr{p1};
+			check_nullptr{p2};
+			return *p1 < *p2;
+		}
+
 	}	 // namespace orm
 }	 // namespace core

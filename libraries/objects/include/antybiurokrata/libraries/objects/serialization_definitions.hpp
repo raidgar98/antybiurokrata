@@ -335,6 +335,89 @@ namespace core
 			};
 
 			/**
+			 * @brief defines requirements for translation unit
+			 * 
+			 * @tparam T type to check
+			 */
+			template<typename T> concept array_provider_req = requires
+			{
+				typename T::enum_t;
+				typename T::base_enum_t;
+				{
+					T::length + 1
+				}
+				->std::same_as<size_t>;
+				std::same_as<std::remove_reference_t<decltype(T::translation[0])>, u16str>;
+				std::convertible_to<std::numeric_limits<typename T::base_enum_t>, typename T::enum_t>;
+			};
+
+			/**
+			 * @brief universal way of stringinizing enums
+			 * 
+			 * @tparam array_provider which fullfills requirements of array_provider_req
+			 */
+			template<array_provider_req array_provider> struct enum_stringinizer
+			{
+				using enum_t										 = array_provider::enum_t;
+				using base_enum_t									 = array_provider::base_enum_t;
+				constexpr static size_t length				 = array_provider::length;
+				inline static const u16str* enum_to_string = array_provider::translation;
+				constexpr static base_enum_t not_found				 = std::numeric_limits<base_enum_t>::max();
+
+				const enum_t x;
+
+				/**
+				 * @brief converts given enum to string
+				 * 
+				 * @param x input enum
+				 * @return u16str stringinized version
+				 */
+				static u16str get(const enum_t x)
+				{
+					const size_t index = static_cast<size_t>(x);
+					// dassert(index < length, "invalid enum_t"_u8);
+					if(index >= length)
+					{
+						global_logger.warn() << "not found enum: " << index << logger::endl;
+						return u"NOT FOUND";
+					}
+					return enum_stringinizer::enum_to_string[index];
+				}
+
+				/**
+				 * @brief converts given string to enum
+				 * 
+				 * @param x input string
+				 * @return enum_t converted string
+				 * @return (enum_t)(std::numeric_limits<enum_t>::max()) if not found
+				 */
+				static enum_t get(u16str x)
+				{
+					std::for_each(x.begin(), x.end(), [](u16char_t& c) { c = std::toupper(c); });
+					for(size_t i = 0; i < length; ++i)
+						if(x == enum_to_string[i]) return static_cast<enum_t>(i);
+					global_logger.warn() << "invalid string: " << x << logger::endl;
+
+					return static_cast<enum_t>(not_found);
+				}
+
+				/**
+				 * @brief operator for eazier stringinization
+				 * 
+				 * @tparam stream_t any stream
+				 * @param os ref to stream
+				 * @param x self
+				 * @return stream_t& given string
+				 */
+				template<typename stream_t>
+				inline friend stream_t& operator<<(stream_t& os, const enum_stringinizer& x)
+				{
+					return os << get_conversion_engine().to_bytes(get(x.x));
+				}
+			};
+
+
+			/**
 			 * @brief alias for serializing any array
 			 * 
 			 * @tparam X reference to previous member

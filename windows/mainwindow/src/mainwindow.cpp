@@ -192,7 +192,7 @@ void MainWindow::on_publications_itemDoubleClicked(QListWidgetItem* item)
 
 		auto conv = core::get_conversion_engine();
 		std::stringstream ss;
-		ss << "Tytuł do porównań: " << conv.to_bytes(pub.title()().raw) << std::endl;
+		ss << "Tytuł referencyjny: " << conv.to_bytes(pub.title()().raw) << std::endl;
 		if(!pub.polish_title()()->empty())
 			ss << "Tytuł orginalny: " << conv.to_bytes(pub.polish_title()().raw) << std::endl;
 		ss << "Rok: " << pub.year() << std::endl;
