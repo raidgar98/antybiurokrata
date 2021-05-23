@@ -195,6 +195,8 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 
 		{
 			stop();
+			on_start();
+			stop();
 			std::jthread th1{bgpolsl_getter};
 			stop();
 			std::jthread th2{orcid_getter};

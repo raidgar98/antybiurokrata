@@ -6,4 +6,7 @@
 struct account_widget_item : public QListWidgetItem
 {
 	using QListWidgetItem::QListWidgetItem;
+
+    core::str name;
+    core::str surname;
 };

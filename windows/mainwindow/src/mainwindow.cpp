@@ -15,10 +15,17 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 	qRegisterMetaType<persons_extractor_storage_t>("persons_extractor_storage_t");
 	QObject::connect(this, &MainWindow::send_neighbours, this, &MainWindow::collect_neighbours);
 	QObject::connect(this, &MainWindow::send_progress, this, &MainWindow::set_progress);
+	QObject::connect(this, &MainWindow::switch_activation, this, &MainWindow::set_activation);
+
+
 	// eng.on_progress.register_slot([&](const size_t progress) { this->send_progress(progress); });
 	eng.on_finish.register_slot([&](std::shared_ptr<core::orm::persons_extractor_t> ptr) {
 		core::dassert(ptr.get(), "person_extractior cannot be nullptr!"_u8);
 		emit send_neighbours(persons_extractor_storage_t{ptr});
+	});
+
+	eng.on_start.register_slot([&](){
+		emit switch_activation(false);
 	});
 }
 
@@ -92,15 +99,24 @@ void MainWindow::clear_ui()
 
 void MainWindow::on_neighbours_itemChanged(QListWidgetItem* item) {}
 
+
+void MainWindow::set_activation(const bool activate) 
+{
+    ui->search_button->setEnabled(activate);
+    ui->generate_report->setEnabled(activate);
+    ui->neighbours->setEnabled(activate);
+    ui->publications->setEnabled(activate);
+}
+
 void MainWindow::collect_neighbours(persons_extractor_storage_t bgperson_visitor)
 {
 	clear_ui();
-
 
 	size_t cmax	 = 0;
 	using coll_t = std::remove_reference<decltype(
 		 (**bgperson_visitor.lock()->persons.begin())().publictions()().data())>::type;
 	coll_t* coll = nullptr;
+    auto conv = core::get_conversion_engine();
 
 	for(const auto& _p: bgperson_visitor.lock()->persons)
 	{
@@ -111,6 +127,8 @@ void MainWindow::collect_neighbours(persons_extractor_storage_t bgperson_visitor
 
 		account_widget_item* item = new account_widget_item();
 		item->setText(QString::fromStdU16String(label));
+		item->name = conv.to_bytes(p().name()().raw);
+		item->surname = conv.to_bytes(p().surname()().raw);
 		ui->neighbours->addItem(item);
 		const size_t mmm = p().publictions()()->size();
 		if(mmm > cmax)
@@ -131,4 +149,17 @@ void MainWindow::collect_neighbours(persons_extractor_storage_t bgperson_visitor
 
 
 	emit send_progress(100);
+	emit switch_activation(true);
+}
+
+void MainWindow::on_neighbours_itemDoubleClicked(QListWidgetItem *item)
+{
+    core::dassert{item != nullptr, "item cannot be nullptr!"_u8};
+    if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
+    {
+        ui->name->setText(QString::fromStdString(account->name));
+        ui->surname->setText(QString::fromStdString(account->surname));
+
+        ui->tabWidget->setCurrentIndex(1);
+    }else core::dassert{ false, "cannot cast object!"_u8 };
 }

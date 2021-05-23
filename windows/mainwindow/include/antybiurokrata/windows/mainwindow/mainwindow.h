@@ -29,6 +29,7 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
 	void send_neighbours(persons_extractor_storage_t);
 	void send_progress(const size_t);
+	void switch_activation(const bool);
 
  private slots:
 
@@ -41,10 +42,13 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	void on_generate_report_clicked();
 	void on_neighbours_itemChanged(QListWidgetItem* item);
 
- public slots:
+    void on_neighbours_itemDoubleClicked(QListWidgetItem *item);
+
+public slots:
 
 	void collect_neighbours(persons_extractor_storage_t);
 	void set_progress(const size_t);
+	void set_activation(const bool);
 
  private:
 	void normalize_text(const QString& arg1, QLineEdit& line);
