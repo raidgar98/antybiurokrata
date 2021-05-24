@@ -470,8 +470,9 @@ namespace core
 
 			struct detail_matches_storage_t : public serial_helper_t
 			{
-				map_ser<&serial_helper_t::_, match_type, ids_string_t> data;	// TODO:	generalize shared_vector to vector and define std::shared_ptr as custom serial
-																									//			then change type to vec_ser<match_type>
+				map_ser<&serial_helper_t::_, match_type, ids_string_t>
+					 data;	// TODO:	generalize shared_vector to vector and define std::shared_ptr as custom serial
+								//			then change type to vec_ser<match_type>
 
 				using ser_data_t = decltype(data);
 				using inner_t	  = typename ser_data_t::value_type;

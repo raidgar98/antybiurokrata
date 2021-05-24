@@ -38,7 +38,6 @@ struct account_widget_item : public QListWidgetItem
 	virtual bool operator<(const QListWidgetItem& other) const override;
 
  private:
-
 	/**
 	 * @brief set text on widdget based on given person
 	 */
@@ -58,7 +57,6 @@ struct publication_widget_item : public QListWidgetItem
 	};
 
  private:
-
 	/**
 	 * @brief set text on widdget based on given publication
 	 */

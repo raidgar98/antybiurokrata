@@ -391,7 +391,7 @@ namespace core
 				using base_enum_t									 = array_provider::base_enum_t;
 				constexpr static size_t length				 = array_provider::length;
 				inline static const u16str* enum_to_string = array_provider::translation;
-				constexpr static base_enum_t not_found				 = std::numeric_limits<base_enum_t>::max();
+				constexpr static base_enum_t not_found		 = std::numeric_limits<base_enum_t>::max();
 
 				const enum_t x;
 

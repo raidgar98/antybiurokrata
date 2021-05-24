@@ -37,7 +37,6 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	core::engine eng;
 
  public:
-	
 	/** @brief default constructor */
 	MainWindow(QWidget* parent = nullptr);
 
@@ -96,7 +95,6 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	void set_activation(const bool);
 
  private:
-
 	/**
 	 * @brief displays common publications with given person
 	 * 

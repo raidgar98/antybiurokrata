@@ -399,10 +399,7 @@ namespace patterns
 			 * @tparam U any types
 			 * @param u any values of types U
 			*/
-			template<typename... U>
-			cser(U&&... u) : val{___null_t{}, std::forward<U>(u)...}
-			{
-			}
+			template<typename... U> cser(U&&... u) : val{___null_t{}, std::forward<U>(u)...} {}
 
 			/**
 			 * @brief forwards all constructors to wrapped class type

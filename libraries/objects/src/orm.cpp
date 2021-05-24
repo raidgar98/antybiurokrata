@@ -220,7 +220,8 @@ namespace core
 		}
 
 
-		bool less_person_comparator::operator()(const shared_person_t& p1, const shared_person_t& p2) const
+		bool less_person_comparator::operator()(const shared_person_t& p1,
+															 const shared_person_t& p2) const
 		{
 			check_nullptr{p1};
 			check_nullptr{p2};

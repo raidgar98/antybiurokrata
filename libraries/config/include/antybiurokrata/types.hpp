@@ -532,7 +532,9 @@ namespace core
 }	 // namespace core
 
 /** @brief automatic conversion for logger */
-template<> typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str_v& v);
+template<>
+typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str_v& v);
 
 /** @brief automatic conversion for logger */
-template<> typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str& v);
+template<>
+typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str& v);
