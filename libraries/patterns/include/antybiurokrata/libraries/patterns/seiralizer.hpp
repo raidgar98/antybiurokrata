@@ -63,6 +63,7 @@ struct logger_piper;
 
 namespace patterns
 {
+	/** @brief contains implementaion of serialization classes */
 	namespace serial
 	{
 		/**
@@ -181,6 +182,7 @@ namespace patterns
 			/** wrapped value */
 			value_type val;
 
+			/** @brief easier access to wrapped values */
 			operator value_type&() { return val; }
 			operator const value_type&() const { return val; }
 
@@ -334,6 +336,13 @@ namespace patterns
 				val = std::move(u.val);
 			}
 
+			/**
+			 * @brief acceptor for visitors that modifies content of this class
+			 * 
+			 * @tparam visitor_t any matched visitor type
+			 * @param v visitor
+			 * @return bool result from visitor
+			 */
 			template<cheese_visitor_req visitor_t> bool accept(visitor_t* v)
 			{
 				if(v == nullptr) throw std::invalid_argument{"visitor cannot be nullptr"};
@@ -343,6 +352,13 @@ namespace patterns
 				return v->visit(this);
 			}
 
+			/**
+			 * @brief acceptor for visitors that doesn't modifies content of this class
+			 * 
+			 * @tparam visitor_t any matched visitor type
+			 * @param v visitor
+			 * @return bool result from visitor
+			 */
 			template<cheese_visitor_req visitor_t> bool accept(visitor_t* v) const
 			{
 				if(v == nullptr) throw std::invalid_argument{"visitor cannot be nullptr"};
@@ -369,9 +385,11 @@ namespace patterns
 			/** wrapped value */
 			class_t val{};
 
+			/** @brief easier access to wrapped values */
 			operator class_t&() { return val; }
 			operator const class_t&() const { return val; }
 
+			/** @brief forwarding constructor */
 			template<auto X> cser(cser<X>&& x) : val{std::move(x.val)} {}
 			template<auto X> cser(const cser<X>& x) : val{x.val} {}
 
@@ -382,7 +400,6 @@ namespace patterns
 			 * @param u any values of types U
 			*/
 			template<typename... U>
-			// requires( std::is_constructible_v<class_t, ___null_t, U...> )
 			cser(U&&... u) : val{___null_t{}, std::forward<U>(u)...}
 			{
 			}
@@ -399,24 +416,52 @@ namespace patterns
 			{
 			}
 
+			/** @brief forwarding assign operator */
 			template<typename U> cser& operator=(U&& u)
 			{
 				val = std::move(u);
 				return *this;
 			}
 
+			/**
+			 * @brief move constructor for wrapper with other types
+			 * 
+			 * @tparam serial any serializable class
+			 * @tparam X pointer to next element 
+			 * @tparam U other template arguments
+			 * @param u other serial
+			 * @return self
+			 */
 			template<template<auto X, typename... U> typename serial, auto X, typename... U>
 			requires serializable_class_type_req<serial, X, U...> cser(serial<X, U...>&& u) :
 				 val{std::move(u.val)}
 			{
 			}
 
+			/**
+			 * @brief copy constructor for wrapper with other types
+			 * 
+			 * @tparam serial any serializable class
+			 * @tparam X pointer to next element 
+			 * @tparam U other template arguments
+			 * @param u other serial
+			 * @return self
+			 */
 			template<template<auto X, typename... U> typename serial, auto X, typename... U>
 			requires serializable_class_type_req<serial, X, U...> cser(const serial<X, U...>& u) :
 				 val{u.val}
 			{
 			}
 
+			/**
+			 * @brief move assign operators for wrapper with other types
+			 * 
+			 * @tparam serial any serializable class
+			 * @tparam X pointer to next element 
+			 * @tparam U other template arguments
+			 * @param u other serial
+			 * @return self
+			 */
 			template<template<auto X, typename... U> typename serial, auto X, typename... U>
 			requires serializable_class_type_req<serial, X, U...> cser operator=(serial<X, U...>&& u)
 			{
@@ -424,6 +469,15 @@ namespace patterns
 				return *this;
 			}
 
+			/**
+			 * @brief copy assign operators for wrapper with other types
+			 * 
+			 * @tparam serial any serializable class
+			 * @tparam X pointer to next element 
+			 * @tparam U other template arguments
+			 * @param u other serial
+			 * @return self
+			 */
 			template<template<auto X, typename... U> typename serial, auto X, typename... U>
 			requires serializable_class_type_req<serial, X, U...> cser
 			operator=(const serial<X, U...>& u)
@@ -432,6 +486,13 @@ namespace patterns
 				return *this;
 			}
 
+			/**
+			 * @brief acceptor for visitors that modifies content of this class
+			 * 
+			 * @tparam visitor_t any matched visitor type
+			 * @param v visitor
+			 * @return bool result from visited wrapped value
+			 */
 			template<cheese_visitor_req visitor_t> bool accept(visitor_t* v)
 			{
 				if(v == nullptr) throw std::invalid_argument{"visitor cannot be nullptr"};
@@ -444,6 +505,13 @@ namespace patterns
 				return result;
 			}
 
+			/**
+			 * @brief acceptor for visitors that doesn't modifies content of this class
+			 * 
+			 * @tparam visitor_t any matched visitor type
+			 * @param v visitor
+			 * @return bool result from visited wrapped value
+			 */
 			template<cheese_visitor_req visitor_t> bool accept(visitor_t* v) const
 			{
 				if(v == nullptr) throw std::invalid_argument{"visitor cannot be nullptr"};
@@ -688,6 +756,7 @@ namespace patterns
 			}
 		};
 
+		/** @brief type marker to detect behaviour in stream */
 		template<typename T> struct pretty_print
 		{
 			const T& x;
@@ -696,6 +765,15 @@ namespace patterns
 		/** @brief This class is used by ser to serialize class members in pretty way */
 		struct pretty_put_to_stream;
 
+		/**
+		 * @brief starts pretty-printing for given value
+		 * 
+		 * @tparam stream_t any stream type
+		 * @tparam X should be deduced
+		 * @param os reference to stream
+		 * @param obj object to serialize
+		 * @return stream_t& given stream
+		 */
 		template<typename stream_t, auto X>
 		inline stream_t& operator<<(stream_t& os, const pretty_print<serial::cser<X>>& obj)
 		{
@@ -715,7 +793,7 @@ namespace patterns
 		struct pretty_put_to_stream
 		{
 			/**
-			 * @brief Construct specialize this constructor for more complex types if required
+			 * @brief specializes cnstructor for serializable types
 			 * 
 			 * @tparam stream_t any stream
 			 * @tparam X any value_type
@@ -728,6 +806,14 @@ namespace patterns
 				operator<<<stream_t, X>(os, pretty_print{any});
 			}
 
+			/**
+			 * @brief pretty put tu stream in default way
+			 * 
+			 * @tparam stream_t any stream
+			 * @tparam X any value_type
+			 * @param os reference to stream
+			 * @param any const reference to printed obj
+			 */
 			template<typename stream_t, typename T> pretty_put_to_stream(stream_t& os, const T& any)
 			{
 				os << any;

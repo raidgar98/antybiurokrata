@@ -1,3 +1,14 @@
+/**
+ * @file serialization_definitions.hpp
+ * @author Krzysztof Mochocki (raidgar98@onet.pl)
+ * @brief contain serialization definitions for more complex types
+ * @version 0.1
+ * @date 2021-05-24
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #include <antybiurokrata/libraries/patterns/seiralizer.hpp>
 #include <iomanip>
 #include <array>
@@ -8,11 +19,19 @@ namespace core
 {
 	namespace objects
 	{
+		/**
+		 * @brief templates of actions on complex types
+		 */
 		namespace serial_definitions
 		{
 			using namespace patterns::serial;
 			using patterns::serial::serial_helper_t;
 
+			/**
+			 * @brief compares to shared_pointers
+			 * 
+			 * @tparam T any wrapped type by shared_pointer
+			 */
 			template<typename T> struct shared_compare
 			{
 				using sT = std::shared_ptr<T>;
@@ -24,6 +43,10 @@ namespace core
 				}
 			};
 
+			/**
+			 * @brief serialization of wide string
+			 */
+
 			struct u16str_serial
 			{
 				template<typename stream_type> u16str_serial(stream_type& os, const u16str_v& view)
@@ -33,6 +56,10 @@ namespace core
 					for(const auto c: view) os << static_cast<int>(c) << delimiter;
 				}
 			};
+
+			/**
+			 * @brief deserialization of wide string
+			 */
 
 			struct u16str_deserial
 			{
@@ -52,6 +79,8 @@ namespace core
 					}
 				}
 			};
+
+			/** @brief pretty-printing of wide stirng (just proxy to conversion) */
 
 			struct u16str_pretty_serial
 			{

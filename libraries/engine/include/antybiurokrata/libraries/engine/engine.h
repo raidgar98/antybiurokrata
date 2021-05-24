@@ -46,6 +46,10 @@ namespace core
 		struct process_name_and_surname_functor_t;
 		friend struct process_functor_t;
 		friend struct process_name_and_surname_functor_t;
+
+		/**
+		 * @brief functor that is used to call `process` in separate thread
+		 */
 		struct process_functor_t
 		{
 			engine* that;
@@ -59,6 +63,10 @@ namespace core
 				ready = true;
 			}
 		};
+
+		/**
+		 * @brief functor that is used to call `process_name_and_surname` in separate thread
+		 */
 		struct process_name_and_surname_functor_t : public process_functor_t
 		{
 			str name;

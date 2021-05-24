@@ -1,3 +1,14 @@
+/**
+ * @file widget_items.h
+ * @author Krzysztof Mochocki (raidgar98@onet.pl)
+ * @brief contains declations of more helpful list widget items
+ * @version 0.1
+ * @date 2021-05-24
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #pragma once
 
 #include <antybiurokrata/libraries/objects/objects.h>
@@ -5,6 +16,9 @@
 
 using namespace core;
 
+/**
+ * @brief widget item with referation to source of its data
+ */
 struct account_widget_item : public QListWidgetItem
 {
 
@@ -18,9 +32,16 @@ struct account_widget_item : public QListWidgetItem
 		apply_text();
 	};
 
+	/**
+	 * @brief thanks to this operator, neighbours can be sorted by amount of collaboration with searched person
+	 */
 	virtual bool operator<(const QListWidgetItem& other) const override;
 
  private:
+
+	/**
+	 * @brief set text on widdget based on given person
+	 */
 	void apply_text();
 };
 
@@ -37,5 +58,9 @@ struct publication_widget_item : public QListWidgetItem
 	};
 
  private:
+
+	/**
+	 * @brief set text on widdget based on given publication
+	 */
 	void apply_text();
 };

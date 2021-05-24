@@ -15,6 +15,7 @@
 
 namespace core
 {
+	/** @brief contains objects that should be used for comparing and IO operations */
 	namespace objects
 	{
 		namespace detail
@@ -128,17 +129,32 @@ namespace core
 			};
 			using orcid_t = cser<&detail_orcid_t::identifier>;
 
-
+			/** @brief default unifier, that do nothing */
 			struct default_unifier
 			{
 				u16str& x;
 			};
+
+			/** @brief default validator, that does not check anythink */
 			struct default_validator
 			{
 				const u16str_v& x;
+
+				/**
+				 * @brief if you write your own validator, override this to indicat is given data ok or not
+				 * 
+				 * @return true if validation success
+				 * @return false otherwise
+				 */
 				operator bool() const noexcept { return true; }
 			};
 
+			/**
+			 * @brief wraps string
+			 * 
+			 * @tparam validator with this struct incoming strings will be validated
+			 * @tparam unifier with this struct incoming strings will be unified
+			 */
 			template<typename validator = default_validator, typename unifier = default_unifier>
 			struct detail_string_holder_t : public serial_helper_t
 			{
@@ -234,16 +250,19 @@ namespace core
 					return core::demangler<u16str, u16str_v>{data()}.process<conv_t>().get_copy();
 				}
 
+				/** @brief forward equal operator */
 				inline friend bool operator==(const detail_string_holder_t& s1,
 														const detail_string_holder_t& s2)
 				{
 					return s1.data() == s2.data();
 				}
+				/** @brief forward not equal operator */
 				inline friend bool operator!=(const detail_string_holder_t& s1,
 														const detail_string_holder_t& s2)
 				{
 					return !(s1 == s2);
 				}
+				/** @brief forward less operator */
 				inline friend bool operator<(const detail_string_holder_t& s1,
 													  const detail_string_holder_t& s2)
 				{
@@ -299,6 +318,9 @@ namespace core
 				NOT_FOUND = max_uint_8_t
 			};
 
+			/**
+			 * @brief provides translation to string for enum: `id_type`
+			 */
 			struct id_type_translation_unit
 			{
 				using enum_t		= id_type;
@@ -307,14 +329,20 @@ namespace core
 					 = {u"IDT", u"DOI", u"EISSN", u"PISSN", u"EID", u"WOSUID", u"ISBN"};
 				constexpr static size_t length = sizeof(translation) / sizeof(u16str);
 			};
+
+			/** @brief removes special charachters and make everythink uppercase */
 			struct ids_unifier
 			{
+				/** @brief actually does all job */
 				ids_unifier(u16str& x) noexcept;
 			};
 
 			using ids_string_t			= string_holder_custom_t<default_validator, ids_unifier>;
 			using id_type_stringinizer = enum_stringinizer<id_type_translation_unit>;
 
+			/**
+			 * @brief wraps map that stores diffrent ids
+			 */
 			struct detail_ids_storage_t : public serial_helper_t
 			{
 				map_ser<&serial_helper_t::_, id_type, ids_string_t> data;
@@ -370,6 +398,9 @@ namespace core
 			};
 			using publication_t = cser<&detail_publication_t::ids>;
 
+			/**
+			 * @brief object representation of memmory-usage-friendly collection with publications
+			 */
 			struct detail_publications_storage_t : public serial_helper_t
 			{
 				sset_ser<&serial_helper_t::_, publication_t> data{};

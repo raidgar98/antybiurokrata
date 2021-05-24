@@ -19,6 +19,9 @@
 #include <concepts>
 #include <stdexcept>
 
+/**
+ * @brief base namespace for whole program
+ */
 namespace core
 {
 	/** @brief unifies string type in whole project */
@@ -139,12 +142,18 @@ namespace core
 			using exception_base<assert_exception<MsgType>, MsgType>::exception_base;
 		};
 
+		/**
+		 * @brief this exception should be thrown if something is not found
+		 */
 		template<typename MsgType>
 		struct not_found_exception : public exception_base<not_found_exception<MsgType>, MsgType>
 		{
 			using exception_base<not_found_exception<MsgType>, MsgType>::exception_base;
 		};
 
+		/**
+		 * @brief this exception should be thrown if given pointer is nullptr, but shouldn't
+		 */
 		template<typename MsgType>
 		struct pointer_is_null : public exception_base<pointer_is_null<MsgType>, MsgType>
 		{
@@ -217,9 +226,18 @@ namespace core
 		 */
 		struct require_not_nullptr
 		{
+			/**
+			 * @brief message to show, when pointer is nullptr
+			 */
 			constexpr static str_v c_require_not_nullptr{"given pointer is equal to nullptr!"};
 			using spec_require = require<pointer_is_null>;
 
+			/**
+			 * @brief by constructing object, checks, is given pointer, not a nullptr
+			 * 
+			 * @tparam T any type
+			 * @param ptr pointer to validate
+			 */
 			template<typename T> require_not_nullptr(T* ptr) { check_impl(ptr); }
 			template<typename T> require_not_nullptr(const T* ptr) { check_impl(ptr); }
 
@@ -285,6 +303,9 @@ namespace core
 	/** @brief this namespace contains string utilities */
 	namespace string_utils
 	{
+		/**
+		 * @brief contains implementations, that shouldn't be used from outside
+		 */
 		namespace detail
 		{
 			/**
@@ -418,17 +439,28 @@ namespace core
 				}
 			};
 
+			/**
+			 * @brief return iterator, that points to first word
+			 * 
+			 * @return iterator 
+			 */
 			iterator begin() const
 			{
 				return iterator{this->view,
 									 (this->view.size() == 0 ? svt::npos : 0ul),
 									 this->separator};
 			}
+
+			/**
+			 * @brief returns iterator that indicates end of given string
+			 * 
+			 * @return iterator 
+			 */
 			iterator end() const { return iterator{this->view, svt::npos, this->separator}; }
 		};
 
 		/**
-		 * @brief revert wrapper for splitting view
+		 * @brief wrapper for reverted splittied view
 		 * 
 		 * @tparam string_view_type any string view type
 		 * @example split_words_rev ~ usage
@@ -476,19 +508,31 @@ namespace core
 				}
 			};
 
+			/**
+			 * @brief return iterator, that points to last word
+			 * 
+			 * @return iterator 
+			 */
 			iterator begin() const
 			{
 				return iterator{this->view,
 									 (this->view.size() == 0 ? svt::npos : this->view.size()),
 									 this->separator};
 			}
+
+			/**
+			 * @brief returns iterator that indicates running out of words
+			 * 
+			 * @return iterator 
+			 */
 			iterator end() const { return iterator{this->view, svt::npos, this->separator}; }
 		};
 	}	 // namespace string_utils
 
 }	 // namespace core
 
-template<>
-typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str_v& v);
-template<>
-typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str& v);
+/** @brief automatic conversion for logger */
+template<> typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str_v& v);
+
+/** @brief automatic conversion for logger */
+template<> typename logger::logger_piper operator<<<>(logger::logger_piper src, const core::u16str& v);

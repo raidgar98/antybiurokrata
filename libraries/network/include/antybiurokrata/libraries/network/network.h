@@ -24,6 +24,7 @@
 
 namespace core
 {
+	/** @brief contains implementation of network classes */
 	namespace network
 	{
 		namespace detail
@@ -63,6 +64,9 @@ namespace core
 				}
 			};
 
+			/**
+			 * @brief universal struct to be filled with JSON-based adapters
+			 */
 			struct json_repr_t : Log<json_repr_t>, public patterns::visitable<json_repr_t>
 			{
 				using Log<json_repr_t>::log;
@@ -86,7 +90,7 @@ namespace core
 				}
 			};
 
-			/** @brief global loop for whole program */
+			/** @brief global loop for whole program, can be used for quick internal calls */
 			extern loop_holder_t global_loop;
 		}	 // namespace detail
 
