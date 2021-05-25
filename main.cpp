@@ -4,16 +4,6 @@
 #include <signal.h>	 // ::signal, ::raise
 #include <boost/stacktrace.hpp>
 
-/*
-
-TODO
-
-// implement scopus
-curl 'https://api.elsevier.com/content/search/scopus?query=all(LISOK)&apiKey=a4a3a6dec671a73561980f44712ef25b&view=standard&start=1&httpAccept=application%2Fjson'
-
-// do something about UI. what UI?
-
-*/
 
 void my_signal_handler(int signum)
 {

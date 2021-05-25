@@ -11,7 +11,7 @@
 
 // Project
 #include <antybiurokrata/libraries/demangler/demangler.h>
-#include <antybiurokrata/libraries/objects/serialization_definitions.hpp>
+#include <antybiurokrata/libraries/objects/processing_details.hpp>
 
 namespace core
 {
@@ -20,7 +20,7 @@ namespace core
 	{
 		namespace detail
 		{
-			using namespace serial_definitions;
+			using namespace processing_details;
 
 			/** @brief object representation of ORCID number */
 			struct detail_orcid_t : public serial_helper_t
