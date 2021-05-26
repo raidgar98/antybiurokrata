@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include <antybiurokrata/libraries/orm/orm.h>
+#include <antybiurokrata/libraries/objects/objects.h>
 
 namespace core
 {
@@ -25,14 +25,10 @@ namespace core
 		// 	using Log<summary>::log;
 		// 	using core::orm::publication_storage_t;
 		// 	using second_publications_t = std::optional< std::ref<publication_storage_t> >;
-
 		// 	const publication_storage_t& m_reference;
 		// 	second_publications_t m_second{ std::nullopt };
-
 		// public:
-
 		// 	explicit summary(const publication_storage_t& reference, const second_publications_t& compare_with = std::nullopt);
-
 		// };
 
 	}	 // namespace reports

@@ -465,6 +465,7 @@ namespace core
 			{
 				ORCID,
 				SCOPUS,
+				NO_MATCH,
 
 				NOT_FOUND = max_uint_8_t
 			};
@@ -476,7 +477,7 @@ namespace core
 			{
 				using enum_t									  = match_type;
 				using base_enum_t								  = uint8_t;
-				inline static const u16str translation[] = {u"ORCID", u"SCOPUS"};
+				inline static const u16str translation[] = {u"ORCID", u"SCOPUS", u"NO_MATCH"};
 				constexpr static size_t length			  = sizeof(translation) / sizeof(u16str);
 			};
 
@@ -485,21 +486,46 @@ namespace core
 			/**
 			 * @brief object representation of match
 			 */
-			struct detail_matches_storage_t : public serial_helper_t
+			struct detail_publication_with_source_t : public serial_helper_t
 			{
-				using item_t = ser_match_type;
-				using inner_t = std::set<item_t>;
-				dser<&detail_matches_storage_t::_, inner_t> data;
+				dser<&detail_publication_with_source_t::_, ser_match_type> source;
+				dser<&detail_publication_with_source_t::source, shared_publication_t> publication;
 
-				inner_t* operator->() { return &(data()); }
-				const inner_t* operator->() const { return &(data()); }
+				/** @brief redirect all comprasion operators */
+				inline friend auto operator<=>(const detail_publication_with_source_t& pws1, const detail_publication_with_source_t& pws2)
+				{
+					return pws1.source()().data() <=> pws2.source()().data();
+				}
+			};
+			using publication_with_source_t = cser<&detail_publication_with_source_t::publication>;
+
+
+			/**
+			 * @brief container with unique values
+			 */
+			struct detail_sourced_publication_storage_t : serial_helper_t
+			{
+				using item_t = publication_with_source_t;
+				using inner_t = std::set<item_t>;
+				dser<&detail_sourced_publication_storage_t::_, inner_t> data;
 
 				using putter_t 				= pd::collection::emplacer<std::set, item_t>;
 				using custom_serialize		= pd::collection::serial<std::set, item_t>;
 				using custom_deserialize	= pd::collection::deserial<putter_t,std::set, item_t>;
 				using custom_pretty_print	= pd::collection::pretty_print<std::set, item_t>;
 			};
-			using matches_storage_t = cser<&detail_matches_storage_t::data>;
+			using sourced_publication_storage_t = cser<&detail_sourced_publication_storage_t::data>;
+
+			/**
+			 * @brief object representation of comprasion result
+			 */
+			struct detail_publications_summary_t : public serial_helper_t
+			{
+				dser<&detail_publications_summary_t::_, shared_publication_t> reference;
+				dser<&detail_publications_summary_t::reference, sourced_publication_storage_t> matched;
+			};
+
+			using publication_summary_t = cser<&detail_publications_summary_t::matched>;
 		}	 // namespace detail
 
 		using typename detail::id_type;
@@ -507,7 +533,7 @@ namespace core
 		using typename detail::person_t;
 		using typename detail::polish_name_t;
 		using typename detail::publication_t;
-		using typename detail::matches_storage_t;
+		using typename detail::publication_summary_t;
 	}	 // namespace objects
 }	 // namespace core
 
