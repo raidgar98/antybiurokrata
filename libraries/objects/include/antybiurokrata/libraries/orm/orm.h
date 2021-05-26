@@ -25,9 +25,9 @@ namespace core
 		using namespace core::objects;
 		using namespace core::network::detail;
 
-		using shared_person_t = objects::shared_person_t;
+		using shared_person_t		= objects::shared_person_t;
 		using shared_publication_t = objects::shared_publication_t;
-		using persons_storage_t		 = std::set<shared_person_t>;
+		using persons_storage_t		= std::set<shared_person_t>;
 
 		/**
 		 * @brief constructs person_t objects, by visiting output from adapters

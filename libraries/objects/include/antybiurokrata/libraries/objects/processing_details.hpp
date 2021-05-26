@@ -117,7 +117,7 @@ namespace core
 				{
 					using value_type = std::shared_ptr<T>;
 					using my_t		  = detail_single_member_shared_struct_helper;
-					ps::dser<&my_t::_, value_type> data{ new T{} };
+					ps::dser<&my_t::_, value_type> data{new T{}};
 
 					using custom_serialize	  = shared::serial<T>;
 					using custom_deserialize  = shared::deserial<T>;
@@ -624,7 +624,8 @@ namespace core
 				 * 
 				 * @tparam array_provider provides string translation
 				 */
-				template<array_provider_req array_provider> struct detail_enum_t : public serial_helper_t
+				template<array_provider_req array_provider>
+				struct detail_enum_t : public serial_helper_t
 				{
 					using enum_type = array_provider::enum_t;
 					dser<&detail_enum_t::_, enum_type> data;
@@ -636,8 +637,7 @@ namespace core
 
 					struct custom_serialize
 					{
-						template<typename stream_t>
-						custom_serialize(stream_t& os, const enum_type& e) 
+						template<typename stream_t> custom_serialize(stream_t& os, const enum_type& e)
 						{
 							os << static_cast<int>(e) << delimiter;
 						}
@@ -645,8 +645,7 @@ namespace core
 
 					struct custom_deserialize
 					{
-						template<typename stream_t>
-						custom_deserialize(stream_t& is, enum_type& e) 
+						template<typename stream_t> custom_deserialize(stream_t& is, enum_type& e)
 						{
 							is >> e;
 							drop_delimiter(is);
@@ -656,14 +655,14 @@ namespace core
 
 					struct custom_pretty_print
 					{
-						template<typename stream_t>
-						custom_pretty_print(stream_t& os, const enum_type& e) 
+						template<typename stream_t> custom_pretty_print(stream_t& os, const enum_type& e)
 						{
 							os << enum_stringinizer<array_provider>::get(e);
 						}
 					};
 				};
-				template<array_provider_req array_provider> using enum_t = cser<&detail_enum_t<array_provider>::data>;
+				template<array_provider_req array_provider>
+				using enum_t = cser<&detail_enum_t<array_provider>::data>;
 			}	 // namespace enums
 
 			/**

@@ -86,8 +86,10 @@ namespace patterns
 		/** @brief this is put to stream as separator for members */
 		constexpr char delimiter{' '};
 
-		template<typename stream_t>
-		inline void drop_delimiter(stream_t& is) { is.ignore(1, delimiter); }
+		template<typename stream_t> inline void drop_delimiter(stream_t& is)
+		{
+			is.ignore(1, delimiter);
+		}
 
 		/**
 		 * @brief C(lass) SE(rialization) R(ecursive); use this on class, that needs to be serialized

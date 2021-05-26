@@ -299,43 +299,42 @@ namespace core
 			 * 
 			 * @param msg reason of exception
 			 */
-			explicit error_report(const str& msg) : reason{ msg } { this->set_callstack(); }
+			explicit error_report(const str& msg) : reason{msg} { this->set_callstack(); }
 
 			/**
 			 * @brief Construct a new error report object
 			 * 
 			 * @param ex any exception
 			 */
-			explicit error_report( const exception<str>& ex ) : error_report{ ex.what() } {}
+			explicit error_report(const exception<str>& ex) : error_report{ex.what()} {}
 
 			/**
 			 * @brief Construct a new error report object
 			 * 
 			 * @param ex any exception
 			 */
-			explicit error_report( const exception<u16str>& ex ) : error_report{ core::get_conversion_engine().to_bytes( ex.what() ) } {}
+			explicit error_report(const exception<u16str>& ex) :
+				 error_report{core::get_conversion_engine().to_bytes(ex.what())}
+			{
+			}
 
 			/**
 			 * @brief returns the callstack as string object
 			 * 
 			 * @return str callstack
 			 */
-			static str get_callstack_as_string() 
+			static str get_callstack_as_string()
 			{
 				std::stringstream ss;
 				ss << boost::stacktrace::stacktrace();
 				return ss.str();
 			}
 
-		private:
-
+		 private:
 			/**
 			 * @brief Set the callstack object
 			 */
-			void set_callstack()
-			{
-				callstack = get_callstack_as_string();
-			}
+			void set_callstack() { callstack = get_callstack_as_string(); }
 		};
 	};	  // namespace exceptions
 

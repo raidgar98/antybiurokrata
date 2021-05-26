@@ -23,9 +23,9 @@ namespace core
 	namespace reports
 	{
 
-		using report_item_t = core::objects::publication_summary_t;
+		using report_item_t		  = core::objects::publication_summary_t;
 		using report_collection_t = std::vector<report_item_t>;
-		using report_t = std::shared_ptr<report_collection_t>;
+		using report_t				  = std::shared_ptr<report_collection_t>;
 
 		/**
 		 * @brief matches given publications and produces summary
@@ -33,15 +33,14 @@ namespace core
 		class summary : public Log<summary>
 		{
 			using Log<summary>::log;
-			using publications_storage_t = const std::vector<objects::shared_publication_t>&;
+			using publications_storage_t			  = const std::vector<objects::shared_publication_t>&;
 			template<typename T> using observable = patterns::observable<T, summary>;
 
 			// using second_publications_t = std::optional<std::ref<shared_publication_t>>;
 
-			patterns::safe<report_t> m_report{ report_t{ new report_collection_t{} } };
+			patterns::safe<report_t> m_report{report_t{new report_collection_t{}}};
 
 		 public:
-
 			/**
 			 * @brief Construct a new summary object
 			 * 
@@ -67,8 +66,7 @@ namespace core
 			 */
 			~summary();
 
-		private:
-
+		 private:
 			/**
 			 * @brief actually does a job
 			 * 
@@ -88,14 +86,17 @@ namespace core
 			 * 
 			 * @param obj object to send
 			 */
-			void invoke_on_done(report_t& obj); 
+			void invoke_on_done(report_t& obj);
 
 			/**
 			 * @brief helper function to invoke `on_done`
 			 * 
 			 * @param that self reference
 			 */
-			inline friend void invoke_on_done_helper(summary& that) { that.m_report.access([&](report_t& obj){ that.invoke_on_done(obj); }); }
+			inline friend void invoke_on_done_helper(summary& that)
+			{
+				that.m_report.access([&](report_t& obj) { that.invoke_on_done(obj); });
+			}
 		};
 
 	}	 // namespace reports

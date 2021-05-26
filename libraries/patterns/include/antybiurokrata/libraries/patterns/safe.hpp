@@ -22,19 +22,18 @@ namespace patterns
 	 * 
 	 * @tparam T any type
 	 */
-	template<typename T>
-	class safe
+	template<typename T> class safe
 	{
 		T m_value;
-		std::shared_ptr<std::mutex> mtx{ new std::mutex{} };
-	public:
+		std::shared_ptr<std::mutex> mtx{new std::mutex{}};
 
+	 public:
 		/**
 		 * @brief Construct a new safe object
 		 * 
 		 * @param i_value initial value
 		 */
-		explicit safe(const T& i_value) : m_value{ i_value } {}
+		explicit safe(const T& i_value) : m_value{i_value} {}
 
 		/**
 		 * @brief safe acces to stored value
@@ -43,14 +42,20 @@ namespace patterns
 		 */
 		void access(std::function<void(T&)> apply)
 		{
-			std::unique_lock<std::mutex> lck{ *mtx };
+			std::unique_lock<std::mutex> lck{*mtx};
 			apply(m_value);
 		}
 
 		/** @brief proxy to access */
-		void set( const T& i_value ) { access([&](T& x){ x = i_value; }); }
+		void set(const T& i_value)
+		{
+			access([&](T& x) { x = i_value; });
+		}
 
 		/** @brief proxy to access */
-		void copy( T& output ) { access([&](T& x){ output = x; }); }
+		void copy(T& output)
+		{
+			access([&](T& x) { output = x; });
+		}
 	};
 }	 // namespace patterns

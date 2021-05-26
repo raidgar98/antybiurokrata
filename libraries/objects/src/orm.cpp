@@ -12,7 +12,7 @@ namespace core
 			shared_person_t result;
 
 			const u16str_v affiliation{ptr->affiliation};	// alias
-			auto& person = result().data(); // alias
+			auto& person				= result().data();		// alias
 			const auto reset_person = [&person] { person.reset(new person_t{}); };
 			for(u16str_v part_of_affiliation: string_utils::split_words<u16str_v>{affiliation, u','})
 			{
@@ -59,7 +59,8 @@ namespace core
 				if(pair.second)
 					log.info() << "successfully added new author: "
 								  << patterns::serial::pretty_print{(*(*pair.first)())} << logger::endl;
-				if(current_publication()) (*(*pair.first)())().publictions()()->insert(current_publication().data());
+				if(current_publication())
+					(*(*pair.first)())().publictions()()->insert(current_publication().data());
 			}
 
 			return true;
@@ -186,9 +187,10 @@ namespace core
 
 			if(pub().ids()()->empty()) log.warn() << "orcid input has no ids" << logger::endl;
 
-			auto it = std::find_if(publications.begin(),
-										  publications.end(),
-										  [&spub](const shared_publication_t& pp) { return *pp() == *spub(); });
+			auto it
+				 = std::find_if(publications.begin(),
+									 publications.end(),
+									 [&spub](const shared_publication_t& pp) { return *pp() == *spub(); });
 			if(it == publications.end())
 			{
 				publications.push_back(spub);
@@ -210,10 +212,10 @@ namespace core
 			for(const auto& person: input.persons)
 			{
 				shared_person_t np{new person_t{}};
-				(*np())().name	 = (*person())().name;
+				(*np())().name		= (*person())().name;
 				(*np())().surname = (*person())().surname;
-				(*np())().orcid	 = (*person())().orcid;
-				auto pair		 = output.persons.insert(np().data());
+				(*np())().orcid	= (*person())().orcid;
+				auto pair			= output.persons.insert(np().data());
 				if(pair.second) (*(*pair.first)())().publictions()()->clear();
 			}
 		}

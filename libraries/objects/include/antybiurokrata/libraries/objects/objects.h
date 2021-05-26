@@ -456,7 +456,7 @@ namespace core
 						return p1.name()() < p2.name()();
 				}
 			};
-			using person_t = cser<&detail_person_t::publictions>;
+			using person_t			 = cser<&detail_person_t::publictions>;
 			using shared_person_t = processing_details::shared_t<person_t>;
 
 
@@ -494,7 +494,8 @@ namespace core
 				dser<&detail_publication_with_source_t::source, shared_publication_t> publication;
 
 				/** @brief redirect all comprasion operators */
-				inline friend auto operator<=>(const detail_publication_with_source_t& pws1, const detail_publication_with_source_t& pws2)
+				inline friend auto operator<=>(const detail_publication_with_source_t& pws1,
+														 const detail_publication_with_source_t& pws2)
 				{
 					return pws1.source()().data() <=> pws2.source()().data();
 				}
@@ -507,14 +508,14 @@ namespace core
 			 */
 			struct detail_sourced_publication_storage_t : serial_helper_t
 			{
-				using item_t = publication_with_source_t;
+				using item_t  = publication_with_source_t;
 				using inner_t = std::set<item_t>;
 				dser<&detail_sourced_publication_storage_t::_, inner_t> data;
 
-				using putter_t 				= pd::collection::emplacer<std::set, item_t>;
-				using custom_serialize		= pd::collection::serial<std::set, item_t>;
-				using custom_deserialize	= pd::collection::deserial<putter_t,std::set, item_t>;
-				using custom_pretty_print	= pd::collection::pretty_print<std::set, item_t>;
+				using putter_t				  = pd::collection::emplacer<std::set, item_t>;
+				using custom_serialize	  = pd::collection::serial<std::set, item_t>;
+				using custom_deserialize  = pd::collection::deserial<putter_t, std::set, item_t>;
+				using custom_pretty_print = pd::collection::pretty_print<std::set, item_t>;
 			};
 			using sourced_publication_storage_t = cser<&detail_sourced_publication_storage_t::data>;
 
@@ -534,10 +535,10 @@ namespace core
 		using typename detail::orcid_t;
 		using typename detail::person_t;
 		using typename detail::polish_name_t;
-		using typename detail::publication_t;
 		using typename detail::publication_summary_t;
-		using typename detail::shared_publication_t;
+		using typename detail::publication_t;
 		using typename detail::shared_person_t;
+		using typename detail::shared_publication_t;
 	}	 // namespace objects
 }	 // namespace core
 

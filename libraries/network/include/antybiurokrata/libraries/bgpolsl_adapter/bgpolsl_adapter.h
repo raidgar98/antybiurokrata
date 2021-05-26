@@ -66,7 +66,7 @@ namespace core
 				 */
 			[[nodiscard]] result_t get_person(const str_v& name, const str_v& surname);
 
-		private:
+		 private:
 			/**
 				 * @brief prepares request for Drogon
 				 * 

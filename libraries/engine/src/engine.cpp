@@ -59,17 +59,20 @@ void engine::start(const str& name, const str& surname)
 
 engine::error_summary_t engine::prepare_error_summary() const
 {
-	return std::make_shared<core::exceptions::error_report>( "while processing cought unknown exception" );
+	return std::make_shared<core::exceptions::error_report>(
+		 "while processing cought unknown exception");
 }
 
-engine::error_summary_t engine::prepare_error_summary(const core::exceptions::exception<str>& ex) const
+engine::error_summary_t engine::prepare_error_summary(
+	 const core::exceptions::exception<str>& ex) const
 {
-	return std::make_shared<core::exceptions::error_report>( ex );
+	return std::make_shared<core::exceptions::error_report>(ex);
 }
 
-engine::error_summary_t engine::prepare_error_summary(const core::exceptions::exception<u16str>& ex) const
+engine::error_summary_t engine::prepare_error_summary(
+	 const core::exceptions::exception<u16str>& ex) const
 {
-	return std::make_shared<core::exceptions::error_report>( ex );
+	return std::make_shared<core::exceptions::error_report>(ex);
 }
 
 void engine::process(const std::stop_token& stop_token, const str& orcid) noexcept
@@ -149,7 +152,7 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 				 new orm::publications_extractor_t{*inner_persons_extractor});
 
 			// std::unique_ptr<reports::summary> sum{ new reports::summary{ inner_publications_extractor->publications } };
-			reports::summary sum{ inner_publications_extractor->publications };
+			reports::summary sum{inner_publications_extractor->publications};
 
 
 			// on_start();
