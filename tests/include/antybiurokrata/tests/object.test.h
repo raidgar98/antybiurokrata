@@ -148,7 +148,7 @@ namespace tests
 		using namespace core::objects;
 		using namespace object_tests_values;
 		log.info() << "entering `person_tests` suite" << logger::endl;
-		logger::switch_log_level_keeper<logger::log_level::NONE> _;
+		// logger::switch_log_level_keeper<logger::log_level::NONE> _;
 
 		"case_01"_test = [] {
 			ut::expect(testbase::check_serialization<person_t>());

@@ -310,7 +310,7 @@ namespace core
 
 						bool operator()(const elem_t& e)
 						{
-							dassert{++idx < size, "out of range"_u8};
+							dassert{idx++ < size, "out of range"_u8};
 							arr[idx] = e;
 							return true;
 						}
@@ -417,8 +417,9 @@ namespace core
 
 				template<template<typename _, typename... args> typename coll_t, typename elem_t,
 							typename... args>
-				using pretty_print = detail::processing_base<pretty_print_impl<coll_t, elem_t, args...>,
-																			coll_t, elem_t, const coll_t<elem_t, args...>&, args...>;
+				using pretty_print
+					 = detail::processing_base<pretty_print_impl<coll_t, elem_t, args...>, coll_t,
+														elem_t, const coll_t<elem_t, args...>&, args...>;
 			};	  // namespace collection
 
 			/**
@@ -573,9 +574,11 @@ namespace core
 			 * @tparam X reference to previous member
 			 * @tparam T type in shared vector
 			 */
-			template<auto X, typename Key, typename Value>		using map_ser		=	ser<X, std::map<Key, Value>>;
-			template<auto X, typename type, size_t count>		using array_ser	=	ser<X, std::array<type, count>>;
-			template<typename T> 										using shared_t		=	shared::single_member_shared_struct_helper<T>;
+			template<auto X, typename Key, typename Value>
+			using map_ser = ser<X, std::map<Key, Value>>;
+			template<auto X, typename type, size_t count>
+			using array_ser							= ser<X, std::array<type, count>>;
+			template<typename T> using shared_t = shared::single_member_shared_struct_helper<T>;
 		}	 // namespace processing_details
 	}		 // namespace objects
 }	 // namespace core

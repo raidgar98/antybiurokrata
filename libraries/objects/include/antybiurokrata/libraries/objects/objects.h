@@ -34,11 +34,10 @@ namespace core
 				pd::array_ser<&detail_orcid_t::_, uint16_t, words_in_orcid_num> identifier;
 
 				using custom_serialize = pd::collection::serial<fixed_orcid_array, uint16_t>;
-				using putter_t = pd::collection::array_putter<uint16_t, words_in_orcid_num>;
+				using putter_t			  = pd::collection::array_putter<uint16_t, words_in_orcid_num>;
 				using custom_deserialize
 					 = pd::collection::deserial<putter_t, fixed_orcid_array, uint16_t>;
-				using custom_pretty_print
-					 = pd::collection::pretty_print<fixed_orcid_array, uint16_t>;
+				using custom_pretty_print = pd::collection::pretty_print<fixed_orcid_array, uint16_t>;
 
 				/** @brief default constructor */
 				explicit detail_orcid_t() = default;
