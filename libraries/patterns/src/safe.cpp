@@ -1,0 +1,1 @@
+#include <antybiurokrata/libraries/patterns/safe.hpp>

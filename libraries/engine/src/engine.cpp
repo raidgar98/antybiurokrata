@@ -163,7 +163,7 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 
 			for(const auto& p: inner_persons_extractor->persons)
 			{
-				const auto& person = (*p);
+				const auto& person = (*p());
 				if(person().name == w_name && person().surname == w_surname)
 				{
 					w_orcid = objects::orcid_t::value_t::to_string(person().orcid()());

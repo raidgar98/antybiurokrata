@@ -79,6 +79,7 @@ void MainWindow::set_progress(const size_t p) { ui->progress->setValue(p); }
 
 void MainWindow::on_search_button_clicked()
 {
+	emit set_progress(0);
 	const auto format_orcid_num = [](const QLineEdit& line) -> QString {
 		std::stringstream ss;
 		ss << std::setw(4) << std::setfill('0') << line.text().toStdString();
@@ -136,7 +137,7 @@ void MainWindow::collect_neighbours(persons_extractor_storage_t bgperson_visitor
 
 	for(const auto& _p: bgperson_visitor.lock()->persons)
 	{
-		auto& p = *_p;
+		auto& p = *_p();
 		ui->neighbours->addItem(new account_widget_item(_p, ui->neighbours));
 		global_logger.info() << patterns::serial::pretty_print{p} << logger::endl;
 	}

@@ -117,7 +117,7 @@ namespace core
 				{
 					using value_type = std::shared_ptr<T>;
 					using my_t		  = detail_single_member_shared_struct_helper;
-					ps::dser<&my_t::_, value_type> data;
+					ps::dser<&my_t::_, value_type> data{ new T{} };
 
 					using custom_serialize	  = shared::serial<T>;
 					using custom_deserialize  = shared::deserial<T>;
@@ -136,6 +136,21 @@ namespace core
 						valid();
 						return data().get();
 					}
+
+					T& operator*()
+					{
+						valid();
+						return *data().get();
+					}
+
+					const T& operator*() const
+					{
+						valid();
+						return *data().get();
+					}
+
+					/** @brief proxies, to make this class usable as much as shared_ptr */
+					operator bool() const { return validate(); }
 
 					/** @brief returns true if pointer is set */
 					bool validate() const { return this->data().get() != nullptr; }

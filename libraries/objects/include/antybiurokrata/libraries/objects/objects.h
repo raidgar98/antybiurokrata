@@ -457,6 +457,8 @@ namespace core
 				}
 			};
 			using person_t = cser<&detail_person_t::publictions>;
+			using shared_person_t = processing_details::shared_t<person_t>;
+
 
 			/**
 			 * @brief defines, with data sources will be compared with reference data
@@ -534,6 +536,8 @@ namespace core
 		using typename detail::polish_name_t;
 		using typename detail::publication_t;
 		using typename detail::publication_summary_t;
+		using typename detail::shared_publication_t;
+		using typename detail::shared_person_t;
 	}	 // namespace objects
 }	 // namespace core
 

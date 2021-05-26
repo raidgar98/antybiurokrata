@@ -2,14 +2,16 @@
 
 namespace core
 {
-/*	namespace reports
+	namespace reports
 	{
 
-		void summary::process(publication_storage_t input) 
-		{
+		void summary::process(publications_storage_t input) { process_impl(input); }
 
+		summary::~summary() 
+		{
+			invoke_on_done_helper(*this);
 		}
 
+
 	}	 // namespace reports
-	*/
 }	 // namespace core

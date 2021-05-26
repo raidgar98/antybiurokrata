@@ -22,17 +22,12 @@ namespace core
 	/** @brief contains converters from adapters output to objects */
 	namespace orm
 	{
-		using shared_person_t = std::shared_ptr<objects::person_t>;
-		/** @brief checks is pointers not null, and then forwards to operator to their content */
-		struct less_person_comparator
-		{
-			bool operator()(const shared_person_t& p1, const shared_person_t& p2) const;
-		};
-
 		using namespace core::objects;
 		using namespace core::network::detail;
-		using publication_storage_t = std::shared_ptr<publication_t>;
-		using persons_storage_t		 = std::set<shared_person_t, less_person_comparator>;
+
+		using shared_person_t = objects::shared_person_t;
+		using shared_publication_t = objects::shared_publication_t;
+		using persons_storage_t		 = std::set<shared_person_t>;
 
 		/**
 		 * @brief constructs person_t objects, by visiting output from adapters
@@ -45,7 +40,7 @@ namespace core
 			using Log<persons_extractor_t>::log;
 
 			persons_storage_t persons;
-			publication_storage_t current_publication{nullptr};
+			shared_publication_t current_publication{nullptr};
 
 			/**
 			 * @brief handy if you want names, but without publications
@@ -73,7 +68,7 @@ namespace core
 			explicit publications_extractor_t(persons_extractor_t& vs) : person_visitor{vs} {}
 
 			persons_extractor_t& person_visitor;
-			std::vector<publication_storage_t> publications{};
+			std::vector<shared_publication_t> publications{};
 
 			virtual bool visit(bgpolsl_repr_t* ptr) override;
 			virtual bool visit(json_repr_t* ptr) override;

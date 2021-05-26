@@ -10,3 +10,4 @@ create_library( recursive_type_collection )
 create_library( functor recursive_type_collection )
 
 create_library( serializer )
+create_library( safe )
