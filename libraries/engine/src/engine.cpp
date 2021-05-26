@@ -132,6 +132,7 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 	orm::persons_extractor_t scopus_visitor{};
 	str w_orcid{orcid};
 
+
 	const auto stop = [&]() {
 		if(stop_token.stop_requested()) dassert(false, "stopped on request!"_u8);
 	};
@@ -146,6 +147,10 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 			inner_persons_extractor.reset(new orm::persons_extractor_t{});
 			inner_publications_extractor.reset(
 				 new orm::publications_extractor_t{*inner_persons_extractor});
+
+			// std::unique_ptr<reports::summary> sum{ new reports::summary{ inner_publications_extractor->publications } };
+			reports::summary sum{ inner_publications_extractor->publications };
+
 
 			// on_start();
 

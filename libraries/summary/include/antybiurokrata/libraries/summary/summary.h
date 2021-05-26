@@ -10,10 +10,13 @@
  */
 #pragma once
 
-#include <antybiurokrata/libraries/orm/orm.h>
+// STL
+#include <atomic>
+
+// Project Includes
 #include <antybiurokrata/libraries/patterns/observer.hpp>
 #include <antybiurokrata/libraries/patterns/safe.hpp>
-#include <atomic>
+#include <antybiurokrata/libraries/orm/orm.h>
 
 namespace core
 {
@@ -35,7 +38,7 @@ namespace core
 
 			// using second_publications_t = std::optional<std::ref<shared_publication_t>>;
 
-			patterns::safe<report_t> m_report;
+			patterns::safe<report_t> m_report{ report_t{ new report_collection_t{} } };
 
 		 public:
 
@@ -44,23 +47,8 @@ namespace core
 			 * 
 			 * @tparam other_owner owner type of incoming signal
 			 * @param reference reference data for comprasion
-			 * @param on_incoming_data reference to signal, that adds new data to analyze
 			 */
-			template<typename other_owner> // <- optionaly can be removed by linking to engine, but it's without logical sense in dependency hierarchy
-			summary(publications_storage_t reference, patterns::observable<publications_storage_t, other_owner>& on_incoming_data )
-			{
-				m_report.access([&](report_t& obj)
-				{
-					obj->reserve( reference.size() );
-					for(const auto& ref : reference)
-					{
-						obj->push_back( ref() );
-						// report_item_t x{};
-						// x().reference = ref();
-					}
-				});
-				on_incoming_data.register_slot( [&](publications_storage_t incoming_data){ this->process(incoming_data); });
-			}
+			summary(publications_storage_t reference);
 
 			/**
 			 * @brief appends comprasion output to internal storage, can take a while
@@ -81,12 +69,32 @@ namespace core
 
 		private:
 
+			/**
+			 * @brief actually does a job
+			 * 
+			 * @param input data
+			 */
 			void process_impl(publications_storage_t input);
 
+			/**
+			 * @brief methode for multithreading
+			 * 
+			 * @param item item to add
+			 */
 			void safely_add_report(const report_item_t& item);
 
-			void invoke_on_done(report_t& obj) { on_done(obj); }
+			/**
+			 * @brief invokes `on_done` with given object
+			 * 
+			 * @param obj object to send
+			 */
+			void invoke_on_done(report_t& obj); 
 
+			/**
+			 * @brief helper function to invoke `on_done`
+			 * 
+			 * @param that self reference
+			 */
 			inline friend void invoke_on_done_helper(summary& that) { that.m_report.access([&](report_t& obj){ that.invoke_on_done(obj); }); }
 		};
 

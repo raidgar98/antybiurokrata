@@ -11,11 +11,8 @@
 
 #pragma once
 
-#include <antybiurokrata/libraries/patterns/observer.hpp>
-#include <antybiurokrata/libraries/logger/logger.h>
-#include <antybiurokrata/libraries/orm/orm.h>
-
-
+// Project Includes
+#include <antybiurokrata/libraries/summary/summary.h>
 namespace core
 {
 
