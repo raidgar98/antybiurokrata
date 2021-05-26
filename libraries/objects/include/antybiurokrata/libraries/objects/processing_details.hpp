@@ -25,6 +25,7 @@ namespace core
 		namespace processing_details
 		{
 			using namespace patterns::serial;
+			using patterns::serial::drop_delimiter;
 			using patterns::serial::serial_helper_t;
 
 			/** @brief contains custom processing options for std::shared_ptr<T> processing */
@@ -73,16 +74,15 @@ namespace core
 					using sT = std::shared_ptr<T>;
 					template<typename stream_type> deserial(stream_type& is, sT& ptr)
 					{
-						using patterns::serial::delimiter;
 						int is_null;
 						is >> is_null;
-						is.ignore(1, delimiter);
+						drop_delimiter(is);
 
 						if(is_null != 0)
 						{
 							ptr = std::make_shared<T>();
 							is >> *ptr;
-							is.ignore(1, delimiter);
+							drop_delimiter(is);
 						}
 					}
 				};
@@ -179,9 +179,9 @@ namespace core
 				{
 					template<typename stream_type> deserial(stream_type& is, typename core::u16str& out)
 					{
-						using patterns::serial::delimiter;
 						size_t size;
 						is >> size;
+						drop_delimiter(is);
 						if(size == 0) return;
 						else
 							out.reserve(size);
@@ -189,6 +189,7 @@ namespace core
 						{
 							int c;
 							is >> c;
+							drop_delimiter(is);
 							out += static_cast<u16char_t>(c);
 						}
 					}
@@ -378,19 +379,18 @@ namespace core
 				struct deserial_impl
 				{
 					template<typename stream_t>
-					deserial_impl(stream_t& os, coll_t<elem_t, args...>& c, const size_t)
+					deserial_impl(stream_t& is, coll_t<elem_t, args...>& c, const size_t)
 					{
-						using patterns::serial::delimiter;
 						size_t size;
-						os >> size;
-						os.ignore(1, delimiter);
+						is >> size;
+						drop_delimiter(is);
 						if(size == 0) return;
 						coll_putter cp{c};
 						for(size_t i = 0; i < size; ++i)
 						{
 							elem_t e;
-							os >> e;
-							os.ignore(1, delimiter);
+							is >> e;
+							drop_delimiter(is);
 							if(!cp(e)) break;
 						}
 					}
@@ -409,7 +409,6 @@ namespace core
 					template<typename stream_t>
 					pretty_print_impl(stream_t& os, const coll_t<elem_t, args...>& c, const size_t size)
 					{
-						using patterns::serial::delimiter;
 						os << '[';
 						for(auto it = c.begin(); it != c.end(); it++)
 							os << ","[it == c.begin()] << ' ' << pretty_print{*it};
@@ -483,19 +482,18 @@ namespace core
 			{
 				template<typename stream_type> map_deserial(stream_type& is, std::map<Key, Value>& data)
 				{
-					using patterns::serial::delimiter;
 					size_t size;
 					is >> size;
-					is.ignore(1, delimiter);
+					drop_delimiter(is);
 					if(size == 0) return;
 					for(size_t i = 0; i < size; ++i)
 					{
 						Key key;
 						is >> key;
-						is.ignore(1, delimiter);
+						drop_delimiter(is);
 						Value val;
 						is >> val;
-						is.ignore(1, delimiter);
+						drop_delimiter(is);
 						data.emplace(key, std::move(val));
 					}
 				}
@@ -520,74 +518,78 @@ namespace core
 				}
 			};
 
-			/**
+			namespace enums
+			{
+
+				/**
 			 * @brief defines requirements for translation unit
 			 * 
 			 * @tparam T type to check
 			 */
-			template<typename T> concept array_provider_req = requires
-			{
-				typename T::enum_t;
-				typename T::base_enum_t;
+				template<typename T> concept array_provider_req = requires
 				{
-					T::length + 1
-				}
-				->std::same_as<size_t>;
-				std::same_as<std::remove_reference_t<decltype(T::translation[0])>, u16str>;
-				std::convertible_to<std::numeric_limits<typename T::base_enum_t>, typename T::enum_t>;
-			};
+					typename T::enum_t;
+					typename T::base_enum_t;
+					{
+						T::length + 1
+					}
+					->std::same_as<size_t>;
+					std::same_as<std::remove_reference_t<decltype(T::translation[0])>, u16str>;
+					std::convertible_to<std::numeric_limits<typename T::base_enum_t>,
+											  typename T::enum_t>;
+				};
 
-			/**
+				/**
 			 * @brief universal way of stringinizing enums
 			 * 
 			 * @tparam array_provider which fullfills requirements of array_provider_req
 			 */
-			template<array_provider_req array_provider> struct enum_stringinizer
-			{
-				using enum_t										 = array_provider::enum_t;
-				using base_enum_t									 = array_provider::base_enum_t;
-				constexpr static size_t length				 = array_provider::length;
-				inline static const u16str* enum_to_string = array_provider::translation;
-				constexpr static base_enum_t not_found		 = std::numeric_limits<base_enum_t>::max();
+				template<array_provider_req array_provider> struct enum_stringinizer
+				{
+					using enum_t										 = array_provider::enum_t;
+					using base_enum_t									 = array_provider::base_enum_t;
+					constexpr static size_t length				 = array_provider::length;
+					inline static const u16str* enum_to_string = array_provider::translation;
+					constexpr static base_enum_t not_found		 = std::numeric_limits<base_enum_t>::max();
 
-				const enum_t x;
+					const enum_t x;
 
-				/**
+					/**
 				 * @brief converts given enum to string
 				 * 
 				 * @param x input enum
 				 * @return u16str stringinized version
 				 */
-				static u16str get(const enum_t x)
-				{
-					const size_t index = static_cast<size_t>(x);
-					// dassert(index < length, "invalid enum_t"_u8);
-					if(index >= length)
+					static u16str get(const enum_t x)
 					{
-						global_logger.warn() << "not found enum: " << index << logger::endl;
-						return u"NOT FOUND";
+						const size_t index = static_cast<size_t>(x);
+						// dassert(index < length, "invalid enum_t"_u8);
+						if(index >= length)
+						{
+							global_logger.warn() << "not found enum: " << index << logger::endl;
+							return u"NOT FOUND";
+						}
+						return enum_stringinizer::enum_to_string[index];
 					}
-					return enum_stringinizer::enum_to_string[index];
-				}
 
-				/**
+					/**
 				 * @brief converts given string to enum
 				 * 
 				 * @param x input string
 				 * @return enum_t converted string
 				 * @return (enum_t)(std::numeric_limits<enum_t>::max()) if not found
 				 */
-				static enum_t get(u16str x)
-				{
-					std::for_each(x.begin(), x.end(), [](u16char_t& c) { c = std::toupper(c); });
-					for(size_t i = 0; i < length; ++i)
-						if(x == enum_to_string[i]) return static_cast<enum_t>(i);
-					global_logger.warn() << "invalid string: " << x << logger::endl;
+					static enum_t get(u16str x)
+					{
+						std::for_each(x.begin(), x.end(), [](u16char_t& c) { c = std::toupper(c); });
+						for(size_t i = 0; i < length; ++i)
+							if(x == enum_to_string[i]) return static_cast<enum_t>(i);
+						global_logger.warn() << "invalid string: " << x << logger::endl;
 
-					return static_cast<enum_t>(not_found);
-				}
+						return static_cast<enum_t>(not_found);
+					}
 
-				/**
+					/**
 				 * @brief operator for eazier stringinization
 				 * 
 				 * @tparam stream_t any stream
@@ -595,13 +597,59 @@ namespace core
 				 * @param x self
 				 * @return stream_t& given string
 				 */
-				template<typename stream_t>
-				inline friend stream_t& operator<<(stream_t& os, const enum_stringinizer& x)
-				{
-					return os << get_conversion_engine().to_bytes(get(x.x));
-				}
-			};
+					template<typename stream_t>
+					inline friend stream_t& operator<<(stream_t& os, const enum_stringinizer& x)
+					{
+						return os << get_conversion_engine().to_bytes(get(x.x));
+					}
+				};
 
+				/**
+				 * @brief universal wrapper for enumerators
+				 * 
+				 * @tparam array_provider provides string translation
+				 */
+				template<array_provider_req array_provider> struct detail_enum_t : public serial_helper_t
+				{
+					using enum_type = array_provider::enum_t;
+					dser<&detail_enum_t::_, enum_type> data;
+
+					inline friend bool operator<(const detail_enum_t& e1, const detail_enum_t& e2)
+					{
+						return e1.data() < e2.data();
+					}
+
+					struct custom_serialize
+					{
+						template<typename stream_t>
+						custom_serialize(stream_t& os, const enum_type& e) 
+						{
+							os << static_cast<int>(e) << delimiter;
+						}
+					};
+
+					struct custom_deserialize
+					{
+						template<typename stream_t>
+						custom_deserialize(stream_t& is, enum_type& e) 
+						{
+							is >> e;
+							drop_delimiter(is);
+							// os << static_cast<int>(e) << delimiter;
+						}
+					};
+
+					struct custom_pretty_print
+					{
+						template<typename stream_t>
+						custom_pretty_print(stream_t& os, const enum_type& e) 
+						{
+							os << enum_stringinizer<array_provider>::get(e);
+						}
+					};
+				};
+				template<array_provider_req array_provider> using enum_t = cser<&detail_enum_t<array_provider>::data>;
+			}	 // namespace enums
 
 			/**
 			 * @brief alias for serializing shared vector

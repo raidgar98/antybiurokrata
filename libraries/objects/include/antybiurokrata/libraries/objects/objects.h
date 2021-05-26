@@ -345,7 +345,7 @@ namespace core
 			};
 
 			using ids_string_t			= string_holder_custom_t<default_validator, ids_unifier>;
-			using id_type_stringinizer = pd::enum_stringinizer<id_type_translation_unit>;
+			using id_type_stringinizer = pd::enums::enum_stringinizer<id_type_translation_unit>;
 
 			/**
 			 * @brief wraps map that stores diffrent ids
@@ -458,8 +458,9 @@ namespace core
 			};
 			using person_t = cser<&detail_person_t::publictions>;
 
-			//////////////////////////////////////////////////////////////////////
-			/*
+			/**
+			 * @brief defines, with data sources will be compared with reference data
+			 */
 			enum class match_type : uint8_t
 			{
 				ORCID,
@@ -468,6 +469,9 @@ namespace core
 				NOT_FOUND = max_uint_8_t
 			};
 
+			/**
+			 * @brief provides cnoversion from enum to string
+			 */
 			struct match_type_translation_unit
 			{
 				using enum_t									  = match_type;
@@ -476,26 +480,26 @@ namespace core
 				constexpr static size_t length			  = sizeof(translation) / sizeof(u16str);
 			};
 
-			using match_type_stringinizer = enum_stringinizer<match_type_translation_unit>;
+			using ser_match_type = pd::enums::enum_t<match_type_translation_unit>;
 
+			/**
+			 * @brief object representation of match
+			 */
 			struct detail_matches_storage_t : public serial_helper_t
 			{
-				map_ser<&serial_helper_t::_, match_type, ids_string_t>
-					 data;	// TODO:	generalize shared_vector to vector and define std::shared_ptr as custom serial
-								//			then change type to vec_ser<match_type>
+				using item_t = ser_match_type;
+				using inner_t = std::set<item_t>;
+				dser<&detail_matches_storage_t::_, inner_t> data;
 
-				using ser_data_t = decltype(data);
-				using inner_t	  = typename ser_data_t::value_type;
 				inner_t* operator->() { return &(data()); }
 				const inner_t* operator->() const { return &(data()); }
 
-				using custom_serialize	 = map_serial<id_type, ids_string_t>;
-				using custom_deserialize = map_deserial<id_type, ids_string_t>;
-				using custom_pretty_print
-					 = map_pretty_serial<id_type, ids_string_t, id_type_stringinizer>;
+				using putter_t 				= pd::collection::emplacer<std::set, item_t>;
+				using custom_serialize		= pd::collection::serial<std::set, item_t>;
+				using custom_deserialize	= pd::collection::deserial<putter_t,std::set, item_t>;
+				using custom_pretty_print	= pd::collection::pretty_print<std::set, item_t>;
 			};
-			using ids_storage_t = cser<&detail_ids_storage_t::data>;
-*/
+			using matches_storage_t = cser<&detail_matches_storage_t::data>;
 		}	 // namespace detail
 
 		using typename detail::id_type;
@@ -503,6 +507,7 @@ namespace core
 		using typename detail::person_t;
 		using typename detail::polish_name_t;
 		using typename detail::publication_t;
+		using typename detail::matches_storage_t;
 	}	 // namespace objects
 }	 // namespace core
 
@@ -517,10 +522,9 @@ inline stream_type& operator<<(stream_type& os, const core::objects::detail::id_
 template<typename stream_type>
 inline stream_type& operator>>(stream_type& is, core::objects::detail::id_type& id)
 {
-	using patterns::serial::delimiter;
 	int x;
 	is >> x;
-	is.ignore(1, delimiter);
+	patterns::serial::drop_delimiter(is);
 	id = static_cast<core::objects::detail::id_type>(x);
 	return is;
 }
