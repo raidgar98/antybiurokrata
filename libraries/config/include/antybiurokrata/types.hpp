@@ -19,6 +19,9 @@
 #include <concepts>
 #include <stdexcept>
 
+// Boost
+#include <boost/stacktrace.hpp>
+
 /**
  * @brief base namespace for whole program
  */
@@ -281,6 +284,58 @@ namespace core
 			}
 		};
 
+		/**
+		 * @brief object representation of error summary
+		 */
+		struct error_report
+		{
+			str reason;
+			str callstack;
+
+			error_report() = default;
+			/**
+			 * @brief Construct a new error report object
+			 * 
+			 * @param msg reason of exception
+			 */
+			explicit error_report(const str& msg) : reason{ msg } { this->set_callstack(); }
+
+			/**
+			 * @brief Construct a new error report object
+			 * 
+			 * @param ex any exception
+			 */
+			explicit error_report( const exception<str>& ex ) : error_report{ ex.what() } {}
+
+			/**
+			 * @brief Construct a new error report object
+			 * 
+			 * @param ex any exception
+			 */
+			explicit error_report( const exception<u16str>& ex ) : error_report{ core::get_conversion_engine().to_bytes( ex.what() ) } {}
+
+			/**
+			 * @brief returns the callstack as string object
+			 * 
+			 * @return str callstack
+			 */
+			static str get_callstack_as_string() 
+			{
+				std::stringstream ss;
+				ss << boost::stacktrace::stacktrace();
+				return ss.str();
+			}
+
+		private:
+
+			/**
+			 * @brief Set the callstack object
+			 */
+			void set_callstack()
+			{
+				callstack = get_callstack_as_string();
+			}
+		};
 	};	  // namespace exceptions
 
 	/**

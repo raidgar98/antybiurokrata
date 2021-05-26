@@ -38,7 +38,7 @@ namespace core
 		using sobservable								 = patterns::sobservable<engine>;
 		template<typename arg> using observable = patterns::observable<arg, engine>;
 		using summary_t								 = container<orm::persons_extractor_t>;
-		using error_summary_t						 = int*;
+		using error_summary_t						 = container<core::exceptions::error_report>;
 		using stop_token_t							 = std::stop_token;
 		using worker_function_t						 = std::function<void(const stop_token_t&, bool&)>;
 
@@ -195,13 +195,20 @@ namespace core
 		 * 
 		 * @return error_summary_t 
 		 */
-		error_summary_t prepare_error_summary(const core::exceptions::exception<str>& ex);
+		error_summary_t prepare_error_summary(const core::exceptions::exception<str>& ex) const;
+
+		/**
+		 * @brief prepares error summary, based on exception
+		 * 
+		 * @return error_summary_t 
+		 */
+		error_summary_t prepare_error_summary(const core::exceptions::exception<u16str>& ex) const;
 
 		/**
 		 * @brief prepares error summary, for unknown exception
 		 * 
 		 * @return error_summary_t 
 		 */
-		error_summary_t prepare_error_summary();
+		error_summary_t prepare_error_summary() const;
 	};
 }	 // namespace core

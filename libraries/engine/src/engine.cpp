@@ -57,16 +57,19 @@ void engine::start(const str& name, const str& surname)
 }
 
 
-engine::error_summary_t engine::prepare_error_summary()
+engine::error_summary_t engine::prepare_error_summary() const
 {
-	log.error() << "while processing cought unknown exception" << logger::endl;
-	return nullptr;
+	return std::make_shared<core::exceptions::error_report>( "while processing cought unknown exception" );
 }
 
-engine::error_summary_t engine::prepare_error_summary(const core::exceptions::exception<str>& ex)
+engine::error_summary_t engine::prepare_error_summary(const core::exceptions::exception<str>& ex) const
 {
-	log.error() << "while processing cought: " << ex.what() << logger::endl;
-	return nullptr;
+	return std::make_shared<core::exceptions::error_report>( ex );
+}
+
+engine::error_summary_t engine::prepare_error_summary(const core::exceptions::exception<u16str>& ex) const
+{
+	return std::make_shared<core::exceptions::error_report>( ex );
 }
 
 void engine::process(const std::stop_token& stop_token, const str& orcid) noexcept
@@ -86,7 +89,7 @@ void engine::process(const std::stop_token& stop_token, const str& orcid) noexce
 	}
 	catch(const core::exceptions::exception<u16str>& e)
 	{
-		log.error() << "wide error!: " << e.what() << logger::endl;
+		on_error(prepare_error_summary(e));
 	}
 	catch(...)
 	{
@@ -107,7 +110,7 @@ void engine::process_name_and_surname(const std::stop_token& stop_token, const s
 	}
 	catch(const core::exceptions::exception<u16str>& e)
 	{
-		log.error() << "wide error!: " << e.what() << logger::endl;
+		on_error(prepare_error_summary(e));
 	}
 	catch(...)
 	{
