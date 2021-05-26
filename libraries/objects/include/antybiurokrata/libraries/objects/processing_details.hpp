@@ -99,7 +99,7 @@ namespace core
 
 					template<typename stream_type> pretty_print(stream_type& os, sT& ptr)
 					{
-						if(ptr) os << pretty_print{*ptr};
+						if(ptr) os << patterns::serial::pretty_print{*ptr};
 						else
 							os << null_value_string;
 					}
@@ -303,6 +303,12 @@ namespace core
 						}
 					};
 
+					/**
+					 * @brief helper struct to put elements into array
+					 * 
+					 * @tparam elem_t type of element
+					 * @tparam size size of array
+					 */
 					template<typename elem_t, size_t size> struct array_putter
 					{
 						std::array<elem_t, size>& arr;
@@ -316,6 +322,13 @@ namespace core
 						}
 					};
 
+					/**
+					 * @brief emplace data to collection
+					 * 
+					 * @tparam coll_t type of collection
+					 * @tparam elem_t type of element
+					 * @tparam argv additional template parameters for collections
+					 */
 					template<template<typename T, typename... argv> typename coll_t, typename elem_t,
 								typename... argv>
 					struct emplacer
@@ -404,17 +417,39 @@ namespace core
 					}
 				};
 
+				/**
+				 * @brief general use serialization alias for collections
+				 * 
+				 * @tparam coll_t type of collection
+				 * @tparam elem_t type of element
+				 * @tparam args additional parameters for collection
+				 */
 				template<template<typename _, typename... args> typename coll_t, typename elem_t,
 							typename... args>
 				using serial = detail::processing_base<serial_impl<coll_t, elem_t, args...>, coll_t,
 																	elem_t, const coll_t<elem_t, args...>&, args...>;
 
+				/**
+				 * @brief general use deserialization alias for collections
+				 * 
+				 * @tparam coll_putter class that implements adding following items to collection
+				 * @tparam coll_t type of collection
+				 * @tparam elem_t type of element
+				 * @tparam args additional parameters for collection
+				 */
 				template<typename coll_putter, template<typename _, typename... args> typename coll_t,
 							typename elem_t, typename... args>
 				using deserial
 					 = detail::processing_base<deserial_impl<coll_putter, coll_t, elem_t, args...>,
 														coll_t, elem_t, coll_t<elem_t, args...>&, args...>;
 
+				/**
+				 * @brief general use pretty-printing alias for collections
+				 * 
+				 * @tparam coll_t type of collection
+				 * @tparam elem_t type of element
+				 * @tparam args additional parameters for collection
+				 */
 				template<template<typename _, typename... args> typename coll_t, typename elem_t,
 							typename... args>
 				using pretty_print

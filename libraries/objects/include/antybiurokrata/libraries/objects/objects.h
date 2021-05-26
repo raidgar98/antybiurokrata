@@ -421,7 +421,7 @@ namespace core
 				using custom_serialize = pd::collection::serial<std::set, shared_publication_t>;
 				using custom_deserialize
 					 = pd::collection::deserial<putter_t, std::set, shared_publication_t>;
-				using custom_pretty_print = pd::collection::serial<std::set, shared_publication_t>;
+				using custom_pretty_print = pd::collection::pretty_print<std::set, shared_publication_t>;
 			};
 			using publications_storage_t = cser<&detail_publications_storage_t::data>;
 

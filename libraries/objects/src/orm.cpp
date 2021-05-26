@@ -57,7 +57,7 @@ namespace core
 				auto pair = this->persons.emplace(person);
 				if(pair.second)
 					log.info() << "successfully added new author: "
-								  << patterns::serial::pretty_print{**pair.first} << logger::endl;
+								  << patterns::serial::pretty_print{(*(*pair.first))} << logger::endl;
 				if(current_publication) (**pair.first)().publictions()()->emplace(current_publication);
 			}
 
