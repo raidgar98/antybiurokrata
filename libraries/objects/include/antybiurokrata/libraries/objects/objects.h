@@ -31,7 +31,7 @@ namespace core
 			{
 				constexpr static size_t words_in_orcid_num{4ul};
 				template<typename T> using fixed_orcid_array = std::array<T, words_in_orcid_num>;
-				pd::array_ser<&detail_orcid_t::_, uint16_t, words_in_orcid_num> identifier;
+				dser<&detail_orcid_t::_, fixed_orcid_array<uint16_t>> identifier;
 
 				using custom_serialize = pd::collection::serial<fixed_orcid_array, uint16_t>;
 				using putter_t			  = pd::collection::array_putter<uint16_t, words_in_orcid_num>;

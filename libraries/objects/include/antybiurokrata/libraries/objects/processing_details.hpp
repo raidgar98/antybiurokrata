@@ -611,8 +611,6 @@ namespace core
 			 */
 			template<auto X, typename Key, typename Value>
 			using map_ser = ser<X, std::map<Key, Value>>;
-			template<auto X, typename type, size_t count>
-			using array_ser							= ser<X, std::array<type, count>>;
 			template<typename T> using shared_t = shared::single_member_shared_struct_helper<T>;
 		}	 // namespace processing_details
 	}		 // namespace objects

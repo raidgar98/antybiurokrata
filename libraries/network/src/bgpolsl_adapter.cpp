@@ -42,6 +42,7 @@ namespace core
 																		{u"Szczegóły", nullptr},
 																		{u"p-ISSN", &p_issn},
 																		{u"DOI", &doi},
+																		{u"Impact Factor", nullptr},
 																		{u"e-ISSN", &e_issn},
 																		{u"Adres", nullptr},
 																		{u"Afiliacja", &affiliation},
