@@ -610,7 +610,7 @@ namespace core
 			 * @tparam T type in shared vector
 			 */
 			template<auto X, typename Key, typename Value>
-			using map_ser = ser<X, std::map<Key, Value>>;
+			using map_ser								= ser<X, std::map<Key, Value>>;
 			template<typename T> using shared_t = shared::single_member_shared_struct_helper<T>;
 		}	 // namespace processing_details
 	}		 // namespace objects
