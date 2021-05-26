@@ -771,8 +771,8 @@ namespace patterns
 		 * @param obj object to serialize
 		 * @return stream_t& given stream
 		 */
-		template<typename stream_t, auto X>
-		inline stream_t& operator<<(stream_t& os, const pretty_print<serial::cser<X>>& obj)
+		template<typename stream_t, typename T> inline stream_t& operator<<(stream_t& os, const pretty_print<T>& obj) { os << obj.x; return os; }
+		template<typename stream_t, auto X> inline stream_t& operator<<(stream_t& os, const pretty_print<serial::cser<X>>& obj)
 		{
 			const std::string type_name
 				 = boost::typeindex::type_id<typename serial::cser<X>::value_t>().pretty_name();

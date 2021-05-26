@@ -20,17 +20,25 @@ namespace core
 	{
 		namespace detail
 		{
-			using namespace processing_details;
+			namespace pd = processing_details;
+			using patterns::serial::cser;
+			using patterns::serial::dser;
+			using patterns::serial::ser;
+			using patterns::serial::serial_helper_t;
 
 			/** @brief object representation of ORCID number */
 			struct detail_orcid_t : public serial_helper_t
 			{
 				constexpr static size_t words_in_orcid_num{4ul};
-				array_ser<&detail_orcid_t::_, uint16_t, words_in_orcid_num> identifier;
+				template<typename T> using fixed_orcid_array = std::array<T, words_in_orcid_num>;
+				pd::array_ser<&detail_orcid_t::_, uint16_t, words_in_orcid_num> identifier;
 
-				using custom_serialize	  = array_serial<uint16_t, words_in_orcid_num>;
-				using custom_deserialize  = array_deserial<uint16_t, words_in_orcid_num>;
-				using custom_pretty_print = array_pretty_serial<uint16_t, words_in_orcid_num>;
+				using custom_serialize = pd::collection::serial<fixed_orcid_array, uint16_t>;
+				using putter_t = pd::collection::array_putter<uint16_t, words_in_orcid_num>;
+				using custom_deserialize
+					 = pd::collection::deserial<putter_t, fixed_orcid_array, uint16_t>;
+				using custom_pretty_print
+					 = pd::collection::pretty_print<fixed_orcid_array, uint16_t>;
 
 				/** @brief default constructor */
 				explicit detail_orcid_t() = default;
@@ -158,7 +166,7 @@ namespace core
 			template<typename validator = default_validator, typename unifier = default_unifier>
 			struct detail_string_holder_t : public serial_helper_t
 			{
-				dser<&detail_string_holder_t::_, u16str> data;
+				ser<&detail_string_holder_t::_, u16str> data;
 				u16str raw;
 
 				using ser_data_t = decltype(data);
@@ -166,9 +174,9 @@ namespace core
 				inner_t* operator->() { return &(data()); }
 				const inner_t* operator->() const { return &(data()); }
 
-				using custom_serialize	  = u16str_serial;
-				using custom_deserialize  = u16str_deserial;
-				using custom_pretty_print = u16str_pretty_serial;
+				using custom_serialize	  = pd::string::serial;
+				using custom_deserialize  = pd::string::deserial;
+				using custom_pretty_print = pd::string::pretty_print;
 
 				/** @brief default constructor */
 				detail_string_holder_t()										= default;
@@ -338,24 +346,24 @@ namespace core
 			};
 
 			using ids_string_t			= string_holder_custom_t<default_validator, ids_unifier>;
-			using id_type_stringinizer = enum_stringinizer<id_type_translation_unit>;
+			using id_type_stringinizer = pd::enum_stringinizer<id_type_translation_unit>;
 
 			/**
 			 * @brief wraps map that stores diffrent ids
 			 */
 			struct detail_ids_storage_t : public serial_helper_t
 			{
-				map_ser<&serial_helper_t::_, id_type, ids_string_t> data;
+				pd::map_ser<&serial_helper_t::_, id_type, ids_string_t> data;
 
 				using ser_data_t = decltype(data);
 				using inner_t	  = typename ser_data_t::value_type;
 				inner_t* operator->() { return &(data()); }
 				const inner_t* operator->() const { return &(data()); }
 
-				using custom_serialize	 = map_serial<id_type, ids_string_t>;
-				using custom_deserialize = map_deserial<id_type, ids_string_t>;
+				using custom_serialize	 = pd::map_serial<id_type, ids_string_t>;
+				using custom_deserialize = pd::map_deserial<id_type, ids_string_t>;
 				using custom_pretty_print
-					 = map_pretty_serial<id_type, ids_string_t, id_type_stringinizer>;
+					 = pd::map_pretty_serial<id_type, ids_string_t, id_type_stringinizer>;
 			};
 			using ids_storage_t = cser<&detail_ids_storage_t::data>;
 
@@ -396,23 +404,25 @@ namespace core
 					return me.compare(other) > 0;
 				}
 			};
-			using publication_t = cser<&detail_publication_t::ids>;
+			using publication_t			= cser<&detail_publication_t::ids>;
+			using shared_publication_t = pd::shared_t<publication_t>;
 
 			/**
 			 * @brief object representation of memmory-usage-friendly collection with publications
 			 */
 			struct detail_publications_storage_t : public serial_helper_t
 			{
-				sset_ser<&serial_helper_t::_, publication_t> data{};
+				using inner_t = std::set<shared_publication_t>;
+				ser<&serial_helper_t::_, inner_t> data{};
 
-				using ser_data_t = decltype(data);
-				using inner_t	  = typename ser_data_t::value_type;
 				inner_t* operator->() { return &(data()); }
 				const inner_t* operator->() const { return &(data()); }
 
-				using custom_serialize	  = shared_set_serial<publication_t>;
-				using custom_deserialize  = shared_set_deserial<publication_t>;
-				using custom_pretty_print = shared_set_pretty_serial<publication_t>;
+				using putter_t			  = pd::collection::emplacer<std::set, shared_publication_t>;
+				using custom_serialize = pd::collection::serial<std::set, shared_publication_t>;
+				using custom_deserialize
+					 = pd::collection::deserial<putter_t, std::set, shared_publication_t>;
+				using custom_pretty_print = pd::collection::serial<std::set, shared_publication_t>;
 			};
 			using publications_storage_t = cser<&detail_publications_storage_t::data>;
 
@@ -449,7 +459,7 @@ namespace core
 			using person_t = cser<&detail_person_t::publictions>;
 
 			//////////////////////////////////////////////////////////////////////
-
+			/*
 			enum class match_type : uint8_t
 			{
 				ORCID,
@@ -485,6 +495,7 @@ namespace core
 					 = map_pretty_serial<id_type, ids_string_t, id_type_stringinizer>;
 			};
 			using ids_storage_t = cser<&detail_ids_storage_t::data>;
+*/
 		}	 // namespace detail
 
 		using typename detail::id_type;
@@ -498,14 +509,18 @@ namespace core
 template<typename stream_type>
 inline stream_type& operator<<(stream_type& os, const core::objects::detail::id_type& id)
 {
-	return os << static_cast<int>(id);
+	using patterns::serial::delimiter;
+	os << static_cast<int>(id) << delimiter;
+	return os;
 }
 
 template<typename stream_type>
 inline stream_type& operator>>(stream_type& is, core::objects::detail::id_type& id)
 {
+	using patterns::serial::delimiter;
 	int x;
 	is >> x;
+	is.ignore(1, delimiter);
 	id = static_cast<core::objects::detail::id_type>(x);
 	return is;
 }

@@ -104,10 +104,60 @@ namespace core
 							os << null_value_string;
 					}
 				};
+
+				namespace ps = patterns::serial;
+
+				/**
+				 * @brief helper crass to quickly create shared single member classes
+				 * 
+				 * @tparam T any type to encapsulate
+				 */
+				template<typename T>
+				struct detail_single_member_shared_struct_helper : public ps::serial_helper_t
+				{
+					using value_type = std::shared_ptr<T>;
+					using my_t		  = detail_single_member_shared_struct_helper;
+					ps::dser<&my_t::_, value_type> data;
+
+					using custom_serialize	  = shared::serial<T>;
+					using custom_deserialize  = shared::deserial<T>;
+					using custom_pretty_print = shared::pretty_print<T>;
+
+					/** @brief quick access to pointer */
+					T* operator->()
+					{
+						valid();
+						return data().get();
+					}
+
+					/** @brief quick access to pointer */
+					const T* operator->() const
+					{
+						valid();
+						return data().get();
+					}
+
+					/** @brief returns true if pointer is set */
+					bool validate() const { return this->data().get() != nullptr; }
+
+					/** @brief forwarding less operator */
+					inline friend bool operator<(const my_t& s1, const my_t& s2)
+					{
+						return shared::compare<T>{}(s1.data(), s2.data());
+					}
+
+				 private:
+					/** @brief checks is pointer not null */
+					void valid() const { check_nullptr{data()}; }
+				};
+
+				template<typename T>
+				using single_member_shared_struct_helper
+					 = ps::cser<&detail_single_member_shared_struct_helper<T>::data>;
 			}	 // namespace shared
 
 			/** @brief contatins custom processing options for u16str */
-			namespace u16str
+			namespace string
 			{
 				/**
 				 * @brief serialization of wide string
@@ -153,7 +203,7 @@ namespace core
 						os << get_conversion_engine().to_bytes(view.data());
 					}
 				};
-			}	 // namespace u16str
+			}	 // namespace string
 
 			namespace collection
 			{
@@ -162,7 +212,7 @@ namespace core
 				 * 
 				 * @tparam iterator_t type to check
 				 */
-				template<typename iterator_t> concept iterator_req = requires(itrator_t it)
+				template<typename iterator_t> concept iterator_req = requires(iterator_t it)
 				{
 					{*it};
 					{it++};
@@ -174,8 +224,9 @@ namespace core
 				 * 
 				 * @tparam coll_t type to check
 				 */
-				template<template<typename T> typename coll_t>
-				concept iterable_req = requires(coll_t<int> c)
+				template<template<typename T, typename... argv> typename coll_t, typename elem_t,
+							typename... args>
+				concept iterable_req = requires(coll_t<elem_t, args...> c)
 				{
 					{c.begin()};
 					{c.end()};
@@ -187,8 +238,10 @@ namespace core
 				 * 
 				 * @tparam coll_t type to check
 				 */
-				template<template<typename T> typename coll_t>
-				concept iterable_size_req = iterable_req<coll_t>&& requires(coll_t<int> c)
+				template<template<typename T, typename... argv> typename coll_t, typename elem_t,
+							typename... args>
+				concept iterable_size_req
+					 = iterable_req<coll_t, elem_t, args...>&& requires(coll_t<elem_t, args...> c)
 				{
 					{
 						c.size()
@@ -201,8 +254,10 @@ namespace core
 				 * 
 				 * @tparam coll_t type to check
 				 */
-				template<template<typename T> typename coll_t>
-				concept iterable_size_empty_req = iterable_size_req<coll_t>&& requires(coll_t<int> c)
+				template<template<typename T, typename... argv> typename coll_t, typename elem_t,
+							typename... args>
+				concept iterable_size_empty_req
+					 = iterable_size_req<coll_t, elem_t, args...>&& requires(coll_t<elem_t, args...> c)
 				{
 					{
 						c.empty()
@@ -213,43 +268,70 @@ namespace core
 				namespace detail
 				{
 					/**
-				 * @brief provides universal processing interface for iterable types
-				 * 
-				 * @tparam coll_t 
-				 * @tparam elem_t 
-				 */
-					template<template<typename _> typename coll_t, typename elem_t,
-								typename param_t = const coll_t<elem_t>&>
+					 * @brief provides universal processing interface for iterable types
+					 * 
+					 * @tparam coll_t collection type
+					 * @tparam elem_t element type in collection
+					 * @tparam param_t put here `const coll_t<elem_t>&` or `coll_t<elem_t>&`
+					 * @tparam args additional parameters for collection (ex. comparator)
+					 */
+					template<typename processing_impl,
+								template<typename _, typename... __> typename coll_t, typename elem_t,
+								typename param_t, typename... args>
 					struct processing_base
 					{
-						// [S]pecialized collection type
-						using scoll_t = coll_t<elem_t>;
-
 						template<typename stream_t>
-						requires iterable_req<coll_t> processing_base(stream_t& os, param_t c)
+						requires iterable_req<coll_t, elem_t, args...> processing_base(stream_t& os,
+																											param_t c)
 						{
 							processing_impl(os, c, std::distance(c.begin(), c.end()));
 						}
 
 						template<typename stream_t>
-						requires iterable_size_req<coll_t> processing_base(stream_t& os, param_t c)
+						requires iterable_size_req<coll_t, elem_t, args...> processing_base(stream_t& os,
+																												  param_t c)
 						{
 							processing_impl(os, c, c.size());
 						}
 
 						template<typename stream_t>
-						requires iterable_size_req<coll_t> processing_base(stream_t& os, param_t c)
+						requires iterable_size_empty_req<coll_t, elem_t, args...> processing_base(
+							 stream_t& os, param_t c)
 						{
 							// some of collections has to iterate over themselfs to get size, so if it's possible to avoid it, why not?u
 							processing_impl(os, c, (c.empty() ? 0 : c.size()));
 						}
+					};
 
-					 protected:
-						template<typename stream_t>
-						virtual void processing_impl(stream_t& os, param_t c,
-															  const size_t size) const = 0;
+					template<typename elem_t, size_t size> struct array_putter
+					{
+						std::array<elem_t, size>& arr;
+						size_t idx = 0;
+
+						bool operator()(const elem_t& e)
+						{
+							dassert{++idx < size, "out of range"_u8};
+							arr[idx] = e;
+							return true;
+						}
+					};
+
+					template<template<typename T, typename... argv> typename coll_t, typename elem_t,
+								typename... argv>
+					struct emplacer
+					{
+						coll_t<elem_t, argv...>& coll;
+
+						bool operator()(const elem_t& e)
+						{
+							coll.emplace(e);
+							return true;
+						}
 					};
 				}	 // namespace detail
+
+				using detail::array_putter;
+				using detail::emplacer;
 
 				/**
 				 * @brief serializes any collection
@@ -257,15 +339,12 @@ namespace core
 				 * @tparam coll_t collection type to serialize
 				 * @tparam elem_t element type of collection
 				 */
-				template<template<typename _> typename coll_t, typename elem_t>
-				struct serial : public detail::processing_base<coll_t, elem_t>
+				template<template<typename _, typename... args> typename coll_t, typename elem_t,
+							typename... args>
+				struct serial_impl
 				{
-					using detail::processing_base<coll_t, elem_t>::processing_base;
-					using scoll_t = typename detail::processing_base<coll_t, elem_t>::scoll_t;
-
-				 protected:
-					virtual void processing_impl(stream_t& os, const scoll_t& c,
-														  const size_t size) const override
+					template<typename stream_t>
+					serial_impl(stream_t& os, const coll_t<elem_t, args...>& c, const size_t size)
 					{
 						using patterns::serial::delimiter;
 						os << size << delimiter;
@@ -281,27 +360,25 @@ namespace core
 				 * @tparam elem_t element type of collection
 				 * @tparam coll_putter this class will be used to insert elem_t to coll_t
 				 */
-				template<template<typename _> typename coll_t, typename elem_t, typename coll_putter>
-				struct deserial : public detail::processing_base<coll_t, elem_t, coll_t<elem_t>&>
+				template<typename coll_putter, template<typename _, typename... args> typename coll_t,
+							typename elem_t, typename... args>
+				struct deserial_impl
 				{
-					using detail::processing_base<coll_t, elem_t, coll_t<elem_t>&>::processing_base;
-					using scoll_t = typename detail::processing_base<coll_t, elem_t>::scoll_t;
-
-				 protected:
-					virtual void processing_impl(stream_t& os, scoll_t& c,
-														  const size_t size) const override
+					template<typename stream_t>
+					deserial_impl(stream_t& os, coll_t<elem_t, args...>& c, const size_t)
 					{
 						using patterns::serial::delimiter;
 						size_t size;
 						os >> size;
 						os.ignore(1, delimiter);
 						if(size == 0) return;
+						coll_putter cp{c};
 						for(size_t i = 0; i < size; ++i)
 						{
 							elem_t e;
 							os >> e;
 							os.ignore(1, delimiter);
-							coll_putter{c, e};
+							if(!cp(e)) break;
 						}
 					}
 				};
@@ -312,224 +389,37 @@ namespace core
 				 * @tparam coll_t collection type to serialize
 				 * @tparam elem_t element type of collection
 				 */
-				template<template<typename _> typename coll_t, typename elem_t>
-				struct pretty_print : public detail::processing_base<coll_t, elem_t>
+				template<template<typename _, typename... args> typename coll_t, typename elem_t,
+							typename... args>
+				struct pretty_print_impl
 				{
-					using detail::processing_base<coll_t, elem_t>::processing_base;
-					using scoll_t = typename detail::processing_base<coll_t, elem_t>::scoll_t;
-
-				 protected:
-					virtual void processing_impl(stream_t& os, const scoll_t& c,
-														  const size_t size) const override
+					template<typename stream_t>
+					pretty_print_impl(stream_t& os, const coll_t<elem_t, args...>& c, const size_t size)
 					{
 						using patterns::serial::delimiter;
 						os << '[';
-						for( auto it = c.begin(); it != c.end(); it++ ) os << ","[it == c.begin()] << ' ' << pretty_print{ *it };
+						for(auto it = c.begin(); it != c.end(); it++)
+							os << ","[it == c.begin()] << ' ' << pretty_print{*it};
 						os << " ]";
 					}
 				};
+
+				template<template<typename _, typename... args> typename coll_t, typename elem_t,
+							typename... args>
+				using serial = detail::processing_base<serial_impl<coll_t, elem_t, args...>, coll_t,
+																	elem_t, const coll_t<elem_t, args...>&, args...>;
+
+				template<typename coll_putter, template<typename _, typename... args> typename coll_t,
+							typename elem_t, typename... args>
+				using deserial
+					 = detail::processing_base<deserial_impl<coll_putter, coll_t, elem_t, args...>,
+														coll_t, elem_t, coll_t<elem_t, args...>&, args...>;
+
+				template<template<typename _, typename... args> typename coll_t, typename elem_t,
+							typename... args>
+				using pretty_print = detail::processing_base<pretty_print_impl<coll_t, elem_t, args...>,
+																			coll_t, elem_t, const coll_t<elem_t, args...>&, args...>;
 			};	  // namespace collection
-
-			/** @brief contatins custom processing options for std::array */
-			namespace array
-			{
-				/**
-				 * @brief definition of any array serialization
-				 * 
-				 * @tparam T any type
-				 * @tparam N any size
-				 */
-				template<typename T, size_t N> struct serial
-				{
-					template<typename stream_type> serial(stream_type& os, const std::array<T, N>& data)
-					{
-						using patterns::serial::delimiter;
-						for(size_t i = 0; i < N; i++) os << data[i] << delimiter;
-					}
-				};
-
-				/**
-				 * @brief definition of any array deserialization
-				 * 
-				 * @tparam T any type
-				 * @tparam N any size
-				 */
-				template<typename T, size_t N> struct deserial
-				{
-					template<typename stream_type> deserial(stream_type& is, std::array<T, N>& data)
-					{
-						using patterns::serial::delimiter;
-						for(size_t i = 0; i < N; i++)
-						{
-							is >> data[i];
-							is.ignore(1, delimiter);
-						}
-					}
-				};
-
-				/**
-			 * @brief definition of any array pretty print
-			 * 
-			 * @tparam T any type
-			 * @tparam N any size
-			 */
-				template<typename T, size_t N> struct pretty_print
-				{
-					template<typename stream_type>
-					pretty_print(stream_type& os, const std::array<T, N>& data)
-					{
-						using patterns::serial::delimiter;
-
-						os << '[';
-						for(size_t i = 0; i < N; i++) os << ","[i == 0] << ' ' << pretty_print{data[i]};
-						os << " ]";
-					}
-				};
-
-				/** @brief specialisation of pretty print designed for orcid */
-				struct orcid_pretty_print
-				{
-					template<typename stream_type>
-					orcid_pretty_print(stream_type& os, const std::array<uint16_t, 4>& data)
-					{
-						for(size_t i = 0; i < 4; i++)
-							os << "-"[i == 0] << std::setw(4) << std::setfill('0')
-								<< std::to_string(data[i]);
-					}
-				};
-			}	 // namespace array
-
-
-			namespace vector
-			{
-				/**
-			 * @brief definition of serializing shared vector
-			 * 
-			 * @tparam T any type
-			 */
-				template<typename T> struct shared_vector_serial
-				{
-					template<typename stream_type>
-					shared_vector_serial(stream_type& os, const std::vector<std::shared_ptr<T>>& data)
-					{
-						using patterns::serial::delimiter;
-						os << data.size() << delimiter;
-						for(auto x: data)
-						{
-							if(x.get()) os << 1 << delimiter << *x << delimiter;
-							else
-								os << 0 << delimiter;
-						}
-					}
-				};
-
-				/**
-				 * @brief definition of deserializing shared vector
-				 * 
-				 * @tparam T any type
-				 */
-				template<typename T> struct shared_vector_deserial
-				{
-					template<typename stream_type>
-					shared_vector_deserial(stream_type& is, std::vector<std::shared_ptr<T>>& data)
-					{
-						using patterns::serial::delimiter;
-						size_t size;
-						is >> size;
-						is.ignore(1, delimiter);
-						if(size == 0) return;
-						data.reserve(size);
-						for(size_t i = 0; i < size; i++)
-						{
-							int proto_bool;
-							is >> proto_bool;
-							is.ignore(1, delimiter);
-							if(proto_bool)
-							{
-								std::shared_ptr<T> ptr{new T{}};
-								is >> *ptr;
-								data.push_back(ptr);
-							}
-							is.ignore(1, delimiter);
-						}
-					}
-				};
-			}	 // namespace vector
-
-			/**
-			 * @brief definition of deserializing shared set
-			 * 
-			 * @tparam T any type
-			 */
-			template<typename T> struct shared_set_deserial
-			{
-				template<typename stream_type>
-				shared_set_deserial(stream_type& is,
-										  std::set<std::shared_ptr<T>, shared::compare<T>>& data)
-				{
-					using patterns::serial::delimiter;
-					size_t size;
-					is >> size;
-					is.ignore(1, delimiter);
-					if(size == 0) return;
-					for(size_t i = 0; i < size; i++)
-					{
-						int proto_bool;
-						is >> proto_bool;
-						is.ignore(1, delimiter);
-						if(proto_bool)
-						{
-							std::shared_ptr<T> ptr{new T{}};
-							is >> *ptr;
-							data.emplace(ptr);
-						}
-						is.ignore(1, delimiter);
-					}
-				}
-			};
-
-			/**
-			 * @brief definition of serializing shared vector
-			 * 
-			 * @tparam T any type
-			*/
-			template<typename T> struct shared_set_serial
-			{
-				template<typename stream_type>
-				shared_set_serial(stream_type& is,
-										std::set<std::shared_ptr<T>, shared::compare<T>>& data)
-				{
-					using patterns::serial::delimiter;
-					is << data.size() << delimiter;
-					for(auto x: data)
-					{
-						if(x.get()) is << 1 << delimiter << *x;
-						else
-							is << 0;
-
-						is << delimiter;
-					}
-				}
-			};
-
-			/**
-			 * @brief definition of pretty printing shared collection
-			 * 
-			 * @tparam Coll any collection
-			 */
-			template<typename Coll> struct shared_collection_pretty_serial
-			{
-				template<typename stream_type>
-				shared_collection_pretty_serial(stream_type& os, const Coll& data)
-				{
-					os << '[';
-					// for(size_t i = 0; i < data.size(); ++i)
-					for(auto it = data.begin(); it != data.end(); ++it)
-						if(it->get())
-							os << ","[it == data.begin()] << ' ' << patterns::serial::pretty_print{*(*it)};
-					os << " ]";
-				}
-			};
 
 			/**
 			 * @brief definition of serializing map
@@ -591,23 +481,6 @@ namespace core
 						os << ","[it == data.begin()] << " ( " << key_pretty_printer{it->first} << " : "
 							<< patterns::serial::pretty_print{it->second} << " )";
 					os << " ]";
-				}
-			};
-
-			/**
-			 * @brief universal printer for enums
-			 * 
-			 * @tparam enum_t anny enum type
-			 * @tparam cast_type type to cast
-			 */
-			template<typename enum_t, typename cast_type = int> struct enum_printer
-			{
-				const enum_t& x;
-
-				template<typename stream_t>
-				inline friend stream_t& operator<<(stream_t& os, const enum_printer& obj)
-				{
-					return os << cast_type(obj.x);
 				}
 			};
 
@@ -695,46 +568,14 @@ namespace core
 
 
 			/**
-			 * @brief alias for serializing any array
-			 * 
-			 * @tparam X reference to previous member
-			 * @tparam T type in array
-			 * @tparam N array size
-			 */
-			template<auto X, typename T, size_t N> using array_ser = ser<X, std::array<T, N>>;
-
-			/**
 			 * @brief alias for serializing shared vector
 			 * 
 			 * @tparam X reference to previous member
 			 * @tparam T type in shared vector
 			 */
-			template<auto X, typename T> using svec_ser = ser<X, std::vector<std::shared_ptr<T>>>;
-			template<typename T>
-			using shared_vector_pretty_serial
-				 = shared_collection_pretty_serial<std::vector<std::shared_ptr<T>>>;
-
-			/**
-			 * @brief alias for serializing shared set
-			 * 
-			 * @tparam X reference to previous member
-			 * @tparam T type in shared set
-			 */
-			template<auto X, typename T>
-			using sset_ser = ser<X, std::set<std::shared_ptr<T>, shared::compare<T>>>;
-			template<typename T>
-			using shared_set_pretty_serial
-				 = shared_collection_pretty_serial<std::set<std::shared_ptr<T>, shared::compare<T>>>;
-
-			/**
-			 * @brief alias for serializing shared vector
-			 * 
-			 * @tparam X reference to previous member
-			 * @tparam T type in shared vector
-			 */
-			template<auto X, typename Key, typename Value>
-			using map_ser = ser<X, std::map<Key, Value>>;
-
+			template<auto X, typename Key, typename Value>		using map_ser		=	ser<X, std::map<Key, Value>>;
+			template<auto X, typename type, size_t count>		using array_ser	=	ser<X, std::array<type, count>>;
+			template<typename T> 										using shared_t		=	shared::single_member_shared_struct_helper<T>;
 		}	 // namespace processing_details
 	}		 // namespace objects
 }	 // namespace core

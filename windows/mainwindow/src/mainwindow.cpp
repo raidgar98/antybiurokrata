@@ -127,7 +127,7 @@ void MainWindow::load_publications(account_widget_item* account)
 	auto& coll = (*account->m_person.lock().get())().publictions()().data();
 	ui->publications->clear();
 	for(const auto& x: coll)
-		ui->publications->addItem(new publication_widget_item{x, ui->publications});
+		ui->publications->addItem(new publication_widget_item{x().data(), ui->publications});
 }
 
 void MainWindow::collect_neighbours(persons_extractor_storage_t bgperson_visitor)
