@@ -31,7 +31,7 @@ INCLUDE_DIRECTORY = join_path( INCLUDE_WIN_DIR, WINDOW_NAME )
 SRC_DIRECTORY = join_path( WINDOW_PATH, "src" )
 
 swap_dict = {
-    "ExWindow": WINDOW_NAME
+	"ExWindow": WINDOW_NAME
 }
 
 print("creating directory structure...")
@@ -46,15 +46,15 @@ mkdir( INCLUDE_DIRECTORY )
 mkdir( SRC_DIRECTORY )
 
 def generate_file( src_file, out_file ):
-    print(f"generating `{out_file}` file...")
-    in_file_size =  getsize( src_file )
-    with open( src_file, 'r' ) as fin:
-        data = fin.read( in_file_size )
-        for _old, _new in swap_dict.items():
-            data = data.replace( _old, _new )
+	print(f"generating `{out_file}` file...")
+	in_file_size =  getsize( src_file )
+	with open( src_file, 'r' ) as fin:
+		data = fin.read( in_file_size )
+		for _old, _new in swap_dict.items():
+			data = data.replace( _old, _new )
 
-        with open( out_file, 'w' ) as fout:
-            fout.write( data )
+		with open( out_file, 'w' ) as fout:
+			fout.write( data )
 
 generate_file( HEADER_FILE_PATH, join_path( INCLUDE_DIRECTORY, f"{WINDOW_NAME}.h" ) )
 generate_file( SOURCE_FILE_PATH, join_path( SRC_DIRECTORY, f"{WINDOW_NAME}.cpp" ) )

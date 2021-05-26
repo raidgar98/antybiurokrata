@@ -287,16 +287,16 @@ namespace core
 
 			u16str wout{};
 
-			if constexpr(conv_t::HTML == type) wout.reserve(4 * wout.size());
-			else
-				wout.reserve(wout.size());
+			if constexpr(conv_t::HTML == type) wout.reserve(4 * out.size());
+			else wout.reserve(out.size());
 
-			for(const u16char_t c: out)
+			// for(const u16char_t c: out)
+			for(auto it = out.begin(); it != out.end(); ++it)
 			{
+				const u16char_t c = *it;
 				if(
 					 // if it's ENG, just check if it's in ASCII range, otherwise exclude ' _-' chars
-					 c <= std::numeric_limits<char_t>::max()
-					 and (conv_t::ENG == type or (u'_' != c and u' ' != c and u'-' != c)))
+					 c <= std::numeric_limits<char_t>::max() && (conv_t::ENG == type or (u'_' != c and u' ' != c and u'-' != c)))
 					 [[likely]]	  // in polish language most of letters are in <0;255> ASCII range
 				{
 					wout += c;
@@ -305,8 +305,7 @@ namespace core
 				{
 					const auto [found, it] = detail::depolonizator::safe_get(c);
 					if(found) wout += it->second.get<type>();
-					else
-						out += c;
+					else wout += c;
 				}
 			}
 

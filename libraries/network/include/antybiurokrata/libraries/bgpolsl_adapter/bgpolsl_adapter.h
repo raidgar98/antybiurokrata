@@ -58,21 +58,21 @@ namespace core
 			bgpolsl_adapter() : connection_handler{"https://www.bg.polsl.pl", true} {}
 
 			/**
-             * @brief get the result from bg.polsl.pl for given name and surname
-             * 
-             * @param name of author
-             * @param surname of author
-             * @return result_t list of trival object representation
-             */
+				 * @brief get the result from bg.polsl.pl for given name and surname
+				 * 
+				 * @param name of author
+				 * @param surname of author
+				 * @return result_t list of trival object representation
+				 */
 			[[nodiscard]] result_t get_person(const str_v& name, const str_v& surname);
 
-		 private:
+		private:
 			/**
-             * @brief prepares request for Drogon
-             * 
-             * @param querried_name escaped surname + name 
-             * @return drogon::HttpRequestPtr 
-             */
+				 * @brief prepares request for Drogon
+				 * 
+				 * @param querried_name escaped surname + name 
+				 * @return drogon::HttpRequestPtr 
+				 */
 			drogon::HttpRequestPtr prepare_request(const str_v& querried_name);
 		};
 	}	 // namespace network
