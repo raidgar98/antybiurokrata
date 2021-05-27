@@ -34,10 +34,10 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
 	using Log<MainWindow>::log;
 
-	using relatives_t = std::shared_ptr<int>;
+	using relatives_t				= std::shared_ptr<int>;
 	using incoming_relatives_t = typename relatives_t::weak_type;
 
-	using report_t = core::reports::report_t;
+	using report_t				= core::reports::report_t;
 	using incoming_report_t = typename report_t::weak_type;
 
 	core::engine eng;

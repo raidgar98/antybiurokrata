@@ -24,7 +24,7 @@ void account_widget_item::display()
 		label += static_cast<core::u16str>(p.orcid()()) + u" ]";
 
 		// style
-		const QBrush brush{ list_widget_colors::default_font_color };
+		const QBrush brush{list_widget_colors::default_font_color};
 		this->setForeground(brush);
 
 		// setting text
@@ -33,13 +33,14 @@ void account_widget_item::display()
 }
 
 
-bool publication_widget_item::operator<(const QListWidgetItem& other) const 
+bool publication_widget_item::operator<(const QListWidgetItem& other) const
 {
 	if(const auto* item = dynamic_cast<const publication_widget_item*>(&other))
 	{
 		if(!this->m_publication.expired() && !item->m_publication.expired())
 		{
-			return (*this->m_publication.lock())().matched()().data().size() < (*item->m_publication.lock())().matched()().data().size();
+			return (*this->m_publication.lock())().matched()().data().size()
+					 < (*item->m_publication.lock())().matched()().data().size();
 		}
 	}
 
@@ -57,17 +58,17 @@ void publication_widget_item::display()
 		const auto& matched = p.matched()().data();
 
 		// creating string
-		QString result		  = QString::fromStdString(std::to_string(ref.year()));
+		QString result = QString::fromStdString(std::to_string(ref.year()));
 		result.insert(0, "[ ");
 		result += " ] ";
 		result += QString::fromStdU16String(ref.title()().raw);
 
 		// validate size
 		const size_t color_level = matched.size();
-		dassert{ color_level < list_widget_colors::scale_length, "size too big!"_u8 };
+		dassert{color_level < list_widget_colors::scale_length, "size too big!"_u8};
 
 		// style
-		const QBrush brush{ list_widget_colors::match_scale_palette[ color_level ] };
+		const QBrush brush{list_widget_colors::match_scale_palette[color_level]};
 		this->setForeground(brush);
 
 		// setting text

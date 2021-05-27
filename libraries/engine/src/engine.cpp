@@ -133,23 +133,25 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 	objects::shared_person_t person{};
 	if(!w_orcid.empty())
 	{
-		(*person())().name( w_name );
-		(*person())().surname( w_surname );
-		(*person())().orcid( objects::detail::detail_orcid_t::from_string( w_orcid ) );
-	}else person().data().reset();
+		(*person())().name(w_name);
+		(*person())().surname(w_surname);
+		(*person())().orcid(objects::detail::detail_orcid_t::from_string(w_orcid));
+	}
+	else
+		person().data().reset();
 
 
 	// setup workers
 	orm::persons_extractor_t scopus_visitor{};
 	orm::persons_extractor_t inner_persons_extractor{};
 	orm::publications_extractor_t inner_publications_extractor{inner_persons_extractor};
-	std::shared_ptr<reports::summary> sum{ new reports::summary{} };
+	std::shared_ptr<reports::summary> sum{new reports::summary{}};
 
 	// prepare delegates
-	auto on_start_delegate = on_start.delegate_ownership();
-	auto on_progress_delegate = on_progress.delegate_ownership();
+	auto on_start_delegate					 = on_start.delegate_ownership();
+	auto on_progress_delegate				 = on_progress.delegate_ownership();
 	auto on_calculated_progress_delegate = on_calculated_progress.delegate_ownership();
-	auto on_finish_delegate = on_finish.delegate_ownership();
+	auto on_finish_delegate					 = on_finish.delegate_ownership();
 
 	// stop token activation function
 	const auto stop = [&]() {
@@ -164,7 +166,6 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 		std::condition_variable_any cv_report;
 
 		const auto bgpolsl_getter = [&]() {
-
 			// notify, that processing started
 			on_start_delegate();
 
@@ -172,7 +173,10 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 			auto publications_raw = ga::polsl.get_person(name, surname);
 
 			// inform about total size of incoming data
-			on_calculated_progress_delegate(publications_raw->size() * ( objects::detail::match_type_translation_unit::length - 2 /* = ( `NO_MATCH` + `POLSL` (which is reference) ) */ ));
+			on_calculated_progress_delegate(
+				 publications_raw->size()
+				 * (objects::detail::match_type_translation_unit::length
+					 - 2 /* = ( `NO_MATCH` + `POLSL` (which is reference) ) */));
 
 			// extract persons
 			for(auto& pub_raw: *publications_raw)
@@ -184,8 +188,9 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 			// setup summary engine
 			auto& last_summary = this->m_last_summary;
 			sum->activate(inner_publications_extractor.publications);
-			global_logger << "created summary on address: " << reinterpret_cast<size_t>(sum.get()) << logger::endl;
-			sum->on_done.register_slot([&](core::reports::report_t ptr){
+			global_logger << "created summary on address: " << reinterpret_cast<size_t>(sum.get())
+							  << logger::endl;
+			sum->on_done.register_slot([&](core::reports::report_t ptr) {
 				check_nullptr{ptr};
 				last_summary = ptr;
 				on_finish_delegate(ptr);
@@ -214,20 +219,32 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 			stop();
 			std::jthread th1{bgpolsl_getter};
 			stop();
-			
+
 			if(w_orcid.empty())
 			{
 				std::unique_lock<std::mutex> lk{mtx_orcid};
-				cv_orcid.wait(lk, [&]{ stop(); return !w_orcid.empty(); });
+				cv_orcid.wait(lk, [&] {
+					stop();
+					return !w_orcid.empty();
+				});
 				dassert(!w_orcid.empty(), "orcid not set!"_u8);
 			}
 
 			stop();
-			std::jthread th2{ core::detail::universal_getter<objects::match_type::ORCID>{ person, sum, on_progress_delegate }, std::ref(mtx_report), std::ref(cv_report) };
+			std::jthread th2{
+				 core::detail::universal_getter<objects::match_type::ORCID>{person,
+																								sum,
+																								on_progress_delegate},
+				 std::ref(mtx_report),
+				 std::ref(cv_report)};
 			stop();
-			std::jthread th3{ core::detail::universal_getter<objects::match_type::SCOPUS>{ person, sum, on_progress_delegate }, std::ref(mtx_report), std::ref(cv_report) };
+			std::jthread th3{
+				 core::detail::universal_getter<objects::match_type::SCOPUS>{person,
+																								 sum,
+																								 on_progress_delegate},
+				 std::ref(mtx_report),
+				 std::ref(cv_report)};
 			stop();
 		}
 	}
-
 }

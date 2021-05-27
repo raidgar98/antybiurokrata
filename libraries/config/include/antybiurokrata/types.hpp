@@ -268,13 +268,13 @@ namespace core
 
 			template<typename T> require_not_nullptr(const std::weak_ptr<T>& ptr)
 			{
-				spec_require{ !ptr.expired(), c_require_not_expire };
+				spec_require{!ptr.expired(), c_require_not_expire};
 				check_impl(ptr.lock().get());
 			}
 
 			template<typename T> require_not_nullptr(const std::weak_ptr<T[]>& ptr)
 			{
-				spec_require{ !ptr.expired(), c_require_not_expire };
+				spec_require{!ptr.expired(), c_require_not_expire};
 				check_impl(ptr.lock().get());
 			}
 

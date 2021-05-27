@@ -657,7 +657,7 @@ namespace core
 					{
 						template<typename stream_t> custom_pretty_print(stream_t& os, const enum_type& e)
 						{
-							string::pretty_print{ os, enum_stringinizer<array_provider>::get(e) };
+							string::pretty_print{os, enum_stringinizer<array_provider>::get(e)};
 						}
 					};
 				};

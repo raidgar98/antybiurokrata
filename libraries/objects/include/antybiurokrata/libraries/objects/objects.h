@@ -529,7 +529,7 @@ namespace core
 				dser<&detail_publications_summary_t::reference, sourced_publication_storage_t> matched;
 			};
 
-			using publication_summary_t = cser<&detail_publications_summary_t::matched>;
+			using publication_summary_t		  = cser<&detail_publications_summary_t::matched>;
 			using shared_publication_summary_t = pd::shared_t<publication_summary_t>;
 		}	 // namespace detail
 
@@ -540,9 +540,9 @@ namespace core
 		using typename detail::polish_name_t;
 		using publication_summary_t = detail::shared_publication_summary_t;
 		using typename detail::publication_t;
+		using typename detail::publication_with_source_t;
 		using typename detail::shared_person_t;
 		using typename detail::shared_publication_t;
-		using typename detail::publication_with_source_t;
 	}	 // namespace objects
 }	 // namespace core
 

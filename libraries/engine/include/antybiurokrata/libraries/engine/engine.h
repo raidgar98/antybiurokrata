@@ -40,14 +40,16 @@ namespace core
 			 * @param i_sum 
 			 * @param fun 
 			 */
-			universal_getter(const objects::shared_person_t& source, w_summary_t i_sum, delegate_t& fun) :
-				 on_progress{fun}, sum{i_sum}, prsn_visitor{new orm::persons_extractor_t{}}
+			universal_getter(const objects::shared_person_t& source, w_summary_t i_sum,
+								  delegate_t& fun) :
+				 on_progress{fun},
+				 sum{i_sum}, prsn_visitor{new orm::persons_extractor_t{}}
 			{
 				// copy just one person
 				objects::shared_person_t current{};
-				(*current())().name = (*source())().name;
+				(*current())().name	  = (*source())().name;
 				(*current())().surname = (*source())().surname;
-				(*current())().orcid = (*source())().orcid;
+				(*current())().orcid	  = (*source())().orcid;
 
 				prsn_visitor->persons.insert(current);
 				pub_visitor.reset(new orm::publications_extractor_t{*prsn_visitor});
@@ -55,12 +57,12 @@ namespace core
 
 			void operator()(std::mutex& mtx, std::condition_variable_any& cv)
 			{
-				core::check_nullptr{ prsn_visitor };
+				core::check_nullptr{prsn_visitor};
 
 				// gather data from given data source
-				const auto result = network::global_adapters::get<mt>().get_person( 
-					objects::detail::detail_orcid_t::to_string( (*(*this->prsn_visitor->persons.begin())())().orcid()() )
-				);
+				const auto result = network::global_adapters::get<mt>().get_person(
+					 objects::detail::detail_orcid_t::to_string(
+						  (*(*this->prsn_visitor->persons.begin())())().orcid()()));
 
 				// process input data
 				for(auto& x: *result)
@@ -73,7 +75,7 @@ namespace core
 				if(!sum)
 				{
 					std::unique_lock<std::mutex> lk{mtx};
-					cv.wait(lk); // wait just once
+					cv.wait(lk);	// wait just once
 					check_nullptr{sum};
 				}
 

@@ -39,10 +39,9 @@ namespace core
 			// using second_publications_t = std::optional<std::ref<shared_publication_t>>;
 
 			patterns::safe<report_t> m_report{report_t{new report_collection_t{}}};
-			std::atomic<bool> is_ready{ false };
+			std::atomic<bool> is_ready{false};
 
 		 public:
-
 			/**
 			 * @brief Construct a new summary object, proxy to activate
 			 * 

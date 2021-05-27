@@ -20,14 +20,14 @@ using namespace core;
 
 namespace list_widget_colors
 {
-	constexpr uint8_t opacity{ 225 };
-	constexpr QColor default_font_color{ 28, 28, 28, 255 };
-	constexpr QColor green_color{ 78, 155, 71, opacity };
-	constexpr QColor orange_color{ 207, 173, 32, opacity };
-	constexpr QColor red_color{ 183, 61, 68, opacity };
-	constexpr QColor match_scale_palette[] = { red_color, orange_color, green_color };
-	constexpr size_t scale_length{ sizeof(match_scale_palette) / sizeof(QColor) };
-}
+	constexpr uint8_t opacity{225};
+	constexpr QColor default_font_color{28, 28, 28, 255};
+	constexpr QColor green_color{78, 155, 71, opacity};
+	constexpr QColor orange_color{207, 173, 32, opacity};
+	constexpr QColor red_color{183, 61, 68, opacity};
+	constexpr QColor match_scale_palette[] = {red_color, orange_color, green_color};
+	constexpr size_t scale_length{sizeof(match_scale_palette) / sizeof(QColor)};
+}	 // namespace list_widget_colors
 
 /**
  * @brief widget item with referation to source of its data
@@ -59,7 +59,7 @@ struct account_widget_item : public QListWidgetItem
 
 struct publication_widget_item : public QListWidgetItem
 {
-	using incoming_t	  = core::reports::report_item_t;
+	using incoming_t = core::reports::report_item_t;
 	using weak_pub_t = typename incoming_t::value_t::value_type::weak_type;
 	weak_pub_t m_publication;
 

@@ -124,25 +124,22 @@ void MainWindow::set_activation(const bool activate)
 void MainWindow::load_publications(incoming_report_t report)
 {
 	core::check_nullptr{report};
-	core::dassert{ !report.expired(), "given report cannot be expired"_u8 };
+	core::dassert{!report.expired(), "given report cannot be expired"_u8};
 
 	ui->publications->clear();
-	for(const auto& x : *(report.lock())) ui->publications->addItem(new publication_widget_item{x});
+	for(const auto& x: *(report.lock())) ui->publications->addItem(new publication_widget_item{x});
 
 	ui->publications->sortItems(Qt::DescendingOrder);
 }
 
 
-void MainWindow::collect_related(relatives_t relatives) 
+void MainWindow::collect_related(relatives_t relatives)
 {
-	core::check_nullptr{ relatives };
-	load_relatives( relatives );
+	core::check_nullptr{relatives};
+	load_relatives(relatives);
 }
 
-void MainWindow::load_relatives(relatives_t related) 
-{
-
-}
+void MainWindow::load_relatives(relatives_t related) {}
 
 void MainWindow::collect_publications(incoming_report_t report)
 {

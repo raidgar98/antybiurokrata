@@ -83,10 +83,22 @@ namespace core
 			 * @tparam mt objects::match_type
 			 * @return adapter
 			 */
-			template<objects::match_type mt> constexpr auto& get() { dassert(false, "invalid specialization!!!"_u8); }
-			template<> constexpr auto& get<objects::match_type::POLSL>() { return global_adapters::polsl; }
-			template<> constexpr auto& get<objects::match_type::ORCID>() { return global_adapters::orcid; }
-			template<> constexpr auto& get<objects::match_type::SCOPUS>() { return global_adapters::scopus; }
+			template<objects::match_type mt> constexpr auto& get()
+			{
+				dassert(false, "invalid specialization!!!"_u8);
+			}
+			template<> constexpr auto& get<objects::match_type::POLSL>()
+			{
+				return global_adapters::polsl;
+			}
+			template<> constexpr auto& get<objects::match_type::ORCID>()
+			{
+				return global_adapters::orcid;
+			}
+			template<> constexpr auto& get<objects::match_type::SCOPUS>()
+			{
+				return global_adapters::scopus;
+			}
 		}	 // namespace global_adapters
 	}		 // namespace network
 }	 // namespace core
