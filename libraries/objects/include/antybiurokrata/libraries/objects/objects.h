@@ -532,6 +532,7 @@ namespace core
 		}	 // namespace detail
 
 		using typename detail::id_type;
+		using typename detail::match_type;
 		using typename detail::orcid_t;
 		using typename detail::person_t;
 		using typename detail::polish_name_t;
@@ -539,6 +540,7 @@ namespace core
 		using typename detail::publication_t;
 		using typename detail::shared_person_t;
 		using typename detail::shared_publication_t;
+		using typename detail::publication_with_source_t;
 	}	 // namespace objects
 }	 // namespace core
 

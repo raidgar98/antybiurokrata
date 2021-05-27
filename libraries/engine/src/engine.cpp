@@ -2,6 +2,7 @@
 #include <antybiurokrata/libraries/global_adapters.hpp>
 
 #include <condition_variable>
+#include <shared_mutex>
 
 namespace ga = core::network::global_adapters;
 using namespace core;
@@ -141,19 +142,18 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 	};
 
 	{	 // local scope to delete synchronization objects, after usage
-		std::mutex mtx_orcid;
-		std::condition_variable cv_orcid;
+		std::shared_mutex mtx_orcid;
+		std::shared_mutex mtx_report;
+		std::condition_variable_any cv_orcid;
+		std::condition_variable_any cv_report;
 		auto& inner_persons_extractor		  = m_persons_reference;
 		auto& inner_publications_extractor = m_publications_reference;
+		std::unique_ptr<reports::summary> sum;
 
 		const auto bgpolsl_getter = [&]() {
 			inner_persons_extractor.reset(new orm::persons_extractor_t{});
 			inner_publications_extractor.reset(
 				 new orm::publications_extractor_t{*inner_persons_extractor});
-
-			// std::unique_ptr<reports::summary> sum{ new reports::summary{ inner_publications_extractor->publications } };
-			reports::summary sum{inner_publications_extractor->publications};
-
 
 			// on_start();
 
@@ -167,8 +167,16 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 				pub_raw.accept(&(*inner_publications_extractor));
 			}
 
-			if(!w_orcid.empty()) return;
+			sum.reset(new reports::summary{inner_publications_extractor->publications});
+			sum->on_done.register_slot([](core::reports::report_t ptr){
+				check_nullptr{ptr};
+				global_logger << logger::endl << logger::endl << logger::endl;
+				for(const auto& x : *ptr) global_logger.info() << patterns::serial::pretty_print{ x } << logger::endl;
+				global_logger << logger::endl << logger::endl << logger::endl;
+			});
+			cv_report.notify_all();
 
+			if(!w_orcid.empty()) return;
 			for(const auto& p: inner_persons_extractor->persons)
 			{
 				const auto& person = (*p());
@@ -183,7 +191,7 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 		};
 
 		const auto orcid_getter = [&]() {
-			std::unique_lock<std::mutex> lk{mtx_orcid};
+			std::shared_lock<std::shared_mutex> lk{mtx_orcid};
 			if(w_orcid.empty()) cv_orcid.wait(lk);	  // wait just once
 			dassert(!w_orcid.empty(), "orcid not set!"_u8);
 			network::orcid_adapter::result_t orcid_ret = ga::orcid.get_person(w_orcid);
@@ -191,17 +199,45 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 			orm::persons_extractor_t::shallow_copy_persons(*inner_persons_extractor, orcid_visitor);
 			orm::publications_extractor_t pub_visitor{orcid_visitor};
 			for(auto& x: *orcid_ret) x.accept(&pub_visitor);
+
+			global_logger << logger::endl << logger::endl << logger::endl;
+			for(const auto& pub : pub_visitor.publications)
+				global_logger.info() << patterns::serial::pretty_print{ pub } << logger::endl;
+			global_logger << logger::endl << logger::endl << logger::endl;
+
+			{
+				std::shared_lock<std::shared_mutex> lk{mtx_report};
+				cv_report.wait(lk, [&sum] { return static_cast<bool>(sum); });
+			}
+
+			// generate report
+			check_nullptr{sum};
+			sum->process(pub_visitor.publications);
 		};
 
 		const auto scopus_getter = [&]() {
-			std::unique_lock<std::mutex> lk{mtx_orcid};
+			// wait for lock
+			std::shared_lock<std::shared_mutex> lk{mtx_orcid};
 			if(w_orcid.empty()) cv_orcid.wait(lk);	  // wait just once
 			dassert(!w_orcid.empty(), "orcid not set!"_u8);
+
+			// acquire data
 			network::scopus_adapter::result_t scopus_ret = ga::scopus.get_person(w_orcid);
 
+			// process data
 			orm::persons_extractor_t::shallow_copy_persons(*inner_persons_extractor, scopus_visitor);
 			orm::publications_extractor_t pub_visitor{scopus_visitor};
 			for(auto& x: *scopus_ret) x.accept(&pub_visitor);
+
+			// wait for report generator
+			{
+				std::shared_lock<std::shared_mutex> lk{mtx_report};
+				cv_report.wait(lk, [&sum] { return static_cast<bool>(sum); });
+			}
+
+			// generate report
+			check_nullptr{sum};
+			sum->process(pub_visitor.publications);
 		};
 
 		{

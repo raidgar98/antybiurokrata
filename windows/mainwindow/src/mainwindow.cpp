@@ -139,7 +139,7 @@ void MainWindow::collect_neighbours(persons_extractor_storage_t bgperson_visitor
 	{
 		auto& p = *_p();
 		ui->neighbours->addItem(new account_widget_item(_p, ui->neighbours));
-		global_logger.info() << patterns::serial::pretty_print{p} << logger::endl;
+		// global_logger.info() << patterns::serial::pretty_print{p} << logger::endl;
 	}
 
 	emit send_progress(100);

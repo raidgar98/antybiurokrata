@@ -139,7 +139,7 @@ namespace core
 			if(r_year == 0)
 			{
 				const int r_title = calc(me.title()(), that.title()());
-				if(r_title == 0) return calc(me.polish_title()(), that.polish_title()());
+				if(r_title == 0 && !me.polish_title()()->empty() && !that.polish_title()()->empty() ) return calc(me.polish_title()(), that.polish_title()());
 				else
 					return r_title;
 			}
