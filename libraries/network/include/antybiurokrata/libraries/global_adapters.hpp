@@ -25,7 +25,6 @@ namespace core
 			extern bgpolsl_adapter polsl;
 			extern orcid_adapter orcid;
 			extern scopus_adapter scopus;
-
 		}	 // namespace global_adapters
 	}		 // namespace network
 }	 // namespace core

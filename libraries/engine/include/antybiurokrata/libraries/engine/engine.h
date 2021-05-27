@@ -15,6 +15,73 @@
 #include <antybiurokrata/libraries/summary/summary.h>
 namespace core
 {
+	/** @brief contains definition of engine internal helper types */
+	namespace detail
+	{
+		/**
+		 * @brief universal processor for alternative data sources
+		 * 
+		 * @tparam mt data source
+		 */
+		template<objects::match_type mt> struct universal_getter
+		{
+			using delegate_t	= patterns::call_ownership_delegator<size_t>;
+			using w_summary_t = std::shared_ptr<reports::summary>;
+
+			delegate_t& on_progress;
+			w_summary_t sum;
+			std::shared_ptr<orm::persons_extractor_t> prsn_visitor;
+			std::shared_ptr<orm::publications_extractor_t> pub_visitor;
+
+			/**
+			 * @brief Construct a new universal getter object
+			 * 
+			 * @param source source of 
+			 * @param i_sum 
+			 * @param fun 
+			 */
+			universal_getter(const objects::shared_person_t& source, w_summary_t i_sum, delegate_t& fun) :
+				 on_progress{fun}, sum{i_sum}, prsn_visitor{new orm::persons_extractor_t{}}
+			{
+				// copy just one person
+				objects::shared_person_t current{};
+				(*current())().name = (*source())().name;
+				(*current())().surname = (*source())().surname;
+				(*current())().orcid = (*source())().orcid;
+
+				prsn_visitor->persons.insert(current);
+				pub_visitor.reset(new orm::publications_extractor_t{*prsn_visitor});
+			}
+
+			void operator()(std::mutex& mtx, std::condition_variable_any& cv)
+			{
+				core::check_nullptr{ prsn_visitor };
+
+				// gather data from given data source
+				const auto result = network::global_adapters::get<mt>().get_person( 
+					objects::detail::detail_orcid_t::to_string( (*(*this->prsn_visitor->persons.begin())())().orcid()() )
+				);
+
+				// process input data
+				for(auto& x: *result)
+				{
+					x.accept(&(*pub_visitor));
+					on_progress(1);
+				}
+
+				// wait for summary to be generated
+				if(!sum)
+				{
+					std::unique_lock<std::mutex> lk{mtx};
+					cv.wait(lk); // wait just once
+					check_nullptr{sum};
+				}
+
+				// generate report
+				sum->process(pub_visitor->publications, mt);
+			}
+		};
+	}	 // namespace detail
 
 	/**
 	 * @brief encapsulates all purpose of this project
@@ -34,7 +101,7 @@ namespace core
 		// internal types
 		using sobservable								 = patterns::sobservable<engine>;
 		template<typename arg> using observable = patterns::observable<arg, engine>;
-		using summary_t								 = container<orm::persons_extractor_t>;
+		using summary_t								 = reports::report_t;
 		using error_summary_t						 = container<core::exceptions::error_report>;
 		using stop_token_t							 = std::stop_token;
 		using worker_function_t						 = std::function<void(const stop_token_t&, bool&)>;
@@ -83,14 +150,8 @@ namespace core
 			}
 		};
 
-		/** @brief storage for persons extractors */
-		container<orm::persons_extractor_t> m_persons_reference;
-
-		/** @brief storage for publications extractors */
-		container<orm::publications_extractor_t> m_publications_reference;
-
 		/** @brief storage for last summary (cache a bit) */
-		container<summary_t> m_last_summary;
+		summary_t m_last_summary;
 
 		/** 
 		 * @brief handler for working thread 

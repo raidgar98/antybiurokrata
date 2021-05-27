@@ -33,7 +33,13 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	Q_OBJECT
 
 	using Log<MainWindow>::log;
-	using persons_extractor_storage_t = std::weak_ptr<core::orm::persons_extractor_t>;
+
+	using relatives_t = std::shared_ptr<int>;
+	using incoming_relatives_t = typename relatives_t::weak_type;
+
+	using report_t = core::reports::report_t;
+	using incoming_report_t = typename report_t::weak_type;
+
 	core::engine eng;
 
  public:
@@ -46,13 +52,16 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
  signals:
 
 	/** @brief emitted when data is ready to be displayed */
-	void send_neighbours(persons_extractor_storage_t);
+	void send_publications(incoming_report_t);
 
 	/** @brief emitted when next step during processing data is achieved */
 	void send_progress(const size_t);
 
 	/** @brief emitted, when disabling of user input/output is required */
 	void switch_activation(const bool);
+
+	/** @brief emitted when related persons arrive */
+	void send_related(relatives_t);
 
  private slots:
 
@@ -86,7 +95,10 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
  public slots:
 
 	/** @brief handles `send_neighbours` signal */
-	void collect_neighbours(persons_extractor_storage_t);
+	void collect_publications(incoming_report_t);
+
+	/** @brief handles `send_related` signal */
+	void collect_related(relatives_t);
 
 	/** @brief handles `send_progress` signal */
 	void set_progress(const size_t);
@@ -96,11 +108,18 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
  private:
 	/**
-	 * @brief displays common publications with given person
+	 * @brief displays common publications
 	 * 
-	 * @param item person
+	 * @param item report
 	 */
-	void load_publications(account_widget_item* item);
+	void load_publications(incoming_report_t report);
+
+	/**
+	 * @brief displays relatted persons
+	 * 
+	 * @param related relatives
+	 */
+	void load_relatives(relatives_t related);
 
 	/**
 	 * @brief recursively corrects user mistakes and provides mechanism for easy pasting ORCID

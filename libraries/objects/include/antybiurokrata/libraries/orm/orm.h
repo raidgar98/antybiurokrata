@@ -12,9 +12,7 @@
 #pragma once
 
 // Project includes
-#include <antybiurokrata/libraries/bgpolsl_adapter/bgpolsl_adapter.h>
-#include <antybiurokrata/libraries/scopus_adapter/scopus_adapter.h>
-#include <antybiurokrata/libraries/orcid_adapter/orcid_adapter.h>
+#include <antybiurokrata/libraries/global_adapters.hpp>
 #include <antybiurokrata/libraries/objects/objects.h>
 
 namespace core
@@ -74,4 +72,21 @@ namespace core
 			virtual bool visit(json_repr_t* ptr) override;
 		};
 	}	 // namespace orm
+
+	namespace network
+	{
+		namespace global_adapters
+		{
+			/**
+			 * @brief static translation from match_type to adapter
+			 * 
+			 * @tparam mt objects::match_type
+			 * @return adapter
+			 */
+			template<objects::match_type mt> constexpr auto& get() { dassert(false, "invalid specialization!!!"_u8); }
+			template<> constexpr auto& get<objects::match_type::POLSL>() { return global_adapters::polsl; }
+			template<> constexpr auto& get<objects::match_type::ORCID>() { return global_adapters::orcid; }
+			template<> constexpr auto& get<objects::match_type::SCOPUS>() { return global_adapters::scopus; }
+		}	 // namespace global_adapters
+	}		 // namespace network
 }	 // namespace core

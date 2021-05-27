@@ -61,6 +61,8 @@ namespace patterns
 	{
 	};
 
+	template<typename arg_type> struct call_ownership_delegator{};
+
 	/**
 	 * @brief holds signal object and provides basic methode of calling
 	 * 
@@ -69,6 +71,7 @@ namespace patterns
 	template<class arg_type> struct observable_impl_data_holder
 	{
 		using slot_function_t = std::function<void(arg_type)>;
+		friend struct call_ownership_delegator<arg_type>;
 
 	 protected:
 		/**
@@ -86,6 +89,7 @@ namespace patterns
 	template<> struct observable_impl_data_holder<void>
 	{
 		using slot_function_t = std::function<void()>;
+		friend struct call_ownership_delegator<void>;
 
 	 protected:
 		/** @brief calling this function sends signal */
@@ -117,6 +121,44 @@ namespace patterns
 		{
 			return this->__signal.connect(function);
 		}
+
+	protected:
+		auto delegate_ownership() { return call_ownership_delegator<arg_type>{ *this }; }
+
+	};
+
+	/**
+	 * @brief this is class allows to delegate privillage of calling to other objects/functions
+	 * 
+	 * @tparam arg_type type of sending data
+	 */
+	template<typename arg_type> requires( !std::is_same_v<arg_type, void> ) struct call_ownership_delegator<arg_type>
+	{
+		friend class observable_impl<arg_type>;
+		void operator()(const arg_type& arg) { invoke.invoke(arg); }
+
+		call_ownership_delegator(const call_ownership_delegator&) = default;
+		call_ownership_delegator(call_ownership_delegator&&) = default;
+
+	private:
+		/** @brief constructor is restricted for friend */
+		explicit call_ownership_delegator(observable_impl<arg_type>& that) : invoke{ that } {}
+		observable_impl<arg_type>& invoke;
+	};
+
+	/* @brief specialization for void type */
+	template<> struct call_ownership_delegator<void>
+	{
+		friend class observable_impl<void>;
+		void operator()() { invoke.invoke(); }
+
+		call_ownership_delegator(const call_ownership_delegator&) = default;
+		call_ownership_delegator(call_ownership_delegator&&) = default;
+
+	private:
+		/** @brief constructor is restricted for friend */
+		explicit call_ownership_delegator(observable_impl<void>& that) : invoke{ that } {}
+		observable_impl<void>& invoke;
 	};
 
 	/**

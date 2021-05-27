@@ -465,6 +465,7 @@ namespace core
 			 */
 			enum class match_type : uint8_t
 			{
+				POLSL,
 				ORCID,
 				SCOPUS,
 				NO_MATCH,
@@ -479,7 +480,7 @@ namespace core
 			{
 				using enum_t									  = match_type;
 				using base_enum_t								  = uint8_t;
-				inline static const u16str translation[] = {u"ORCID", u"SCOPUS", u"NO_MATCH"};
+				inline static const u16str translation[] = {u"POLSL", u"ORCID", u"SCOPUS", u"NO_MATCH"};
 				constexpr static size_t length			  = sizeof(translation) / sizeof(u16str);
 			};
 
@@ -529,6 +530,7 @@ namespace core
 			};
 
 			using publication_summary_t = cser<&detail_publications_summary_t::matched>;
+			using shared_publication_summary_t = pd::shared_t<publication_summary_t>;
 		}	 // namespace detail
 
 		using typename detail::id_type;
@@ -536,7 +538,7 @@ namespace core
 		using typename detail::orcid_t;
 		using typename detail::person_t;
 		using typename detail::polish_name_t;
-		using typename detail::publication_summary_t;
+		using publication_summary_t = detail::shared_publication_summary_t;
 		using typename detail::publication_t;
 		using typename detail::shared_person_t;
 		using typename detail::shared_publication_t;

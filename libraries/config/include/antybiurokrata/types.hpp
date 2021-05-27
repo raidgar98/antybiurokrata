@@ -234,6 +234,7 @@ namespace core
 			 * @brief message to show, when pointer is nullptr
 			 */
 			constexpr static str_v c_require_not_nullptr{"given pointer is equal to nullptr!"};
+			constexpr static str_v c_require_not_expire{"given pointer is expired!"};
 			using spec_require = require<pointer_is_null>;
 
 			/**
@@ -267,11 +268,14 @@ namespace core
 
 			template<typename T> require_not_nullptr(const std::weak_ptr<T>& ptr)
 			{
-				check_impl(ptr.get());
+				spec_require{ !ptr.expired(), c_require_not_expire };
+				check_impl(ptr.lock().get());
 			}
+
 			template<typename T> require_not_nullptr(const std::weak_ptr<T[]>& ptr)
 			{
-				check_impl(ptr.get());
+				spec_require{ !ptr.expired(), c_require_not_expire };
+				check_impl(ptr.lock().get());
 			}
 
 		 private:

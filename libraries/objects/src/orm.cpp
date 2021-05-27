@@ -216,7 +216,7 @@ namespace core
 				(*np())().surname = (*person())().surname;
 				(*np())().orcid	= (*person())().orcid;
 				auto pair			= output.persons.insert(np().data());
-				if(pair.second) (*(*pair.first)())().publictions()()->clear();
+				// if(pair.second) (*(*pair.first)())().publictions()()->clear();
 			}
 		}
 	}	 // namespace orm

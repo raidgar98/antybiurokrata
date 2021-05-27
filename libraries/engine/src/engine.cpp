@@ -42,7 +42,7 @@ const engine::summary_t& engine::get_last_summary() const
 {
 	dassert(is_last_summary_avaiable(),
 			  "last summary is not avaiable! first check before calling"_u8);
-	return *m_last_summary;
+	return m_last_summary;
 }
 
 
@@ -125,64 +125,83 @@ void engine::process_name_and_surname(const std::stop_token& stop_token, const s
 void engine::process_impl(const std::stop_token& stop_token, const str& name, const str& surname,
 								  const str& orcid)
 {
+	// standarize incoming data
 	auto conv = get_conversion_engine();
 	const objects::polish_name_t w_name{conv.from_bytes(name)};
 	const objects::polish_name_t w_surname{conv.from_bytes(surname)};
-	log.info() << patterns::serial::pretty_print{w_name} << logger::endl;
-	log.info() << w_name().raw << logger::endl;
-	log.info() << patterns::serial::pretty_print{w_surname} << logger::endl;
-	log.info() << w_surname().raw << logger::endl;
-	orm::persons_extractor_t orcid_visitor{};
-	orm::persons_extractor_t scopus_visitor{};
 	str w_orcid{orcid};
+	objects::shared_person_t person{};
+	if(!w_orcid.empty())
+	{
+		(*person())().name( w_name );
+		(*person())().surname( w_surname );
+		(*person())().orcid( objects::detail::detail_orcid_t::from_string( w_orcid ) );
+	}else person().data().reset();
 
 
+	// setup workers
+	orm::persons_extractor_t scopus_visitor{};
+	orm::persons_extractor_t inner_persons_extractor{};
+	orm::publications_extractor_t inner_publications_extractor{inner_persons_extractor};
+	std::shared_ptr<reports::summary> sum{ new reports::summary{} };
+
+	// prepare delegates
+	auto on_start_delegate = on_start.delegate_ownership();
+	auto on_progress_delegate = on_progress.delegate_ownership();
+	auto on_calculated_progress_delegate = on_calculated_progress.delegate_ownership();
+	auto on_finish_delegate = on_finish.delegate_ownership();
+
+	// stop token activation function
 	const auto stop = [&]() {
 		if(stop_token.stop_requested()) dassert(false, "stopped on request!"_u8);
 	};
 
 	{	 // local scope to delete synchronization objects, after usage
-		std::shared_mutex mtx_orcid;
-		std::shared_mutex mtx_report;
+
+		std::mutex mtx_orcid;
+		std::mutex mtx_report;
 		std::condition_variable_any cv_orcid;
 		std::condition_variable_any cv_report;
-		auto& inner_persons_extractor		  = m_persons_reference;
-		auto& inner_publications_extractor = m_publications_reference;
-		std::unique_ptr<reports::summary> sum;
 
 		const auto bgpolsl_getter = [&]() {
-			inner_persons_extractor.reset(new orm::persons_extractor_t{});
-			inner_publications_extractor.reset(
-				 new orm::publications_extractor_t{*inner_persons_extractor});
 
-			// on_start();
+			// notify, that processing started
+			on_start_delegate();
 
+			// gather initial data
 			auto publications_raw = ga::polsl.get_person(name, surname);
 
-			// on_calculated_progress(persons_data->size());
+			// inform about total size of incoming data
+			on_calculated_progress_delegate(publications_raw->size() * ( objects::detail::match_type_translation_unit::length - 2 /* = ( `NO_MATCH` + `POLSL` (which is reference) ) */ ));
 
+			// extract persons
 			for(auto& pub_raw: *publications_raw)
 			{
-				// on_progress(1)
-				pub_raw.accept(&(*inner_publications_extractor));
+				pub_raw.accept(&inner_publications_extractor);
+				on_progress_delegate(1);
 			}
 
-			sum.reset(new reports::summary{inner_publications_extractor->publications});
-			sum->on_done.register_slot([](core::reports::report_t ptr){
+			// setup summary engine
+			auto& last_summary = this->m_last_summary;
+			sum->activate(inner_publications_extractor.publications);
+			global_logger << "created summary on address: " << reinterpret_cast<size_t>(sum.get()) << logger::endl;
+			sum->on_done.register_slot([&](core::reports::report_t ptr){
 				check_nullptr{ptr};
-				global_logger << logger::endl << logger::endl << logger::endl;
-				for(const auto& x : *ptr) global_logger.info() << patterns::serial::pretty_print{ x } << logger::endl;
-				global_logger << logger::endl << logger::endl << logger::endl;
+				last_summary = ptr;
+				on_finish_delegate(ptr);
+				on_progress_delegate(100);
 			});
 			cv_report.notify_all();
+			global_logger << "cv_report notified!\n";
 
+			// if orcid is already given return
 			if(!w_orcid.empty()) return;
-			for(const auto& p: inner_persons_extractor->persons)
+			for(const auto& p: inner_persons_extractor.persons)
 			{
-				const auto& person = (*p());
-				if(person().name == w_name && person().surname == w_surname)
+				const auto& in_p = (*p());
+				if(in_p().name == w_name && in_p().surname == w_surname)
 				{
-					w_orcid = objects::orcid_t::value_t::to_string(person().orcid()());
+					person = p;
 					cv_orcid.notify_all();
 					return;
 				}
@@ -190,68 +209,25 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 			dassert(false, "person not found!?"_u8);
 		};
 
-		const auto orcid_getter = [&]() {
-			std::shared_lock<std::shared_mutex> lk{mtx_orcid};
-			if(w_orcid.empty()) cv_orcid.wait(lk);	  // wait just once
-			dassert(!w_orcid.empty(), "orcid not set!"_u8);
-			network::orcid_adapter::result_t orcid_ret = ga::orcid.get_person(w_orcid);
-
-			orm::persons_extractor_t::shallow_copy_persons(*inner_persons_extractor, orcid_visitor);
-			orm::publications_extractor_t pub_visitor{orcid_visitor};
-			for(auto& x: *orcid_ret) x.accept(&pub_visitor);
-
-			global_logger << logger::endl << logger::endl << logger::endl;
-			for(const auto& pub : pub_visitor.publications)
-				global_logger.info() << patterns::serial::pretty_print{ pub } << logger::endl;
-			global_logger << logger::endl << logger::endl << logger::endl;
-
-			{
-				std::shared_lock<std::shared_mutex> lk{mtx_report};
-				cv_report.wait(lk, [&sum] { return static_cast<bool>(sum); });
-			}
-
-			// generate report
-			check_nullptr{sum};
-			sum->process(pub_visitor.publications);
-		};
-
-		const auto scopus_getter = [&]() {
-			// wait for lock
-			std::shared_lock<std::shared_mutex> lk{mtx_orcid};
-			if(w_orcid.empty()) cv_orcid.wait(lk);	  // wait just once
-			dassert(!w_orcid.empty(), "orcid not set!"_u8);
-
-			// acquire data
-			network::scopus_adapter::result_t scopus_ret = ga::scopus.get_person(w_orcid);
-
-			// process data
-			orm::persons_extractor_t::shallow_copy_persons(*inner_persons_extractor, scopus_visitor);
-			orm::publications_extractor_t pub_visitor{scopus_visitor};
-			for(auto& x: *scopus_ret) x.accept(&pub_visitor);
-
-			// wait for report generator
-			{
-				std::shared_lock<std::shared_mutex> lk{mtx_report};
-				cv_report.wait(lk, [&sum] { return static_cast<bool>(sum); });
-			}
-
-			// generate report
-			check_nullptr{sum};
-			sum->process(pub_visitor.publications);
-		};
-
+		// thread order
 		{
-			stop();
-			on_start();
 			stop();
 			std::jthread th1{bgpolsl_getter};
 			stop();
-			std::jthread th2{orcid_getter};
+			
+			if(w_orcid.empty())
+			{
+				std::unique_lock<std::mutex> lk{mtx_orcid};
+				cv_orcid.wait(lk, [&]{ stop(); return !w_orcid.empty(); });
+				dassert(!w_orcid.empty(), "orcid not set!"_u8);
+			}
+
 			stop();
-			std::jthread th3{scopus_getter};
+			std::jthread th2{ core::detail::universal_getter<objects::match_type::ORCID>{ person, sum, on_progress_delegate }, std::ref(mtx_report), std::ref(cv_report) };
+			stop();
+			std::jthread th3{ core::detail::universal_getter<objects::match_type::SCOPUS>{ person, sum, on_progress_delegate }, std::ref(mtx_report), std::ref(cv_report) };
 			stop();
 		}
 	}
 
-	on_finish(m_persons_reference);
 }

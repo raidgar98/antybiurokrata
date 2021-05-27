@@ -39,22 +39,32 @@ namespace core
 			// using second_publications_t = std::optional<std::ref<shared_publication_t>>;
 
 			patterns::safe<report_t> m_report{report_t{new report_collection_t{}}};
+			std::atomic<bool> is_ready{ false };
 
 		 public:
+
 			/**
-			 * @brief Construct a new summary object
+			 * @brief Construct a new summary object, proxy to activate
 			 * 
-			 * @tparam other_owner owner type of incoming signal
+			 * @param reference reference data for comprasion, if nullptr is given, nothing cheanges
+			 */
+			explicit summary(publications_storage_t reference);
+			explicit summary() = default;
+
+			/**
+			 * @brief Initializes all data
+			 * 
 			 * @param reference reference data for comprasion
 			 */
-			summary(publications_storage_t reference);
+			void activate(publications_storage_t reference);
 
 			/**
 			 * @brief appends comprasion output to internal storage, can take a while
 			 * 
 			 * @param input data to compare
+			 * @param mt data source
 			 */
-			void process(publications_storage_t input);
+			void process(publications_storage_t input, const objects::match_type mt);
 
 			/**
 			 * @brief called in destructor, provides pointer to return
@@ -71,8 +81,9 @@ namespace core
 			 * @brief actually does a job
 			 * 
 			 * @param input data
+			 * @param mt data source
 			 */
-			void process_impl(publications_storage_t input);
+			void process_impl(publications_storage_t input, const objects::match_type mt);
 
 			/**
 			 * @brief methode for multithreading

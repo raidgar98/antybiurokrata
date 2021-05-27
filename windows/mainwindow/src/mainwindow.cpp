@@ -13,14 +13,14 @@
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
-	qRegisterMetaType<persons_extractor_storage_t>("persons_extractor_storage_t");
-	QObject::connect(this, &MainWindow::send_neighbours, this, &MainWindow::collect_neighbours);
+	qRegisterMetaType<incoming_report_t>("incoming_report_t");
+	QObject::connect(this, &MainWindow::send_publications, this, &MainWindow::collect_publications);
 	QObject::connect(this, &MainWindow::send_progress, this, &MainWindow::set_progress);
 	QObject::connect(this, &MainWindow::switch_activation, this, &MainWindow::set_activation);
 
-	eng.on_finish.register_slot([&](std::shared_ptr<core::orm::persons_extractor_t> ptr) {
+	eng.on_finish.register_slot([&](report_t ptr) {
 		core::check_nullptr{ptr};
-		emit send_neighbours(persons_extractor_storage_t{ptr});
+		emit send_publications(incoming_report_t{ptr});
 	});
 
 	eng.on_start.register_slot([&]() { emit switch_activation(false); });
@@ -121,93 +121,105 @@ void MainWindow::set_activation(const bool activate)
 	ui->publications->setEnabled(activate);
 }
 
-void MainWindow::load_publications(account_widget_item* account)
+void MainWindow::load_publications(incoming_report_t report)
 {
-	core::check_nullptr{account};
-	if(account->m_person.expired()) return;
-	auto& coll = (*account->m_person.lock().get())().publictions()().data();
+	core::check_nullptr{report};
+	core::dassert{ !report.expired(), "given report cannot be expired"_u8 };
+
 	ui->publications->clear();
-	for(const auto& x: coll)
-		ui->publications->addItem(new publication_widget_item{x().data(), ui->publications});
+	for(const auto& x : *(report.lock())) ui->publications->addItem(new publication_widget_item{x});
+
+	ui->publications->sortItems(Qt::DescendingOrder);
 }
 
-void MainWindow::collect_neighbours(persons_extractor_storage_t bgperson_visitor)
+
+void MainWindow::collect_related(relatives_t relatives) 
+{
+	core::check_nullptr{ relatives };
+	load_relatives( relatives );
+}
+
+void MainWindow::load_relatives(relatives_t related) 
+{
+
+}
+
+void MainWindow::collect_publications(incoming_report_t report)
 {
 	clear_ui();
-
-	for(const auto& _p: bgperson_visitor.lock()->persons)
-	{
-		auto& p = *_p();
-		ui->neighbours->addItem(new account_widget_item(_p, ui->neighbours));
-		// global_logger.info() << patterns::serial::pretty_print{p} << logger::endl;
-	}
-
-	emit send_progress(100);
+	load_publications(report);
 	emit switch_activation(true);
+	// load_publications(dynamic_cast<account_widget_item*>(ui->neighbours->itemAt(0, 0)));
 
-	ui->neighbours->sortItems();
-	ui->neighbours->setCurrentRow(0);
-	load_publications(dynamic_cast<account_widget_item*>(ui->neighbours->itemAt(0, 0)));
+	// for(const auto& _p: bgperson_visitor.lock()->persons)
+	// {
+	// 	auto& p = *_p();
+	// 	ui->neighbours->addItem(new account_widget_item(_p, ui->neighbours));
+	// 	// global_logger.info() << patterns::serial::pretty_print{p} << logger::endl;
+	// }
+
+	// ui->neighbours->sortItems();
+	// ui->neighbours->setCurrentRow(0);
 }
 
 void MainWindow::on_neighbours_itemClicked(QListWidgetItem* item)
 {
-	core::check_nullptr{item};
-	if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
-		load_publications(account);
-	else
-		core::dassert{false, "cannot cast object!"_u8};
+	// core::check_nullptr{item};
+	// if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
+	// 	load_publications(account);
+	// else
+	// 	core::dassert{false, "cannot cast object!"_u8};
 }
 
 void MainWindow::on_neighbours_itemChanged(QListWidgetItem* item)
 {
-	core::check_nullptr{item};
-	if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
-		load_publications(account);
-	else
-		core::dassert{false, "cannot cast object!"_u8};
+	// core::check_nullptr{item};
+	// if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
+	// 	load_publications(account);
+	// else
+	// 	core::dassert{false, "cannot cast object!"_u8};
 }
 
 void MainWindow::on_neighbours_itemDoubleClicked(QListWidgetItem* item)
 {
-	core::check_nullptr{item};
-	if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
-	{
-		if(account->m_person.expired()) return;
-		const auto& person = (*account->m_person.lock().get())();
-		ui->name->setText(QString::fromStdU16String(person.name()().raw));
-		ui->surname->setText(QString::fromStdU16String(person.surname()().raw));
+	// core::check_nullptr{item};
+	// if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
+	// {
+	// 	if(account->m_person.expired()) return;
+	// 	const auto& person = (*account->m_person.lock().get())();
+	// 	ui->name->setText(QString::fromStdU16String(person.name()().raw));
+	// 	ui->surname->setText(QString::fromStdU16String(person.surname()().raw));
 
-		ui->tabWidget->setCurrentIndex(1);
-	}
-	else
-		core::dassert{false, "cannot cast object!"_u8};
+	// 	ui->tabWidget->setCurrentIndex(1);
+	// }
+	// else
+	// 	core::dassert{false, "cannot cast object!"_u8};
 }
 
 void MainWindow::on_publications_itemDoubleClicked(QListWidgetItem* item)
 {
-	core::check_nullptr{item};
-	if(publication_widget_item* publication = dynamic_cast<publication_widget_item*>(item))
-	{
-		dassert{!publication->m_publication.expired(), "this publication is empty!"_u8};
-		const auto& pub = (*publication->m_publication.lock().get())();
+	// core::check_nullptr{item};
+	// if(publication_widget_item* publication = dynamic_cast<publication_widget_item*>(item))
+	// {
+	// 	dassert{!publication->m_publication.expired(), "this publication is empty!"_u8};
+	// 	const auto& pub = (*publication->m_publication.lock().get())();
 
-		auto conv = core::get_conversion_engine();
-		std::stringstream ss;
-		ss << "Tytuł referencyjny: " << conv.to_bytes(pub.title()().raw) << std::endl;
-		if(!pub.polish_title()()->empty())
-			ss << "Tytuł orginalny: " << conv.to_bytes(pub.polish_title()().raw) << std::endl;
-		ss << "Rok: " << pub.year() << std::endl;
-		for(const auto& pair: pub.ids()().data())
-		{
-			ss << conv.to_bytes(objects::detail::id_type_stringinizer::get(pair.first)) << ": "
-				<< conv.to_bytes(pair.second().raw) << std::endl;
-		}
+	// 	auto conv = core::get_conversion_engine();
+	// 	std::stringstream ss;
+	// 	ss << "Tytuł referencyjny: " << conv.to_bytes(pub.title()().raw) << std::endl;
+	// 	if(!pub.polish_title()()->empty())
+	// 		ss << "Tytuł orginalny: " << conv.to_bytes(pub.polish_title()().raw) << std::endl;
+	// 	ss << "Rok: " << pub.year() << std::endl;
+	// 	for(const auto& pair: pub.ids()().data())
+	// 	{
+	// 		ss << conv.to_bytes(objects::detail::id_type_stringinizer::get(pair.first)) << ": "
+	// 			<< conv.to_bytes(pair.second().raw) << std::endl;
+	// 	}
 
-		std::unique_ptr<info_dialog> window{new info_dialog{QString::fromStdString(ss.str()), this}};
-		window->setModal(true);
-		window->exec();
-	}
-	else
-		core::dassert{false, "cannot cast object!"_u8};
+	// 	std::unique_ptr<info_dialog> window{new info_dialog{QString::fromStdString(ss.str()), this}};
+	// 	window->setModal(true);
+	// 	window->exec();
+	// }
+	// else
+	// 	core::dassert{false, "cannot cast object!"_u8};
 }
