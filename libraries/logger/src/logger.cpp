@@ -16,7 +16,7 @@ namespace ___dummmy
 };	  // namespace ___dummmy
 logger global_logger{logger::_get_logger<___dummmy::global_logger>()};
 
-void logger::log_with_global_logger(const std::string& msg) { global_logger << msg; }
+void logger::log_with_global_logger(const std::string& msg) { global_logger.dbg() << msg; }
 
 logger::logger(const std::string& preambula) : preambula{preambula} {}
 
@@ -60,6 +60,7 @@ void logger::print_out(const std::string& msg, const format_function& _format)
 	std::cout << msg;
 	logger::reset_color_scheme(std::cout);
 	std::cout << "";
+	std::cout.flush();
 }
 
 void logger::print_stacktrace() const

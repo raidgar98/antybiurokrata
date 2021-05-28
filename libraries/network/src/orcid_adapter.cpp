@@ -199,7 +199,7 @@ namespace core
 
 			const jvalue& array = json->get("group", empty_array);
 			dassert(array.isArray(), "it's not array"_u8);
-			log << "it's array, with size: " << array.size() << " hooray!" << logger::endl;
+			log.dbg() << "it's array, with size: " << array.size() << " hooray!" << logger::endl;
 			if(array.size() == 0) log.warn() << "array is empty for orcid: " << orcid << logger::endl;
 			auto cengine				= get_conversion_engine();
 			const u16str wide_orcid = cengine.from_bytes(orcid);
@@ -223,7 +223,7 @@ namespace core
 						if(year == null_value) continue;
 						else
 							obj.year = cengine.from_bytes(year["value"].asCString());
-						log << "added year" << logger::endl;
+						log.dbg() << "added year" << logger::endl;
 					}
 
 					{	 // title
@@ -238,7 +238,7 @@ namespace core
 							else
 								obj.title = cengine.from_bytes(title["value"].asCString());
 							if(obj.title.find(double_tittle_separator)) double_title = true;
-							log << "added tittle" << logger::endl;
+							log.dbg() << "added tittle" << logger::endl;
 						}
 
 						if(!double_title) /* i hope */ [[likely]]
@@ -246,7 +246,7 @@ namespace core
 							const jvalue& title = pretitle.get("translated-title", null_value);
 							if(title != null_value)
 								obj.translated_title = cengine.from_bytes(title["value"].asCString());
-							log << "added translated tittle" << logger::endl;
+							log.dbg() << "added translated tittle" << logger::endl;
 						}
 						else
 						{
@@ -262,7 +262,7 @@ namespace core
 				}
 				else
 					continue;
-				log << "properly added year and tittle" << logger::endl;
+				log.dbg() << "properly added year and tittle" << logger::endl;
 
 				// ids
 				const jvalue& external_ids = x.get("external-ids", null_value);
@@ -270,7 +270,8 @@ namespace core
 				const jvalue& external_id = external_ids.get("external-id", empty_array);
 				if(external_id.isArray() && external_id.size() > 0)
 				{
-					log << "searching for ids in array of size: " << external_id.size() << logger::endl;
+					log.dbg() << "searching for ids in array of size: " << external_id.size()
+								 << logger::endl;
 					for(const jvalue& item: external_id)
 					{
 						std::pair<u16str, u16str> to_emplace{};
@@ -291,15 +292,15 @@ namespace core
 						else
 							to_emplace.second = cengine.from_bytes(eid_normalized["value"].asCString());
 
-						log << "added id: ( " << to_emplace.first << " ; " << to_emplace.second << " )"
-							 << logger::endl;
+						log.dbg() << "added id: ( " << to_emplace.first << " ; " << to_emplace.second
+									 << " )" << logger::endl;
 						obj.ids.emplace_back(std::move(to_emplace));
 					}
 				}
-				log << "properly added ids" << logger::endl;
+				log.dbg() << "properly added ids" << logger::endl;
 
 				list.emplace_back(std::move(obj));
-				log << "properly added publication" << logger::endl;
+				log.dbg() << "properly added publication" << logger::endl;
 			}
 
 			return result_list;

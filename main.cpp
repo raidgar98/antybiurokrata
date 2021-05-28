@@ -7,6 +7,7 @@
 
 void my_signal_handler(int signum)
 {
+	logger::set_current_log_level<logger::log_level::DEBUG>();
 	::signal(signum, SIG_DFL);
 	std::cout << "sigfault in: " << std::this_thread::get_id() << std::endl;
 	global_logger.print_stacktrace();
@@ -17,6 +18,7 @@ void my_signal_handler(int signum)
 
 int main(int argc, char* argv[])
 {
+	logger::set_current_log_level<logger::log_level::ERROR>();
 	::signal(SIGSEGV, &my_signal_handler);
 	::signal(SIGABRT, &my_signal_handler);
 

@@ -80,13 +80,13 @@ namespace core
 				/** @brief DEBUG */
 				void print() const
 				{
-					log << "orcid: " << orcid << logger::endl;
-					log << "year: " << year << logger::endl;
-					log << "title: " << title << logger::endl;
+					log.dbg() << "orcid: " << orcid << logger::endl;
+					log.dbg() << "year: " << year << logger::endl;
+					log.dbg() << "title: " << title << logger::endl;
 					if(!translated_title.empty())
-						log << "translated_title: " << translated_title << logger::endl;
+						log.dbg() << "translated_title: " << translated_title << logger::endl;
 					for(const auto& x: ids)
-						log << "id: ( " << x.first << " ; " << x.second << " )" << logger::endl;
+						log.dbg() << "id: ( " << x.first << " ; " << x.second << " )" << logger::endl;
 				}
 			};
 

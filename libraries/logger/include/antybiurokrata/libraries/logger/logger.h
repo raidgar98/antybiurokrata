@@ -57,7 +57,7 @@ class logger
 		DEBUG = std::numeric_limits<uint16_t>::max()
 	};
 
-	inline static log_level level{log_level::DEBUG};	// by default log all
+	inline static log_level level{log_level::WARN};	  // by default log all
 
 	template<log_level lvl> constexpr static bool log_on_current_log_level()
 	{
@@ -175,7 +175,10 @@ class logger
 	 * 
 	 * @return logger_piper& struct that takes care about flush collected data
 	*/
-	logger_piper start_stream() const { return _config_logger_piper(); }
+	logger_piper start_stream() const
+	{
+		return _config_logger_piper(log_on_current_log_level<log_level::DEBUG>());
+	}
 
 	void dbg(const std::string&) const;
 	void info(const std::string&) const;
@@ -214,7 +217,7 @@ class logger
 	{
 		std::stringstream ss;
 		fun(ss);
-		ss << get_preambula(4);
+		ss << get_preambula(3);
 		return logger_piper{std::move(ss), print_out};
 	}
 
@@ -249,21 +252,8 @@ template<typename T> class Log
 template<typename T>
 inline typename logger::logger_piper operator<<(logger::logger_piper src, const T& v)
 {
-	*src.ss << v;
+	if(src.will_be_printed) *src.ss << v;
 	return src;
-}
-
-/**
- * @brief proxy function to inner operator
- * 
- * @tparam T any object
- * @param out self
- * @param obj any object
- * @return logger::logger_piper& self
- */
-template<typename T> inline typename logger::logger_piper operator<<(logger& out, const T& obj)
-{
-	return out.start_stream() << obj;
 }
 
 extern logger global_logger;

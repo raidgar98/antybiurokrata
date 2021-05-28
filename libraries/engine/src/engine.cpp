@@ -252,16 +252,16 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 
 			stop();
 			std::jthread th2{
-				 core::detail::universal_getter<objects::match_type::ORCID>{person,
-																								sum,
-																								on_progress_delegate},
+				 core::detail::universal_getter<objects::match_type::SCOPUS>{person,
+																								 sum,
+																								 on_progress_delegate},
 				 std::ref(mtx_report),
 				 std::ref(cv_report)};
 			stop();
 			std::jthread th3{
-				 core::detail::universal_getter<objects::match_type::SCOPUS>{person,
-																								 sum,
-																								 on_progress_delegate},
+				 core::detail::universal_getter<objects::match_type::ORCID>{person,
+																								sum,
+																								on_progress_delegate},
 				 std::ref(mtx_report),
 				 std::ref(cv_report)};
 			stop();
