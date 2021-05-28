@@ -168,7 +168,6 @@ namespace core
 		container<std::pair<container<std::jthread>, bool>> m_worker;
 
 	 public:
-
 		/** @brief only default cnstructible */
 		engine();
 

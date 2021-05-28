@@ -36,10 +36,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 MainWindow::~MainWindow() { delete ui; }
 
 
-bool MainWindow::handle_signal() const volatile
-{
-	return this->m_handle_signals.load();
-}
+bool MainWindow::handle_signal() const volatile { return this->m_handle_signals.load(); }
 
 void MainWindow::normalize_text(const QString& arg1, QLineEdit& line, QLineEdit* next)
 {
@@ -202,7 +199,7 @@ void MainWindow::collect_publications(incoming_report_t report)
 }
 
 
-void MainWindow::apply_relative_change(QListWidgetItem* item) 
+void MainWindow::apply_relative_change(QListWidgetItem* item)
 {
 	if(!handle_signal()) return;
 
@@ -211,10 +208,11 @@ void MainWindow::apply_relative_change(QListWidgetItem* item)
 	{
 		auto& ref = account->m_person;
 		core::check_nullptr{ref};
-		const auto& pubs =  (*ref.lock())().publictions();
+		const auto& pubs = (*ref.lock())().publictions();
 		load_publications(eng.get_last_summary(), &pubs);
 	}
-	else core::dassert{false, "cannot cast object!"_u8};
+	else
+		core::dassert{false, "cannot cast object!"_u8};
 }
 
 void MainWindow::on_neighbours_itemClicked(QListWidgetItem* item)

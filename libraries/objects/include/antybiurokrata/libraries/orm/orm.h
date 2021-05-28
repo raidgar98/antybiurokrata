@@ -37,7 +37,7 @@ namespace core
 		{
 			using Log<persons_extractor_t>::log;
 
-			persons_storage_t persons{ new persons_storage_t::element_type{} };
+			persons_storage_t persons{new persons_storage_t::element_type{}};
 			shared_publication_t current_publication{nullptr};
 
 			/**

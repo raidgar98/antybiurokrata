@@ -43,7 +43,7 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
 	core::engine eng;
 
-	std::atomic<bool> m_handle_signals{ true };
+	std::atomic<bool> m_handle_signals{true};
 
  public:
 	/** @brief default constructor */
