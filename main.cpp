@@ -46,5 +46,13 @@ int main(int argc, char* argv[])
 
 	// for(const auto& x : bgperson_visitor.persons) std::cout << patterns::serial::pretty_print{ *x } << std::endl;
 
+	/*
+		TODO:
+
+			- MUST DO - generate report
+			- NOIZZ - improve matching, add possible match
+
+	*/
+
 	return 0;
 }

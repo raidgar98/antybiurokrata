@@ -57,7 +57,6 @@ namespace core
 
 			void operator()(std::mutex& mtx, std::condition_variable_any& cv)
 			{
-				global_logger.error() << "started: " << static_cast<int>(mt) << logger::endl;
 				core::check_nullptr{prsn_visitor};
 
 				// gather data from given data source
@@ -81,9 +80,7 @@ namespace core
 				}
 
 				// generate report
-				global_logger.error() << "proc: " << static_cast<int>(mt) << logger::endl;
 				sum->process(pub_visitor->publications, mt);
-				global_logger.error() << "end: " << static_cast<int>(mt) << logger::endl;
 			}
 		};
 	}	 // namespace detail

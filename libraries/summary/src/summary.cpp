@@ -54,7 +54,6 @@ namespace core
 					// TODO: compare function is not enough, but fair enough now;
 					if(ref.compare(*y()) == 0)
 					{
-						// objects::publication_with_source_t to_add;
 						m_report.access(
 							 [&](report_t& obj) { (*(*obj)[i]())().matched()().data().emplace(mt, y); });
 					}
