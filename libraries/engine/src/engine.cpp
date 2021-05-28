@@ -7,6 +7,12 @@
 namespace ga = core::network::global_adapters;
 using namespace core;
 
+engine::engine()
+{
+	engine::persons_summary_t& proxy{m_last_persons_summary};
+	on_collaboration_finish.register_slot([&proxy](engine::persons_summary_t ptr) { proxy = ptr; });
+}
+
 void engine::get_name_and_surname(const str& orcid, str& out_name, str& out_surname) const
 {
 	try
@@ -46,7 +52,21 @@ const engine::summary_t& engine::get_last_summary() const
 }
 
 
+const engine::persons_summary_t& engine::get_last_persons_summary() const
+{
+	dassert(is_last_person_summary_avaiable(),
+			  "last persons summary is not avaiable! first check before calling"_u8);
+	return m_last_persons_summary;
+}
+
+
 bool engine::is_last_summary_avaiable() const { return m_last_summary.get() != nullptr; }
+
+
+bool engine::is_last_person_summary_avaiable() const
+{
+	return m_last_persons_summary.get() != nullptr;
+}
 
 
 void engine::start(const str& orcid) { setup_new_thread(process_functor_t{this, orcid}); }
@@ -148,10 +168,11 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 	std::shared_ptr<reports::summary> sum{new reports::summary{}};
 
 	// prepare delegates
-	auto on_start_delegate					 = on_start.delegate_ownership();
-	auto on_progress_delegate				 = on_progress.delegate_ownership();
-	auto on_calculated_progress_delegate = on_calculated_progress.delegate_ownership();
-	auto on_finish_delegate					 = on_finish.delegate_ownership();
+	auto on_start_delegate					  = on_start.delegate_ownership();
+	auto on_progress_delegate				  = on_progress.delegate_ownership();
+	auto on_calculated_progress_delegate  = on_calculated_progress.delegate_ownership();
+	auto on_finish_delegate					  = on_finish.delegate_ownership();
+	auto on_collaboration_finish_delegate = on_collaboration_finish.delegate_ownership();
 
 	// stop token activation function
 	const auto stop = [&]() {
@@ -165,6 +186,7 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 		std::condition_variable_any cv_orcid;
 		std::condition_variable_any cv_report;
 
+		/// @todo maybe put it in another function?
 		const auto bgpolsl_getter = [&]() {
 			// notify, that processing started
 			on_start_delegate();
@@ -184,12 +206,11 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 				pub_raw.accept(&inner_publications_extractor);
 				on_progress_delegate(1);
 			}
+			on_collaboration_finish_delegate(inner_persons_extractor.persons);
 
 			// setup summary engine
 			auto& last_summary = this->m_last_summary;
 			sum->activate(inner_publications_extractor.publications);
-			global_logger << "created summary on address: " << reinterpret_cast<size_t>(sum.get())
-							  << logger::endl;
 			sum->on_done.register_slot([&](core::reports::report_t ptr) {
 				check_nullptr{ptr};
 				last_summary = ptr;
@@ -197,21 +218,20 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 				on_progress_delegate(100);
 			});
 			cv_report.notify_all();
-			global_logger << "cv_report notified!\n";
 
 			// if orcid is already given return
-			if(!w_orcid.empty()) return;
-			for(const auto& p: inner_persons_extractor.persons)
+			if(person()) return;
+			for(const auto& p: *inner_persons_extractor.persons)
 			{
 				const auto& in_p = (*p());
 				if(in_p().name == w_name && in_p().surname == w_surname)
 				{
 					person = p;
 					cv_orcid.notify_all();
-					return;
 				}
 			}
-			dassert(false, "person not found!?"_u8);
+
+			check_nullptr{person().data()};
 		};
 
 		// thread order
@@ -220,14 +240,14 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 			std::jthread th1{bgpolsl_getter};
 			stop();
 
-			if(w_orcid.empty())
+			if(!person())
 			{
 				std::unique_lock<std::mutex> lk{mtx_orcid};
 				cv_orcid.wait(lk, [&] {
 					stop();
-					return !w_orcid.empty();
+					return person();
 				});
-				dassert(!w_orcid.empty(), "orcid not set!"_u8);
+				dassert(person(), "orcid not set!"_u8);
 			}
 
 			stop();

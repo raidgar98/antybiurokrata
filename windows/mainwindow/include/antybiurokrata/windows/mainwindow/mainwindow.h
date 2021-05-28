@@ -34,13 +34,16 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
 	using Log<MainWindow>::log;
 
-	using relatives_t				= std::shared_ptr<int>;
+	using relatives_t				= core::orm::persons_storage_t;
 	using incoming_relatives_t = typename relatives_t::weak_type;
+	using single_relative_t		= core::objects::detail::publications_storage_t;
 
 	using report_t				= core::reports::report_t;
 	using incoming_report_t = typename report_t::weak_type;
 
 	core::engine eng;
+
+	std::atomic<bool> m_handle_signals{ true };
 
  public:
 	/** @brief default constructor */
@@ -61,7 +64,7 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	void switch_activation(const bool);
 
 	/** @brief emitted when related persons arrive */
-	void send_related(relatives_t);
+	void send_related(incoming_relatives_t);
 
  private slots:
 
@@ -98,7 +101,7 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	void collect_publications(incoming_report_t);
 
 	/** @brief handles `send_related` signal */
-	void collect_related(relatives_t);
+	void collect_related(incoming_relatives_t);
 
 	/** @brief handles `send_progress` signal */
 	void set_progress(const size_t);
@@ -112,14 +115,14 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	 * 
 	 * @param item report
 	 */
-	void load_publications(incoming_report_t report);
+	void load_publications(incoming_report_t report, const single_relative_t* filter = nullptr);
 
 	/**
 	 * @brief displays relatted persons
 	 * 
 	 * @param related relatives
 	 */
-	void load_relatives(relatives_t related);
+	void load_relatives(incoming_relatives_t related);
 
 	/**
 	 * @brief recursively corrects user mistakes and provides mechanism for easy pasting ORCID
@@ -135,6 +138,20 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	 */
 	void clear_ui();
 
-	std::list<std::shared_ptr<std::jthread>> jobs;
+	/**
+	 * @brief handles switch of selected relative
+	 * 
+	 * @param item new selection
+	 */
+	void apply_relative_change(QListWidgetItem* item);
+
+	/**
+	 * @brief checks is signals (from GUI) should be handled
+	 * 
+	 * @return true if yes
+	 * @return false if not
+	 */
+	bool handle_signal() const volatile;
+
 	Ui::MainWindow* ui;
 };

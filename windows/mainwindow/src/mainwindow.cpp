@@ -13,8 +13,12 @@
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
+
 	qRegisterMetaType<incoming_report_t>("incoming_report_t");
+	qRegisterMetaType<incoming_relatives_t>("incoming_relatives_t");
+
 	QObject::connect(this, &MainWindow::send_publications, this, &MainWindow::collect_publications);
+	QObject::connect(this, &MainWindow::send_related, this, &MainWindow::collect_related);
 	QObject::connect(this, &MainWindow::send_progress, this, &MainWindow::set_progress);
 	QObject::connect(this, &MainWindow::switch_activation, this, &MainWindow::set_activation);
 
@@ -23,10 +27,19 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 		emit send_publications(incoming_report_t{ptr});
 	});
 
-	eng.on_start.register_slot([&]() { emit switch_activation(false); });
+	eng.on_collaboration_finish.register_slot([&](relatives_t ptr) {
+		core::check_nullptr{ptr};
+		emit send_related(incoming_relatives_t{ptr});
+	});
 }
 
 MainWindow::~MainWindow() { delete ui; }
+
+
+bool MainWindow::handle_signal() const volatile
+{
+	return this->m_handle_signals.load();
+}
 
 void MainWindow::normalize_text(const QString& arg1, QLineEdit& line, QLineEdit* next)
 {
@@ -79,7 +92,8 @@ void MainWindow::set_progress(const size_t p) { ui->progress->setValue(p); }
 
 void MainWindow::on_search_button_clicked()
 {
-	emit set_progress(0);
+	if(!handle_signal()) return;
+
 	const auto format_orcid_num = [](const QLineEdit& line) -> QString {
 		std::stringstream ss;
 		ss << std::setw(4) << std::setfill('0') << line.text().toStdString();
@@ -88,6 +102,9 @@ void MainWindow::on_search_button_clicked()
 
 	ui->neighbours->addItem("please wait...");
 	ui->publications->addItem("please wait...");
+
+	emit set_progress(0);
+	emit switch_activation(false);
 
 	const std::string resolv_name		= ui->name->text().toUpper().toStdString();
 	const std::string resolv_surname = ui->surname->text().toUpper().toStdString();
@@ -115,35 +132,60 @@ void MainWindow::clear_ui()
 
 void MainWindow::set_activation(const bool activate)
 {
+	m_handle_signals.store(activate);
+
 	ui->search_button->setEnabled(activate);
 	ui->generate_report->setEnabled(activate);
 	ui->neighbours->setEnabled(activate);
 	ui->publications->setEnabled(activate);
 }
 
-void MainWindow::load_publications(incoming_report_t report)
+void MainWindow::load_publications(incoming_report_t report, const single_relative_t* filter)
 {
 	core::check_nullptr{report};
-	core::dassert{!report.expired(), "given report cannot be expired"_u8};
-
 	ui->publications->clear();
-	for(const auto& x: *(report.lock())) ui->publications->addItem(new publication_widget_item{x});
+
+	for(const auto& x: *(report.lock()))
+	{
+		if(filter)
+		{
+			const auto& ref  = (*(*x())().reference()())();
+			const auto& pubs = (*filter)().data();
+			if(std::find_if(pubs.begin(),
+								 pubs.end(),
+								 [&pubs, &ref](const objects::shared_publication_t& c) {
+									 return ref.compare((*c())()) == 0;
+								 })
+				== pubs.end())
+				continue;
+		}
+		ui->publications->addItem(new publication_widget_item{x});
+	}
 
 	ui->publications->sortItems(Qt::DescendingOrder);
 }
 
 
-void MainWindow::collect_related(relatives_t relatives)
+void MainWindow::collect_related(incoming_relatives_t relatives)
 {
 	core::check_nullptr{relatives};
 	load_relatives(relatives);
 }
 
-void MainWindow::load_relatives(relatives_t related) {}
+void MainWindow::load_relatives(incoming_relatives_t related)
+{
+	core::check_nullptr{related};
+	ui->neighbours->clear();
+
+	for(const auto& p: *related.lock())
+		ui->neighbours->addItem(new account_widget_item(p().data(), ui->neighbours));
+
+	ui->neighbours->sortItems();
+}
 
 void MainWindow::collect_publications(incoming_report_t report)
 {
-	clear_ui();
+	// clear_ui();
 	load_publications(report);
 	emit switch_activation(true);
 	// load_publications(dynamic_cast<account_widget_item*>(ui->neighbours->itemAt(0, 0)));
@@ -159,30 +201,42 @@ void MainWindow::collect_publications(incoming_report_t report)
 	// ui->neighbours->setCurrentRow(0);
 }
 
+
+void MainWindow::apply_relative_change(QListWidgetItem* item) 
+{
+	if(!handle_signal()) return;
+
+	core::check_nullptr{item};
+	if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
+	{
+		auto& ref = account->m_person;
+		core::check_nullptr{ref};
+		const auto& pubs =  (*ref.lock())().publictions();
+		load_publications(eng.get_last_summary(), &pubs);
+	}
+	else core::dassert{false, "cannot cast object!"_u8};
+}
+
 void MainWindow::on_neighbours_itemClicked(QListWidgetItem* item)
 {
-	// core::check_nullptr{item};
-	// if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
-	// 	load_publications(account);
-	// else
-	// 	core::dassert{false, "cannot cast object!"_u8};
+	log.info() << "on_neighbours_itemClicked" << logger::endl;
+	apply_relative_change(item);
 }
 
 void MainWindow::on_neighbours_itemChanged(QListWidgetItem* item)
 {
-	// core::check_nullptr{item};
-	// if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
-	// 	load_publications(account);
-	// else
-	// 	core::dassert{false, "cannot cast object!"_u8};
+	log.info() << "on_neighbours_itemChanged" << logger::endl;
+	apply_relative_change(item);
 }
 
 void MainWindow::on_neighbours_itemDoubleClicked(QListWidgetItem* item)
 {
+	if(!handle_signal()) return;
+
 	// core::check_nullptr{item};
 	// if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
 	// {
-	// 	if(account->m_person.expired()) return;
+	// 	check_nullptr{ account->m_person };
 	// 	const auto& person = (*account->m_person.lock().get())();
 	// 	ui->name->setText(QString::fromStdU16String(person.name()().raw));
 	// 	ui->surname->setText(QString::fromStdU16String(person.surname()().raw));
@@ -195,6 +249,8 @@ void MainWindow::on_neighbours_itemDoubleClicked(QListWidgetItem* item)
 
 void MainWindow::on_publications_itemDoubleClicked(QListWidgetItem* item)
 {
+	if(!handle_signal()) return;
+
 	// core::check_nullptr{item};
 	// if(publication_widget_item* publication = dynamic_cast<publication_widget_item*>(item))
 	// {

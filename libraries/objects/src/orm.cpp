@@ -55,7 +55,7 @@ namespace core
 					continue;
 				}
 
-				auto pair = this->persons.insert(result);
+				auto pair = this->persons->insert(result);
 				if(pair.second)
 					log.info() << "successfully added new author: "
 								  << patterns::serial::pretty_print{(*(*pair.first)())} << logger::endl;
@@ -81,8 +81,8 @@ namespace core
 
 			if(!pp().orcid()().is_valid_orcid()) return false;
 
-			auto found = persons.find(person);
-			dassert(found != persons.end(), "unknown person for given orcid!"_u8);
+			auto found = persons->find(person);
+			dassert(found != persons->end(), "unknown person for given orcid!"_u8);
 
 			(*(*found)())().publictions()()->insert(current_publication());
 			return true;
@@ -209,13 +209,13 @@ namespace core
 		void persons_extractor_t::shallow_copy_persons(const persons_extractor_t& input,
 																	  persons_extractor_t& output)
 		{
-			for(const auto& person: input.persons)
+			for(const auto& person: *input.persons)
 			{
 				shared_person_t np{new person_t{}};
 				(*np())().name		= (*person())().name;
 				(*np())().surname = (*person())().surname;
 				(*np())().orcid	= (*person())().orcid;
-				auto pair			= output.persons.insert(np().data());
+				auto pair			= output.persons->insert(np().data());
 				// if(pair.second) (*(*pair.first)())().publictions()()->clear();
 			}
 		}

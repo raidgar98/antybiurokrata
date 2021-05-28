@@ -51,8 +51,8 @@ namespace core
 
 				for(const objects::shared_publication_t& y: input)
 				{
-					if(ref.compare(*y())
-						== 0)	  // TODO: compare function is not enough, but fair enough now;
+					// TODO: compare function is not enough, but fair enough now;
+					if(ref.compare(*y()) == 0)
 					{
 						// objects::publication_with_source_t to_add;
 						m_report.access(

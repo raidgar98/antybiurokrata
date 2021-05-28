@@ -25,7 +25,7 @@ namespace core
 
 		using shared_person_t		= objects::shared_person_t;
 		using shared_publication_t = objects::shared_publication_t;
-		using persons_storage_t		= std::set<shared_person_t>;
+		using persons_storage_t		= std::shared_ptr<std::set<shared_person_t>>;
 
 		/**
 		 * @brief constructs person_t objects, by visiting output from adapters
@@ -37,7 +37,7 @@ namespace core
 		{
 			using Log<persons_extractor_t>::log;
 
-			persons_storage_t persons;
+			persons_storage_t persons{ new persons_storage_t::element_type{} };
 			shared_publication_t current_publication{nullptr};
 
 			/**

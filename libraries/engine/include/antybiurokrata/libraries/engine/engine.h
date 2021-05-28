@@ -51,7 +51,7 @@ namespace core
 				(*current())().surname = (*source())().surname;
 				(*current())().orcid	  = (*source())().orcid;
 
-				prsn_visitor->persons.insert(current);
+				prsn_visitor->persons->insert(current);
 				pub_visitor.reset(new orm::publications_extractor_t{*prsn_visitor});
 			}
 
@@ -62,7 +62,7 @@ namespace core
 				// gather data from given data source
 				const auto result = network::global_adapters::get<mt>().get_person(
 					 objects::detail::detail_orcid_t::to_string(
-						  (*(*this->prsn_visitor->persons.begin())())().orcid()()));
+						  (*(*this->prsn_visitor->persons->begin())())().orcid()()));
 
 				// process input data
 				for(auto& x: *result)
@@ -104,6 +104,7 @@ namespace core
 		using sobservable								 = patterns::sobservable<engine>;
 		template<typename arg> using observable = patterns::observable<arg, engine>;
 		using summary_t								 = reports::report_t;
+		using persons_summary_t						 = core::orm::persons_storage_t;
 		using error_summary_t						 = container<core::exceptions::error_report>;
 		using stop_token_t							 = std::stop_token;
 		using worker_function_t						 = std::function<void(const stop_token_t&, bool&)>;
@@ -155,6 +156,9 @@ namespace core
 		/** @brief storage for last summary (cache a bit) */
 		summary_t m_last_summary;
 
+		/** @brief storage for last persons summary (cache a bit) */
+		persons_summary_t m_last_persons_summary;
+
 		/** 
 		 * @brief handler for working thread 
 		 * 
@@ -164,23 +168,32 @@ namespace core
 		container<std::pair<container<std::jthread>, bool>> m_worker;
 
 	 public:
+
+		/** @brief only default cnstructible */
+		engine();
+
 		/** @brief sends how many items will be processed */
 		observable<size_t> on_calculated_progress;
 		/** @brief sends current progess */
 		observable<size_t> on_progress;
-
 		/** @brief sends, when processing starts */
 		sobservable on_start;
 		/** @brief sends when finished without any problems with summary */
 		observable<summary_t> on_finish;
+		/** @brief sends when collaborations processing are  */
+		observable<persons_summary_t> on_collaboration_finish;
 		/** @brief sends with error summary, when something goes wrong */
 		observable<error_summary_t> on_error;
 
 		/** @brief returns last summary, if avaiable */
 		const summary_t& get_last_summary() const;
 
+		/** @brief returns last summary, if avaiable */
+		const persons_summary_t& get_last_persons_summary() const;
+
 		/** @brief checks is summary avaiable */
 		bool is_last_summary_avaiable() const;
+		bool is_last_person_summary_avaiable() const;
 
 		/**
 		 * @brief proxy to start(u16str, u16str), but get name and surname with orcid API
