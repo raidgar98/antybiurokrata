@@ -39,8 +39,15 @@ bool publication_widget_item::operator<(const QListWidgetItem& other) const
 	{
 		if(!this->m_publication.expired() && !item->m_publication.expired())
 		{
-			return (*this->m_publication.lock())().matched()().data().size()
-					 < (*item->m_publication.lock())().matched()().data().size();
+			const auto& me	 = (*this->m_publication.lock())();
+			const auto& you = (*item->m_publication.lock())();
+
+			const size_t me_size	 = me.matched()().data().size();
+			const size_t you_size = you.matched()().data().size();
+
+			if(me_size == you_size) return (*me.reference()())().year < (*you.reference()())().year;
+			else
+				return me_size < you_size;
 		}
 	}
 

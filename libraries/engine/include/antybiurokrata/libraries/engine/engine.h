@@ -72,7 +72,7 @@ namespace core
 				}
 
 				// wait for summary to be generated
-				if(!sum)
+				if(!sum && sum->ready())
 				{
 					std::unique_lock<std::mutex> lk{mtx};
 					cv.wait(lk);	// wait just once

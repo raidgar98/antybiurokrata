@@ -95,7 +95,6 @@ namespace tests
 		};
 
 		"case_07"_test = [] {
-			logger::set_current_log_level<logger::log_level::DEBUG>();
 			core::str result{msg_03};
 			demangler<>::mangle<core::conv_t::HTML>(result);
 			ut::expect(ut::eq(result, msg_02));

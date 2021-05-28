@@ -19,8 +19,15 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 	QObject::connect(this, &MainWindow::send_publications, this, &MainWindow::collect_publications);
 	QObject::connect(this, &MainWindow::send_related, this, &MainWindow::collect_related);
-	QObject::connect(this, &MainWindow::send_progress, this, &MainWindow::set_progress);
+	QObject::connect(this, &MainWindow::send_max_progress, this, &MainWindow::set_max_progress);
 	QObject::connect(this, &MainWindow::switch_activation, this, &MainWindow::set_activation);
+	QObject::connect(this,
+						  &MainWindow::send_progress,
+						  this,
+						  &MainWindow::set_progress,
+						  Qt::QueuedConnection);
+
+	eng.on_calculated_progress.register_slot([&](const size_t N) { emit set_max_progress(N); });
 
 	eng.on_finish.register_slot([&](report_t ptr) {
 		core::check_nullptr{ptr};
@@ -31,6 +38,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 		core::check_nullptr{ptr};
 		emit send_related(incoming_relatives_t{ptr});
 	});
+
+	eng.on_progress.register_slot([&](const size_t N) { emit send_progress(N); });
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -85,7 +94,15 @@ void MainWindow::on_orcid_4_textChanged(const QString& arg1)
 	this->normalize_text(arg1, *ui->orcid_4);
 }
 
-void MainWindow::set_progress(const size_t p) { ui->progress->setValue(p); }
+void MainWindow::set_max_progress(const size_t N) { ui->progress->setMaximum(N); }
+
+void MainWindow::set_progress(const size_t p)
+{
+	if(p == 1) ui->progress->setValue(ui->progress->value() + 1);
+	else
+		ui->progress->setValue((static_cast<double>(p) / 100.0)
+									  * static_cast<double>(ui->progress->maximum()));
+}
 
 void MainWindow::on_search_button_clicked()
 {
@@ -178,24 +195,13 @@ void MainWindow::load_relatives(incoming_relatives_t related)
 		ui->neighbours->addItem(new account_widget_item(p().data(), ui->neighbours));
 
 	ui->neighbours->sortItems();
+	// ui->neighbours->setCurrentRow(0);
 }
 
 void MainWindow::collect_publications(incoming_report_t report)
 {
-	// clear_ui();
 	load_publications(report);
 	emit switch_activation(true);
-	// load_publications(dynamic_cast<account_widget_item*>(ui->neighbours->itemAt(0, 0)));
-
-	// for(const auto& _p: bgperson_visitor.lock()->persons)
-	// {
-	// 	auto& p = *_p();
-	// 	ui->neighbours->addItem(new account_widget_item(_p, ui->neighbours));
-	// 	// global_logger.info() << patterns::serial::pretty_print{p} << logger::endl;
-	// }
-
-	// ui->neighbours->sortItems();
-	// ui->neighbours->setCurrentRow(0);
 }
 
 
@@ -231,46 +237,71 @@ void MainWindow::on_neighbours_itemDoubleClicked(QListWidgetItem* item)
 {
 	if(!handle_signal()) return;
 
-	// core::check_nullptr{item};
-	// if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
-	// {
-	// 	check_nullptr{ account->m_person };
-	// 	const auto& person = (*account->m_person.lock().get())();
-	// 	ui->name->setText(QString::fromStdU16String(person.name()().raw));
-	// 	ui->surname->setText(QString::fromStdU16String(person.surname()().raw));
+	core::check_nullptr{item};
+	if(account_widget_item* account = dynamic_cast<account_widget_item*>(item))
+	{
+		check_nullptr{account->m_person};
+		const auto& person = (*account->m_person.lock())();
 
-	// 	ui->tabWidget->setCurrentIndex(1);
-	// }
-	// else
-	// 	core::dassert{false, "cannot cast object!"_u8};
+		ui->name->setText(QString::fromStdU16String(person.name()().raw));
+		ui->surname->setText(QString::fromStdU16String(person.surname()().raw));
+
+		ui->tabWidget->setCurrentIndex(1);
+	}
+	else
+		core::dassert{false, "cannot cast object!"_u8};
 }
 
 void MainWindow::on_publications_itemDoubleClicked(QListWidgetItem* item)
 {
 	if(!handle_signal()) return;
 
-	// core::check_nullptr{item};
-	// if(publication_widget_item* publication = dynamic_cast<publication_widget_item*>(item))
-	// {
-	// 	dassert{!publication->m_publication.expired(), "this publication is empty!"_u8};
-	// 	const auto& pub = (*publication->m_publication.lock().get())();
+	core::check_nullptr{item};
+	if(publication_widget_item* publication = dynamic_cast<publication_widget_item*>(item))
+	{
+		dassert{!publication->m_publication.expired(), "this publication is empty!"_u8};
+		const auto& pub		 = (*publication->m_publication.lock().get())();
+		const auto& pub_ref	 = (*pub.reference()())();
+		const auto& pub_match = pub.matched()().data();
 
-	// 	auto conv = core::get_conversion_engine();
-	// 	std::stringstream ss;
-	// 	ss << "Tytuł referencyjny: " << conv.to_bytes(pub.title()().raw) << std::endl;
-	// 	if(!pub.polish_title()()->empty())
-	// 		ss << "Tytuł orginalny: " << conv.to_bytes(pub.polish_title()().raw) << std::endl;
-	// 	ss << "Rok: " << pub.year() << std::endl;
-	// 	for(const auto& pair: pub.ids()().data())
-	// 	{
-	// 		ss << conv.to_bytes(objects::detail::id_type_stringinizer::get(pair.first)) << ": "
-	// 			<< conv.to_bytes(pair.second().raw) << std::endl;
-	// 	}
+		auto conv = core::get_conversion_engine();
+		std::stringstream ss;
+		ss << "Tytuł referencyjny: " << conv.to_bytes(pub_ref.title()().raw) << std::endl
+			<< std::endl;
 
-	// 	std::unique_ptr<info_dialog> window{new info_dialog{QString::fromStdString(ss.str()), this}};
-	// 	window->setModal(true);
-	// 	window->exec();
-	// }
-	// else
-	// 	core::dassert{false, "cannot cast object!"_u8};
+		if(!pub_ref.polish_title()()->empty())
+			ss << "Tytuł orginalny: " << conv.to_bytes(pub_ref.polish_title()().raw) << std::endl
+				<< std::endl;
+
+		ss << "Rok: " << pub_ref.year() << std::endl << std::endl;
+
+		for(const auto& pair: pub_ref.ids()().data())
+		{
+			ss << conv.to_bytes(objects::detail::id_type_stringinizer::get(pair.first)) << ": "
+				<< conv.to_bytes(pair.second().raw) << std::endl;
+		}
+
+		ss << std::endl;
+		if(pub_match.empty()) ss << "Brak dopasowań" << std::endl;
+		else
+		{
+			using trans_t = objects::processing_details::enums::enum_stringinizer<
+				 objects::detail::match_type_translation_unit>;
+
+			ss << "Dopsowano w ";
+			if(pub_match.size() == 1) ss << "serwisie ";
+			else
+				ss << "serwisach: ";
+
+			for(const auto& pair: pub_match)
+				ss << conv.to_bytes(trans_t::get(pair().source()().data())) << " ";
+		}
+
+		std::unique_ptr<info_dialog> window{new info_dialog{QString::fromStdString(ss.str()), this}};
+		window->setWindowTitle(QString::fromStdU16String(pub_ref.title()().raw));
+		window->setModal(false);
+		window->exec();
+	}
+	else
+		core::dassert{false, "cannot cast object!"_u8};
 }

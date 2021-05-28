@@ -44,6 +44,7 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	core::engine eng;
 
 	std::atomic<bool> m_handle_signals{true};
+	size_t m_max_progress{0};
 
  public:
 	/** @brief default constructor */
@@ -59,6 +60,9 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
 	/** @brief emitted when next step during processing data is achieved */
 	void send_progress(const size_t);
+
+	/** @brief emitted when max count is known */
+	void send_max_progress(const size_t);
 
 	/** @brief emitted, when disabling of user input/output is required */
 	void switch_activation(const bool);
@@ -105,6 +109,9 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
 	/** @brief handles `send_progress` signal */
 	void set_progress(const size_t);
+
+	/** @brief handles `set_max_progress signal */
+	void set_max_progress(const size_t);
 
 	/** @brief handles `switch_activation` signal */
 	void set_activation(const bool);

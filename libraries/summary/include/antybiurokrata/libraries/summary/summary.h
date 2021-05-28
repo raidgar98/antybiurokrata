@@ -42,6 +42,8 @@ namespace core
 			std::atomic<bool> is_ready{false};
 
 		 public:
+			bool ready() const volatile { return is_ready.load(); }
+
 			/**
 			 * @brief Construct a new summary object, proxy to activate
 			 * 
