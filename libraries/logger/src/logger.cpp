@@ -56,11 +56,11 @@ void logger::print_out(const std::string& msg, const format_function& _format)
 		file.close();
 	}
 
-	_format(std::clog);
-	std::clog << msg;
+	_format(std::cout);
+	std::cout << msg;
 	// logger::reset_color_scheme(std::clog);
-	std::clog << "";
-	std::clog.flush();
+	std::cout << "";
+	std::cout.flush();
 }
 
 void logger::print_stacktrace() const

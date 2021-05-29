@@ -4,6 +4,8 @@
 #include <antybiurokrata/libraries/bgpolsl_adapter/bgpolsl_adapter.h>
 #include <antybiurokrata/libraries/orcid_adapter/orcid_adapter.h>
 #include <antybiurokrata/libraries/scopus_adapter/scopus_adapter.h>
+#include <antybiurokrata/libraries/generator/generator.h>
+
 
 #include <QKeyEvent>
 
@@ -20,6 +22,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 	QObject::connect(this, &MainWindow::send_publications, this, &MainWindow::collect_publications);
 	QObject::connect(this, &MainWindow::send_related, this, &MainWindow::collect_related);
 	QObject::connect(this, &MainWindow::send_max_progress, this, &MainWindow::set_max_progress);
+	QObject::connect(this, &MainWindow::send_report_generation_done, this, &MainWindow::on_report_generation_done);
 	QObject::connect(this, &MainWindow::switch_activation, this, &MainWindow::set_activation);
 	QObject::connect(this,
 						  &MainWindow::send_progress,
@@ -104,9 +107,19 @@ void MainWindow::set_progress(const size_t p)
 									  * static_cast<double>(ui->progress->maximum()));
 }
 
+
+void MainWindow::on_report_generation_done()
+{
+	info_dialog dial{"Poprawnie wygenerowano raport!", this};
+	dial.exec();
+	set_activation(true);
+}
+
+
 void MainWindow::on_search_button_clicked()
 {
 	if(!handle_signal()) return;
+	set_activation(false);
 
 	const auto format_orcid_num = [](const QLineEdit& line) -> QString {
 		std::stringstream ss;
@@ -118,7 +131,6 @@ void MainWindow::on_search_button_clicked()
 	ui->publications->addItem("please wait...");
 
 	emit set_progress(0);
-	emit switch_activation(false);
 
 	const std::string resolv_name		= ui->name->text().toUpper().toStdString();
 	const std::string resolv_surname = ui->surname->text().toUpper().toStdString();
@@ -136,7 +148,28 @@ void MainWindow::on_search_button_clicked()
 		core::dassert(false, "not supported"_u8);
 }
 
-void MainWindow::on_generate_report_clicked() {}
+void MainWindow::on_generate_report_clicked()
+{
+	if(!handle_signal()) return;
+	dassert{eng.is_last_summary_avaiable(), "no data is avaiable, cannot create report"_u8};
+	switch_activation(false);
+
+	set_max_progress(eng.get_last_summary()->size());
+	QString name{"antybiurokrata_raport.xlsx"};
+	if(auto* ptr = dynamic_cast<account_widget_item*>(ui->neighbours->itemAt(0, 0)))
+	{
+		core::check_nullptr{ptr->m_person};
+		name = QString::fromStdU16String((*ptr->m_person.lock())().name()().raw).toLower()
+				 + QString("_")
+				 + QString::fromStdU16String((*ptr->m_person.lock())().surname()().raw).toLower()
+				 + "_raport.xlsx";
+	}
+	m_job.reset(
+		 new std::jthread{reports::generator{eng.get_last_summary(),
+														 name.toStdString(),
+														 [&]() { emit send_report_generation_done(); },
+														 [&](const size_t N) { emit send_progress(N); }}});
+}
 
 void MainWindow::clear_ui()
 {
@@ -167,7 +200,7 @@ void MainWindow::load_publications(incoming_report_t report, const single_relati
 			const auto& pubs = (*filter)().data();
 			if(std::find_if(pubs.begin(),
 								 pubs.end(),
-								 [&pubs, &ref](const objects::shared_publication_t& c) {
+								 [&ref](const objects::shared_publication_t& c) {
 									 return ref.compare((*c())()) == 0;
 								 })
 				== pubs.end())

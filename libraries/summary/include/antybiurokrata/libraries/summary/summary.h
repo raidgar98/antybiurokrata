@@ -110,6 +110,5 @@ namespace core
 				that.m_report.access([&](report_t& obj) { that.invoke_on_done(obj); });
 			}
 		};
-
 	}	 // namespace reports
 }	 // namespace core

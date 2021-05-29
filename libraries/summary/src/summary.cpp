@@ -37,7 +37,8 @@ namespace core
 
 		void summary::process_impl(publications_storage_t input, const objects::match_type mt)
 		{
-			dassert(is_ready.load(), "first call activate()! summry is not ready!"_u8);
+			// dassert(is_ready.load(), "first call activate()! summry is not ready!"_u8);
+			while(!is_ready.load()) {std::this_thread::yield();};
 			using objects::publication_summary_t;
 			const objects::publication_with_source_t search{mt};
 			report_t browser;

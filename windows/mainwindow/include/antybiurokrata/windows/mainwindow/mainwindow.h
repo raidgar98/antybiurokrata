@@ -42,6 +42,7 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	using incoming_report_t = typename report_t::weak_type;
 
 	core::engine eng;
+	std::unique_ptr<std::jthread> m_job;
 
 	std::atomic<bool> m_handle_signals{true};
 	size_t m_max_progress{0};
@@ -69,6 +70,9 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
 	/** @brief emitted when related persons arrive */
 	void send_related(incoming_relatives_t);
+
+	/** @brief emitted when rport generation is done */
+	void send_report_generation_done();
 
  private slots:
 
@@ -115,6 +119,9 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
 	/** @brief handles `switch_activation` signal */
 	void set_activation(const bool);
+
+	/** @brief handles `send_report_generation_done` signal */
+	void on_report_generation_done();
 
  private:
 	/**
