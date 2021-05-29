@@ -1,3 +1,7 @@
 [submodule "gen/docs/doxygen-dark-theme"]
 	path = gen/docs/doxygen-dark-theme
 	url = git@github.com:MaJerle/doxygen-dark-theme.git
+[submodule "libraries/QtXlsxWriter"]
+	path = libraries/QtXlsxWriter
+	url = https://github.com/dand-oss/QtXlsxWriter.git
+	branch = add-cmake
