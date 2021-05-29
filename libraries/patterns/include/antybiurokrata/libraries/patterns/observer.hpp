@@ -61,9 +61,12 @@ namespace patterns
 	{
 	};
 
-	template<typename arg_type> struct call_ownership_delegator
-	{
-	};
+	/**
+	 * @brief this is class allows to delegate privillage of calling to other objects/functions
+	 * 
+	 * @tparam arg_type type of sending data
+	 */
+	template<typename arg_type> struct call_ownership_delegator{};
 
 	/**
 	 * @brief holds signal object and provides basic methode of calling
@@ -148,7 +151,7 @@ namespace patterns
 		observable_impl<arg_type>& invoke;
 	};
 
-	/* @brief specialization for void type */
+	/** @brief specialization for void type */
 	template<> struct call_ownership_delegator<void>
 	{
 		friend class observable_impl<void>;

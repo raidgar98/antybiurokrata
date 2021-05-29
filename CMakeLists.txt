@@ -71,6 +71,7 @@ IF(${DOXYGEN})
 	# Setting up sources
 	file(APPEND ${DOXYFILE_PATH_DEST} "\nINPUT = ${CMAKE_SOURCE_DIR}/libraries ${CMAKE_SOURCE_DIR}/windows \n")
 	file(APPEND ${DOXYFILE_PATH_DEST} "OUTPUT_DIRECTORY = ${CMAKE_BINARY_DIR}/docs \n")
+	file(APPEND ${DOXYFILE_PATH_DEST} "EXCLUDE_PATTERNS = */QtXlsxWriter/* \n")
 	
 	# Theme
 	set(THEME_SUBMODULE_PATH ${CMAKE_SOURCE_DIR}/gen/docs/doxygen-dark-theme)

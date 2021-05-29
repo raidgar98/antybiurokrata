@@ -52,7 +52,17 @@ namespace core
 
 				for(const objects::shared_publication_t& y: input)
 				{
-					// TODO: compare function is not enough, but fair enough now;
+					/**
+					 * @todo `compare` is minimum to make program works, but much much better results can be achieved 
+					 * by replacing this primitive function with on of theese algorithms
+					 * 
+					 * (1) https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance
+					 * (2) https://en.wikipedia.org/wiki/Levenshtein_distance
+					 * 
+					 * Damerau–Levenshtein (1) distance probably will better fit here
+					 * 
+					 * This change is required to increase matching score, because often in titles, misspells occurs
+					 */
 					if(ref.compare(*y()) == 0)
 					{
 						m_report.access(
