@@ -492,7 +492,7 @@ namespace core
 			struct detail_publication_with_source_t : public serial_helper_t
 			{
 				dser<&detail_publication_with_source_t::_, ser_match_type> source;
-				dser<&detail_publication_with_source_t::source, shared_publication_t> publication;
+				dser<&detail_publication_with_source_t::source, shared_publication_t> publication{};
 
 				/** @brief redirect all comprasion operators */
 				inline friend auto operator<=>(const detail_publication_with_source_t& pws1,

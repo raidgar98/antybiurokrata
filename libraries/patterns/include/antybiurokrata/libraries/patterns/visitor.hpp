@@ -32,7 +32,7 @@ namespace patterns
 		 * @return true if visit goes well
 		 * @return false stop signal or somethiong goes wrong
 		 */
-		virtual bool visit(T* ptr)
+		virtual bool visit(T*)
 		{
 			get_logger().warn("Empty visit, by: `" + get_class_name<T>() + "`.");
 			return true;

@@ -422,7 +422,7 @@ namespace core
 				struct pretty_print_impl
 				{
 					template<typename stream_t>
-					pretty_print_impl(stream_t& os, const coll_t<elem_t, args...>& c, const size_t size)
+					pretty_print_impl(stream_t& os, const coll_t<elem_t, args...>& c, const size_t)
 					{
 						os << '[';
 						for(auto it = c.begin(); it != c.end(); it++)

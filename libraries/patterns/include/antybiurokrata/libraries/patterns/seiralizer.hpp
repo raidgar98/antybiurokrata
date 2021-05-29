@@ -72,7 +72,7 @@ namespace patterns
 		struct ___null_t
 		{
 			/** @brief terminator */
-			bool accept(void* v) { return false; }
+			bool accept(void*) { return false; }
 		};
 
 		/**

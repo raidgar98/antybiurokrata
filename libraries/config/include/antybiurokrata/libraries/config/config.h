@@ -18,7 +18,7 @@ namespace core
 	 */
 	struct config
 	{
-		virtual bool dump_config(const str& file_name) const { return false; }
-		virtual bool load_config(const str& file_name) { return false; }
+		virtual bool dump_config(const str&) const { return false; }
+		virtual bool load_config(const str&) { return false; }
 	};
 }	 // namespace core

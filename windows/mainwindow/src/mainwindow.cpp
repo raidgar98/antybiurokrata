@@ -22,7 +22,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 	QObject::connect(this, &MainWindow::send_publications, this, &MainWindow::collect_publications);
 	QObject::connect(this, &MainWindow::send_related, this, &MainWindow::collect_related);
 	QObject::connect(this, &MainWindow::send_max_progress, this, &MainWindow::set_max_progress);
-	QObject::connect(this, &MainWindow::send_report_generation_done, this, &MainWindow::on_report_generation_done);
+	QObject::connect(this,
+						  &MainWindow::send_report_generation_done,
+						  this,
+						  &MainWindow::on_report_generation_done);
 	QObject::connect(this, &MainWindow::switch_activation, this, &MainWindow::set_activation);
 	QObject::connect(this,
 						  &MainWindow::send_progress,

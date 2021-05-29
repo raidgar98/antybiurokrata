@@ -7,9 +7,12 @@ set(CONFIG_DIR "config")
 set(XLSX_DIR "QtXlsxWriter")
 
 # first add submodule
+set( CXX_BACKUP ${CMAKE_CXX_FLAGS} )	# backup arguments
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w" )	# temporarly disable all warnings (for submodule)
 add_compile_definitions(XLSX_NO_LIB)
 add_subdirectory(${XLSX_DIR})
 set(xlsx_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/QtXlsxWriter/src" CACHE INTERNAL "")
+set( CMAKE_CXX_FLAGS "${CXX_BACKUP} -Wall -Wextra -Werror" )	# enable all possible warnings and treat them as errors
 
 # next logger
 add_subdirectory(${LOGGER_DIR})

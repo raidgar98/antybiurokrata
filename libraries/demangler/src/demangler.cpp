@@ -82,8 +82,7 @@ template<> void core::demangler<>::mangle_url(core::u16str& out)
 	u16str_v view{out};
 	const std::ranges::split_view splitted{view, hash};
 	u16str result;
-	bool first_it	= true;
-	bool in_middle = false;
+	bool first_it = true;
 	u16str current_tag{};
 	current_tag.reserve(6);
 
