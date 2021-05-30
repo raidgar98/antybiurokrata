@@ -74,9 +74,6 @@ namespace core
 	struct u16str_serial;
 	struct u16str_deserial;
 
-	/** @brief handy type for wide type */
-	// template<auto X> using u16ser = patterns::serial::ser<X, u16str, u16str_serial, u16str_deserial, u16str_pretty_serial>;
-
 	/**
 	 * @brief returns the conversion engine object
 	 * 
@@ -191,6 +188,7 @@ namespace core
 		 * @brief alternative to asertion
 		 * 
 		 * @tparam _ExceptionType exception to throw if check failed
+		 * @tparam __log_pass if set to true, communications about positive check are displayed
 		 */
 		template<template<typename Msg> typename _ExceptionType = exception, bool __log_pass = false>
 		requires supported_exception<_ExceptionType> struct require :
@@ -199,7 +197,7 @@ namespace core
 			using Log<require<_ExceptionType, __log_pass>>::get_logger;
 
 			/**
-			 * @brief Construct a new require object, which is also checker
+			 * @brief constructor is used as operator() for handy usage
 			 * 
 			 * @tparam MsgType deducted type, of message
 			 * @tparam ExceptionArgs variadic type of additional argument that are passed to exception constructor
