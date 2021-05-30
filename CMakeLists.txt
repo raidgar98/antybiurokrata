@@ -75,11 +75,11 @@ IF(${DOXYGEN})
 	
 	# Theme
 	set(THEME_SUBMODULE_PATH ${CMAKE_SOURCE_DIR}/gen/docs/doxygen-dark-theme)
-	set(THEME_SUBMODULE_CSS "\"${THEME_SUBMODULE_PATH}/custom.css\" \"${THEME_SUBMODULE_PATH}/custom_dark_theme.css\"")
+	# set(THEME_SUBMODULE_CSS "\"${THEME_SUBMODULE_PATH}/custom.css\" \"${THEME_SUBMODULE_PATH}/custom_dark_theme.css\"")
 
-	file(APPEND ${DOXYFILE_PATH_DEST} "HTML_EXTRA_STYLESHEET = ${THEME_SUBMODULE_CSS} \n")
-	file(APPEND ${DOXYFILE_PATH_DEST} "HTML_HEADER = \"${THEME_SUBMODULE_PATH}/html_header.html\"\n")
-	file(APPEND ${DOXYFILE_PATH_DEST} "HTML_FOOTER = \"${THEME_SUBMODULE_PATH}/html_footer.html\"\n")
+	# file(APPEND ${DOXYFILE_PATH_DEST} "HTML_EXTRA_STYLESHEET = ${THEME_SUBMODULE_CSS} \n")
+	# file(APPEND ${DOXYFILE_PATH_DEST} "HTML_HEADER = \"${THEME_SUBMODULE_PATH}/html_header.html\"\n")
+	# file(APPEND ${DOXYFILE_PATH_DEST} "HTML_FOOTER = \"${THEME_SUBMODULE_PATH}/html_footer.html\"\n")
 	file(APPEND ${DOXYFILE_PATH_DEST} "PROJECT_LOGO = \"${CMAKE_SOURCE_DIR}/gen/docs/image.png\" \n")
 
 
