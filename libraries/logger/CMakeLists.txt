@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(logger CXX)
+# project(logger CXX)
 set(CMAKE_CXX_STANDARD 20)
 include("${CUSTOM_CMAKE_SCRIPTS_DIR}/attach_package.cmake")
 include("${CUSTOM_CMAKE_SCRIPTS_DIR}/create_library.cmake")

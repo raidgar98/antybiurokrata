@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
 set(PROJECT_NAME "antybiurokrata")
-
 project(${PROJECT_NAME} LANGUAGES CXX)
 
 # prevent build in source
