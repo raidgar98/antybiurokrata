@@ -37,8 +37,6 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 
 🞎 implement configs
 
-🞎 implement report generation
-
 
 ## Currently done
 ---
@@ -78,6 +76,8 @@ Goal of this project is to compare diffrent aggregators of scientific publicatio
 🗹 design GUI
 
 🗹 implement multithreading
+
+🗹 implement report generation
 
 ## Setup
 ---
