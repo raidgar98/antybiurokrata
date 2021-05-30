@@ -1,5 +1,5 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/45bc0767e88a4433a1e6416a5f94d3cb)](https://www.codacy.com/gh/raidgar98/antybiurokrata/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=raidgar98/antybiurokrata&amp;utm_campaign=Badge_Grade)
-[![codecov](https://codecov.io/gh/raidgar98/antybiurokrata/branch/master/graph/badge.svg?token=C748U2M3CH)](https://codecov.io/gh/raidgar98/antybiurokrata)
+
 
 # antybiurokrata
 
