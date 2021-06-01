@@ -58,7 +58,7 @@
            <enum>QTabWidget::Rounded</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="orcid_tab">
            <property name="minimumSize">
@@ -98,7 +98,7 @@
                <string/>
               </property>
               <property name="text">
-               <string notr="true">0000</string>
+               <string notr="true"/>
               </property>
               <property name="maxLength">
                <number>99</number>
@@ -148,7 +148,7 @@
                <string/>
               </property>
               <property name="text">
-               <string notr="true">0001</string>
+               <string notr="true"/>
               </property>
               <property name="maxLength">
                <number>99</number>
@@ -198,7 +198,7 @@
                <string/>
               </property>
               <property name="text">
-               <string notr="true">7667</string>
+               <string notr="true"/>
               </property>
               <property name="maxLength">
                <number>99</number>
@@ -248,7 +248,7 @@
                <string/>
               </property>
               <property name="text">
-               <string notr="true">6697</string>
+               <string notr="true"/>
               </property>
               <property name="maxLength">
                <number>99</number>
@@ -280,7 +280,7 @@
                <locale language="Polish" country="Poland"/>
               </property>
               <property name="text">
-               <string>aDriaN</string>
+               <string/>
               </property>
               <property name="maxLength">
                <number>50</number>
@@ -299,7 +299,7 @@
                <string/>
               </property>
               <property name="text">
-               <string>smagÓr</string>
+               <string/>
               </property>
               <property name="maxLength">
                <number>100</number>
