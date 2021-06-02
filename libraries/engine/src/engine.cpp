@@ -81,7 +81,7 @@ void engine::start(const str& name, const str& surname)
 engine::error_summary_t engine::prepare_error_summary() const
 {
 	return std::make_shared<core::exceptions::error_report>(
-		 "while processing cought unknown exception");
+		 "while processing cought unknown exception"_u8);
 }
 
 engine::error_summary_t engine::prepare_error_summary(
@@ -102,6 +102,7 @@ void engine::process(const std::stop_token& stop_token, const str& orcid) noexce
 	{
 		dassert(core::objects::orcid_t::value_t::is_valid_orcid_string(orcid),
 				  "given string is not valid orcid!"_u8);
+		dassert{orcid != "0000-0000-0000-0000", "given string is incorrect, null orcid number, please provide existing one!"_u8};
 		str name{}, surname{};
 		get_name_and_surname(orcid, name, surname);
 		if(stop_token.stop_requested()) return;

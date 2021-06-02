@@ -98,25 +98,22 @@ namespace core
 	 */
 	namespace exceptions
 	{
+
 		/**
-		 * @brief basic exception, as recommended it's derived freom std::exception
+		 * @brief simplest exception, use this to catch all exceptions
 		 * 
-		 * @tparam T provides logger for all child exception
 		 * @tparam MsgType message type, ex: core::str, core::u16str
 		 */
-		template<typename T, typename MsgType>
-		struct exception_base : /* public std::exception,*/ Log<exception_base<T, MsgType>>
+		template<typename MsgType>
+		struct exception
 		{
-			using Log<exception_base<T, MsgType>>::get_logger;
-
 			/** stores message */
-			const MsgType _what;
+			MsgType _what;
+
+			exception() = default;
 
 			template<typename Any>
-			requires std::is_convertible_v<Any, MsgType> explicit exception_base(const Any& msg) :
-				 _what{msg}
-			{
-			}
+			exception(const Any& msg) : _what{msg} {}
 
 			// virtual const char* what() const noexcept override { return this->___what.c_str(); }
 			const MsgType& what() const noexcept { return this->_what; }
@@ -126,12 +123,18 @@ namespace core
 		};
 
 		/**
-		 * @brief simplest exception
+		 * @brief basic exception,
+		 * 
+		 * @tparam T provides logger for all child exception
+		 * @tparam MsgType message type, ex: core::str, core::u16str
 		 */
-		template<typename MsgType>
-		struct exception : public exception_base<exception<MsgType>, MsgType>
+		template<typename T, typename MsgType>
+		struct exception_base : public Log<T>, public exception<MsgType>
 		{
-			using exception_base<exception<MsgType>, MsgType>::exception_base;
+			// using Log<T>::get_logger;
+
+			template<typename Any>
+			explicit exception_base(const Any& any) { this->_what = any; }
 		};
 
 		/**
