@@ -33,13 +33,12 @@ namespace core
 
 			bgpolsl_repr_t::bgpolsl_repr_t(const std::vector<u16str>& words)
 			{
-				const std::map<u16str, u16str*> keywords{{std::pair<u16str, u16str*>{u"IDT", &idt},
-				{u"Rok", &year}, {u"Autorzy", &authors}, {u"Tytuł oryginału", &org_title},
-				{u"Tytuł całości", &whole_title}, {u"Czasopismo", nullptr}, {u"Szczegóły", nullptr},
-				{u"p-ISSN", &p_issn}, {u"DOI", &doi}, {u"Impact Factor", nullptr},
-				{u"e-ISSN", &e_issn}, {u"Adres", nullptr}, {u"Afiliacja", &affiliation},
-				{u"Punktacja", nullptr}, {u"Pobierz", nullptr}, {u"Dyscypliny", nullptr},
-				{u"Uwaga", nullptr}}};
+				const std::map<u16str, u16str*> keywords{{std::pair<u16str, u16str*>
+					{u"IDT", &idt}, {u"Rok", &year}, {u"Autorzy", &authors}, {u"Tytuł oryginału", &org_title},
+					{u"Tytuł całości", &whole_title}, {u"Czasopismo", nullptr}, {u"Szczegóły", nullptr},
+					{u"p-ISSN", &p_issn}, {u"DOI", &doi}, {u"Impact Factor", nullptr},{u"e-ISSN", &e_issn}, 
+					{u"Adres", nullptr}, {u"Afiliacja", &affiliation}, {u"Punktacja", nullptr}, 
+					{u"Pobierz", nullptr}, {u"Dyscypliny", nullptr}, {u"Uwaga", nullptr}}};
 
 				u16str* savepoint = nullptr;
 				for(const u16str& word: words)
