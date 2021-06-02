@@ -20,8 +20,9 @@ void account_widget_item::display()
 		auto& p = (*m_person.lock().get())();
 
 		// creating string
-		core::u16str label{p.name()().raw + u" " + p.surname()().raw + u"[ "};
-		label += static_cast<core::u16str>(p.orcid()()) + u" ]";
+		core::u16str label{u"["};
+		label += static_cast<core::u16str>(p.orcid()()) + u"] ";
+		label += p.name()().raw + u" " + p.surname()().raw;
 
 		// style
 		const QBrush brush{list_widget_colors::default_font_color};

@@ -20,7 +20,7 @@ using namespace core;
 
 namespace list_widget_colors
 {
-	constexpr uint8_t black{28};
+	constexpr uint8_t black{120};
 	constexpr uint8_t white{255 - black};
 	constexpr uint8_t opacity{225};
 	constexpr QColor default_font_color{white, white, white};	// , 255};

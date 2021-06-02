@@ -98,7 +98,7 @@
                <string/>
               </property>
               <property name="text">
-               <string notr="true">0000</string>
+               <string notr="true"/>
               </property>
               <property name="maxLength">
                <number>99</number>
@@ -148,7 +148,7 @@
                <string/>
               </property>
               <property name="text">
-               <string notr="true">0001</string>
+               <string notr="true"/>
               </property>
               <property name="maxLength">
                <number>99</number>
@@ -198,7 +198,7 @@
                <string/>
               </property>
               <property name="text">
-               <string notr="true">7667</string>
+               <string notr="true"/>
               </property>
               <property name="maxLength">
                <number>99</number>
@@ -248,7 +248,7 @@
                <string/>
               </property>
               <property name="text">
-               <string notr="true">6697</string>
+               <string notr="true"/>
               </property>
               <property name="maxLength">
                <number>99</number>
@@ -280,10 +280,10 @@
                <locale language="Polish" country="Poland"/>
               </property>
               <property name="text">
-               <string>aDriaN</string>
+               <string/>
               </property>
               <property name="maxLength">
-               <number>50</number>
+               <number>15</number>
               </property>
               <property name="placeholderText">
                <string>Imię</string>
@@ -299,7 +299,7 @@
                <string/>
               </property>
               <property name="text">
-               <string>smagÓr</string>
+               <string/>
               </property>
               <property name="maxLength">
                <number>100</number>
@@ -413,6 +413,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="generate_report">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Wygeneruj Raport</string>
         </property>

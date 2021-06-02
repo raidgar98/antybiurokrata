@@ -18,15 +18,17 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 	qRegisterMetaType<incoming_report_t>("incoming_report_t");
 	qRegisterMetaType<incoming_relatives_t>("incoming_relatives_t");
+	qRegisterMetaType<error_report_t>("error_report_t");
 
 	QObject::connect(this, &MainWindow::send_publications, this, &MainWindow::collect_publications);
 	QObject::connect(this, &MainWindow::send_related, this, &MainWindow::collect_related);
 	QObject::connect(this, &MainWindow::send_max_progress, this, &MainWindow::set_max_progress);
+	QObject::connect(this, &MainWindow::switch_activation, this, &MainWindow::set_activation);
+	QObject::connect(this, &MainWindow::send_error_report, this, &MainWindow::on_error_thrown);
 	QObject::connect(this,
 						  &MainWindow::send_report_generation_done,
 						  this,
 						  &MainWindow::on_report_generation_done);
-	QObject::connect(this, &MainWindow::switch_activation, this, &MainWindow::set_activation);
 	QObject::connect(this,
 						  &MainWindow::send_progress,
 						  this,
@@ -46,6 +48,12 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 	});
 
 	eng.on_progress.register_slot([&](const size_t N) { emit send_progress(N); });
+
+	eng.on_error.register_slot([&](error_report_t report){
+		emit send_error_report(report);
+		emit switch_activation(true);
+		this->clear_ui();
+	});
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -278,11 +286,18 @@ void MainWindow::on_neighbours_itemDoubleClicked(QListWidgetItem* item)
 	{
 		check_nullptr{account->m_person};
 		const auto& person = (*account->m_person.lock())();
+		const auto format	 = [](const uint16_t& num) {
+			 std::stringstream ss;
+			 ss << std::setw(4) << std::setfill('0') << num;
+			 return QString::fromStdString(ss.str());
+		};
 
-		ui->name->setText(QString::fromStdU16String(person.name()().raw));
-		ui->surname->setText(QString::fromStdU16String(person.surname()().raw));
+		ui->orcid_1->setText(format(person.orcid()().identifier()[0]));
+		ui->orcid_2->setText(format(person.orcid()().identifier()[1]));
+		ui->orcid_3->setText(format(person.orcid()().identifier()[2]));
+		ui->orcid_4->setText(format(person.orcid()().identifier()[3]));
 
-		ui->tabWidget->setCurrentIndex(1);
+		ui->tabWidget->setCurrentIndex(0);
 	}
 	else
 		core::dassert{false, "cannot cast object!"_u8};
@@ -335,9 +350,30 @@ void MainWindow::on_publications_itemDoubleClicked(QListWidgetItem* item)
 
 		std::unique_ptr<info_dialog> window{new info_dialog{QString::fromStdString(ss.str()), this}};
 		window->setWindowTitle(QString::fromStdU16String(pub_ref.title()().raw));
-		window->setModal(false);
 		window->exec();
 	}
 	else
 		core::dassert{false, "cannot cast object!"_u8};
+}
+
+void MainWindow::on_error_thrown(error_report_t report)
+{
+	check_nullptr{report};
+	constexpr str_v base_error_msg{
+R"(Podczas przetwarzania wystąpił błąd.
+Jeżeli sposób naprawy nie wydaje się oczywisty skontaktuj się z autorem
+
+e-mail: krzymoc340@student.polsl.pl
+e-mail: raidgar98@onet.pl
+
+Treść wyjątku: ")"};
+
+	// prepare string
+	std::stringstream ss;
+	ss << base_error_msg << report->reason << '"' << std::endl << std::endl;
+	ss << "Stos:" << std::endl << std::endl;
+	ss << report->get_callstack_as_string() << std::endl;
+
+	std::unique_ptr<info_dialog> window{new info_dialog{QString::fromStdString(ss.str()), this}};
+	window->exec();
 }

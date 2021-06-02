@@ -39,6 +39,7 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	using single_relative_t		= core::objects::detail::publications_storage_t;
 
 	using report_t				= core::reports::report_t;
+	using error_report_t		= std::shared_ptr<core::exceptions::error_report>;
 	using incoming_report_t = typename report_t::weak_type;
 
 	core::engine eng;
@@ -73,6 +74,9 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 
 	/** @brief emitted when rport generation is done */
 	void send_report_generation_done();
+
+	/** @brief emitted, when error occurs in any worker thread */
+	void send_error_report(error_report_t);
 
  private slots:
 
@@ -123,6 +127,15 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	/** @brief handles `send_report_generation_done` signal */
 	void on_report_generation_done();
 
+	/** @brief handles `send_error_report` signal */
+	void on_error_thrown(error_report_t);
+
+ public:
+	/**
+	 * @brief clears both listviews
+	 */
+	void clear_ui();
+
  private:
 	/**
 	 * @brief displays common publications
@@ -146,11 +159,6 @@ class MainWindow : public QMainWindow, private Log<MainWindow>
 	 * @param next place to propagte additional data (if nullptr [default] propagation is ignored)
 	 */
 	void normalize_text(const QString& arg1, QLineEdit& line, QLineEdit* next = nullptr);
-
-	/**
-	 * @brief clears both listviews
-	 */
-	void clear_ui();
 
 	/**
 	 * @brief handles switch of selected relative
