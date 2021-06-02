@@ -104,8 +104,7 @@ namespace core
 		 * 
 		 * @tparam MsgType message type, ex: core::str, core::u16str
 		 */
-		template<typename MsgType>
-		struct exception : public std::exception
+		template<typename MsgType> struct exception : public std::exception
 		{
 			/** stores message */
 			str _what;
@@ -114,13 +113,13 @@ namespace core
 
 			template<typename Any> exception(const Any& msg) : _what{msg} {}
 			exception(const u16str& msg) { _what = get_conversion_engine().to_bytes(msg); }
-			exception(const u16str_v& msg) : exception{ u16str{ msg.data(), msg.size() }  } {}
-			exception(const str& msg) : _what{ msg } {  }
-			exception(const str_v& msg) : _what{ msg } {  }
+			exception(const u16str_v& msg) : exception{u16str{msg.data(), msg.size()}} {}
+			exception(const str& msg) : _what{msg} {}
+			exception(const str_v& msg) : _what{msg} {}
 
 			virtual const char* what() const noexcept override { return _what.data(); }
 			str_v what_v() const noexcept { return this->_what; }
-			u16str w_what() const{ return get_conversion_engine().from_bytes(this->_what); }
+			u16str w_what() const { return get_conversion_engine().from_bytes(this->_what); }
 			// const MsgType& what() const noexcept { return this->_what; }
 
 			// virtual const str& what() const noexcept { return this->___what; }
@@ -138,7 +137,8 @@ namespace core
 			using Log<T>::get_logger;
 
 			template<typename Any>
-			explicit exception_base(const Any& any) : exception<MsgType>{any} {} // { this->_what = any; }
+			explicit exception_base(const Any& any) :
+				 exception<MsgType>{any} {}	// { this->_what = any; }
 		};
 
 		/**

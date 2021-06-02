@@ -66,7 +66,9 @@ namespace patterns
 	 * 
 	 * @tparam arg_type type of sending data
 	 */
-	template<typename arg_type> struct call_ownership_delegator{};
+	template<typename arg_type> struct call_ownership_delegator
+	{
+	};
 
 	/**
 	 * @brief holds signal object and provides basic methode of calling

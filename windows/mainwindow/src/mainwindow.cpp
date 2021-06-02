@@ -49,7 +49,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 	eng.on_progress.register_slot([&](const size_t N) { emit send_progress(N); });
 
-	eng.on_error.register_slot([&](error_report_t report){
+	eng.on_error.register_slot([&](error_report_t report) {
 		emit send_error_report(report);
 		emit switch_activation(true);
 		this->clear_ui();
@@ -360,7 +360,7 @@ void MainWindow::on_error_thrown(error_report_t report)
 {
 	check_nullptr{report};
 	constexpr str_v base_error_msg{
-R"(Podczas przetwarzania wystąpił błąd.
+		 R"(Podczas przetwarzania wystąpił błąd.
 Jeżeli sposób naprawy nie wydaje się oczywisty skontaktuj się z autorem
 
 e-mail: krzymoc340@student.polsl.pl
