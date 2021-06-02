@@ -62,7 +62,7 @@ namespace core
 		};
 
 		/**
-		 * @brief provides polish -> international translation
+		 * @brief provides polish translation
 		*/
 		struct depolonizator : Log<depolonizator>
 		{
