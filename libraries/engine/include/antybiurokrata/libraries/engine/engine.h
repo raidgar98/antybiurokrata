@@ -277,6 +277,13 @@ namespace core
 		error_summary_t prepare_error_summary(const core::exceptions::exception<u16str>& ex) const;
 
 		/**
+		 * @brief prepares error summary, based on exception
+		 * 
+		 * @return error_summary_t 
+		 */
+		error_summary_t prepare_error_summary(const std::exception& ex) const;
+
+		/**
 		 * @brief prepares error summary, for unknown exception
 		 * 
 		 * @return error_summary_t 

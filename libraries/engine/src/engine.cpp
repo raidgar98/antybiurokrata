@@ -96,6 +96,12 @@ engine::error_summary_t engine::prepare_error_summary(
 	return std::make_shared<core::exceptions::error_report>(ex);
 }
 
+
+engine::error_summary_t engine::prepare_error_summary(const std::exception& ex) const
+{
+	return std::make_shared<core::exceptions::error_report>(str{ex.what()});
+}
+
 void engine::process(const std::stop_token& stop_token, const str& orcid) noexcept
 {
 	try
@@ -113,6 +119,10 @@ void engine::process(const std::stop_token& stop_token, const str& orcid) noexce
 		on_error(prepare_error_summary(e));
 	}
 	catch(const core::exceptions::exception<u16str>& e)
+	{
+		on_error(prepare_error_summary(e));
+	}
+	catch(const std::exception& e)
 	{
 		on_error(prepare_error_summary(e));
 	}
@@ -134,6 +144,10 @@ void engine::process_name_and_surname(const std::stop_token& stop_token, const s
 		on_error(prepare_error_summary(e));
 	}
 	catch(const core::exceptions::exception<u16str>& e)
+	{
+		on_error(prepare_error_summary(e));
+	}
+	catch(const std::exception& e)
 	{
 		on_error(prepare_error_summary(e));
 	}
