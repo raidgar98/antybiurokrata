@@ -278,11 +278,19 @@ void MainWindow::on_neighbours_itemDoubleClicked(QListWidgetItem* item)
 	{
 		check_nullptr{account->m_person};
 		const auto& person = (*account->m_person.lock())();
+		const auto format = [](const uint16_t& num)
+		{
+			std::stringstream ss;
+			ss << std::setw(4) << std::setfill('0') << num;
+			return QString::fromStdString(ss.str());
+		};
 
-		ui->name->setText(QString::fromStdU16String(person.name()().raw));
-		ui->surname->setText(QString::fromStdU16String(person.surname()().raw));
+		ui->orcid_1->setText( format(person.orcid()().identifier()[0]) );
+		ui->orcid_2->setText( format(person.orcid()().identifier()[1]) );
+		ui->orcid_3->setText( format(person.orcid()().identifier()[2]) );
+		ui->orcid_4->setText( format(person.orcid()().identifier()[3]) );
 
-		ui->tabWidget->setCurrentIndex(1);
+		ui->tabWidget->setCurrentIndex(0);
 	}
 	else
 		core::dassert{false, "cannot cast object!"_u8};
