@@ -70,7 +70,7 @@ IF(${DOXYGEN})
 	# Setting up sources
 	file(APPEND ${DOXYFILE_PATH_DEST} "\nINPUT = ${CMAKE_SOURCE_DIR}/libraries ${CMAKE_SOURCE_DIR}/windows \n")
 	file(APPEND ${DOXYFILE_PATH_DEST} "OUTPUT_DIRECTORY = ${CMAKE_BINARY_DIR}/docs \n")
-	file(APPEND ${DOXYFILE_PATH_DEST} "EXCLUDE_PATTERNS = */QtXlsxWriter/* \n")
+	file(APPEND ${DOXYFILE_PATH_DEST} "EXCLUDE_PATTERNS = ${CMAKE_SOURCE_DIR}/libraries/QtXlsxWriter \n")
 	
 	# Theme
 	set(THEME_SUBMODULE_PATH ${CMAKE_SOURCE_DIR}/gen/docs/doxygen-dark-theme)
@@ -97,7 +97,7 @@ IF(${FORMAT})
 	# filter out direcotries
 	set(FILES_FOR_CLANG_FORMAT)
 	foreach(x ${FILES_TO_FORMAT})
-		if(x MATCHES "antybiurokrata/gen/.*" OR x MATCHES "tests/src/tests.cpp.in" OR x MATCHES "antybiurokrata/libraries/QtXlsxWriter/.*")
+		if(x MATCHES "antybiurokrata/gen/.*" OR x MATCHES "tests/src/tests.cpp.in" OR x MATCHES "libraries/QtXlsxWriter/.*")
 			continue() 
 		endif()
 		list(APPEND FILES_FOR_CLANG_FORMAT "${x}")
