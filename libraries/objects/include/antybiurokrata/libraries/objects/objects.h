@@ -525,9 +525,9 @@ namespace core
 				dser<&detail_publications_summary_t::_, shared_publication_t> reference;
 				dser<&detail_publications_summary_t::reference, sourced_publication_storage_t> matched;
 			};
-
 			using publication_summary_t		  = cser<&detail_publications_summary_t::matched>;
 			using shared_publication_summary_t = pd::shared_t<publication_summary_t>;
+
 		}	 // namespace detail
 
 		using typename detail::id_type;

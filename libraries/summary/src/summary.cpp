@@ -44,11 +44,11 @@ namespace core
 			report_t browser;
 			m_report.copy(browser);
 
-			for(auto& item : *browser)
+			for(auto& item: *browser)
 			{
 				auto& report_item = (*item())();
-				auto& matches = report_item.matched()().data();
-				
+				auto& matches		= report_item.matched()().data();
+
 				if(matches.find(search) != matches.end())
 					continue;	// it's allready matched, no sense for processing
 				const auto& ref = (*report_item.reference()().data())();
@@ -68,8 +68,8 @@ namespace core
 					 */
 					if(ref.compare(*y()) == 0)
 					{
-						m_report.access(
-							 [&](report_t&) { matches.emplace(mt, y); });
+						m_report.access([&](report_t&) { matches.emplace(mt, y); });
+						break;
 					}
 				}
 			}
