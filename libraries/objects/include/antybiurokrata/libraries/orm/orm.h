@@ -63,7 +63,10 @@ namespace core
 		{
 			using Log<publications_extractor_t>::log;
 
-			explicit publications_extractor_t(persons_extractor_t& vs) : person_visitor{vs} {}
+			explicit publications_extractor_t(persons_extractor_t& vs) : person_visitor{vs}
+			{
+				publications.reserve(250ul);
+			}
 
 			persons_extractor_t& person_visitor;
 			std::vector<shared_publication_t> publications{};

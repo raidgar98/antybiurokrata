@@ -185,19 +185,14 @@ namespace core
 				if(exists_pair == pub().ids()()->end()) pub().ids()().data()[id] = pair.second;
 			}
 
-			if(pub().ids()()->empty()) log.warn() << "orcid input has no ids" << logger::endl;
-
-			auto it
-				 = std::find_if(publications.begin(),
-									 publications.end(),
-									 [&spub](const shared_publication_t& pp) { return *pp() == *spub(); });
-			if(it == publications.end())
+			if(pub().ids()()->empty())
 			{
-				publications.push_back(spub);
-				log.info() << "succefully added new publications" << logger::endl;
+				log.warn() << "json input has no ids" << logger::endl;
+				return false;
 			}
-			else
-				spub = *it;
+
+			publications.push_back(spub);
+			log.info() << "succefully added new publications" << logger::endl;
 
 			person_visitor.current_publication = spub;
 

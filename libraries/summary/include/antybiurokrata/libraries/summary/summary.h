@@ -53,7 +53,7 @@ namespace core
 			explicit summary() = default;
 
 			/**
-			 * @brief Initializes all data
+			 * @brief Initializes all members
 			 * 
 			 * @param reference reference data for comprasion
 			 */

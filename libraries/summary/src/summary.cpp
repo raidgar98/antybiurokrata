@@ -43,12 +43,15 @@ namespace core
 			const objects::publication_with_source_t search{mt};
 			report_t browser;
 			m_report.copy(browser);
-			for(size_t i = 0; i < browser->size(); ++i)
+
+			for(auto& item : *browser)
 			{
-				const auto& x = (*(*browser)[i]())();
-				if(x.matched()().data().find(search) != x.matched()().data().end())
+				auto& report_item = (*item())();
+				auto& matches = report_item.matched()().data();
+				
+				if(matches.find(search) != matches.end())
 					continue;	// it's allready matched, no sense for processing
-				const auto& ref = (*x.reference()().data())();
+				const auto& ref = (*report_item.reference()().data())();
 
 				for(const objects::shared_publication_t& y: input)
 				{
@@ -66,7 +69,7 @@ namespace core
 					if(ref.compare(*y()) == 0)
 					{
 						m_report.access(
-							 [&](report_t& obj) { (*(*obj)[i]())().matched()().data().emplace(mt, y); });
+							 [&](report_t&) { matches.emplace(mt, y); });
 					}
 				}
 			}
