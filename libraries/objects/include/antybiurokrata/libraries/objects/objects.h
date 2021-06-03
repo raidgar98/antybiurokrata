@@ -369,10 +369,10 @@ namespace core
 			/** @brief object representation of publication */
 			struct detail_publication_t : public serial_helper_t
 			{
-				u16ser<&detail_publication_t::_>								title;
-				u16ser<&detail_publication_t::title> 						polish_title;
-				dser<&detail_publication_t::polish_title, uint16_t> 	year;
-				dser<&detail_publication_t::year, ids_storage_t> 		ids;
+				u16ser<&detail_publication_t::_> title;
+				u16ser<&detail_publication_t::title> polish_title;
+				dser<&detail_publication_t::polish_title, uint16_t> year;
+				dser<&detail_publication_t::year, ids_storage_t> ids;
 
 				/**
 				 * @brief compares two me with other
@@ -380,19 +380,23 @@ namespace core
 				 * @return int 0 = equal, 1 = greater, -1 = lesser
 				 */
 				int compare(const detail_publication_t&) const;
-				inline friend bool operator==(const detail_publication_t& me,const detail_publication_t& other)
+				inline friend bool operator==(const detail_publication_t& me,
+														const detail_publication_t& other)
 				{
 					return me.compare(other) == 0;
 				}
-				inline friend bool operator!=(const detail_publication_t& me, const detail_publication_t& other)
+				inline friend bool operator!=(const detail_publication_t& me,
+														const detail_publication_t& other)
 				{
 					return !(me == other);
 				}
-				inline friend bool operator<(const detail_publication_t& me, const detail_publication_t& other)
+				inline friend bool operator<(const detail_publication_t& me,
+													  const detail_publication_t& other)
 				{
 					return me.compare(other) < 0;
 				}
-				inline friend bool operator>(const detail_publication_t& me, const detail_publication_t& other)
+				inline friend bool operator>(const detail_publication_t& me,
+													  const detail_publication_t& other)
 				{
 					return me.compare(other) > 0;
 				}
@@ -423,10 +427,10 @@ namespace core
 			/** @brief object representation of person (author) */
 			struct detail_person_t : public serial_helper_t
 			{
-							dser<&detail_person_t::_, polish_name_t> 					name;
-							dser<&detail_person_t::name, polish_name_t> 				surname;
-							dser<&detail_person_t::surname, orcid_t> 					orcid;
-				mutable	dser<&detail_person_t::orcid, publications_storage_t>	publictions{};
+				dser<&detail_person_t::_, polish_name_t> name;
+				dser<&detail_person_t::name, polish_name_t> surname;
+				dser<&detail_person_t::surname, orcid_t> orcid;
+				mutable dser<&detail_person_t::orcid, publications_storage_t> publictions{};
 
 				friend inline bool operator==(const detail_person_t& p1, const detail_person_t& p2)
 				{
