@@ -178,8 +178,7 @@ namespace patterns
 		 * @tparam class_t::*value reference to member in class
 		 * @tparam T type of current member
 		*/
-		template<typename class_t, typename class_member_t, class_member_t class_t::*value,
-					typename T>
+		template<typename class_t, typename class_member_t, class_member_t class_t::*value, typename T>
 		struct ser<value, T>
 		{
 			using is_serializable_class = std::true_type;
@@ -498,7 +497,6 @@ namespace patterns
 			template<cheese_visitor_req visitor_t> bool accept(visitor_t* v)
 			{
 				if(v == nullptr) throw std::invalid_argument{"visitor cannot be nullptr"};
-				// if(v->that == nullptr) throw std::invalid_argument{"that in visitor cannot be nullptr"};
 
 				auto* prev			= v->that;
 				v->that				= &val;
@@ -517,7 +515,6 @@ namespace patterns
 			template<cheese_visitor_req visitor_t> bool accept(visitor_t* v) const
 			{
 				if(v == nullptr) throw std::invalid_argument{"visitor cannot be nullptr"};
-				// if(v->that == nullptr) throw std::invalid_argument{"that in visitor cannot be nullptr"};
 
 				void* prev			= v->that;
 				v->that				= reinterpret_cast<void*>(const_cast<class_t*>(&val));

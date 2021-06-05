@@ -37,12 +37,12 @@ namespace core
 			 * @brief Construct a new universal getter object
 			 * 
 			 * @param source source of 
-			 * @param i_sum 
-			 * @param fun 
+			 * @param i_sum object to use as summary engine
+			 * @param i_on_progress function to call on progress
 			 */
 			universal_getter(const objects::shared_person_t& source, w_summary_t i_sum,
-								  delegate_t& fun) :
-				 on_progress{fun},
+								  delegate_t& i_on_progress) :
+				 on_progress{i_on_progress},
 				 sum{i_sum}, prsn_visitor{new orm::persons_extractor_t{}}
 			{
 				// copy just one person

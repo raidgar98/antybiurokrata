@@ -195,7 +195,7 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 		if(stop_token.stop_requested()) dassert(false, "stopped on request!"_u8);
 	};
 
-	{	 // local scope to delete synchronization objects, after usage
+	{
 
 		std::mutex mtx_orcid;
 		std::mutex mtx_report;
@@ -263,7 +263,7 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 					stop();
 					return person();
 				});
-				dassert(person(), "orcid not set!"_u8);
+				dassert(person(), "person is not properly setted up!"_u8);
 			}
 
 			stop();
@@ -271,13 +271,16 @@ void engine::process_impl(const std::stop_token& stop_token, const str& name, co
 				 core::detail::universal_getter<objects::match_type::SCOPUS>{person,
 																								 sum,
 																								 on_progress_delegate},
+
 				 std::ref(mtx_report),
 				 std::ref(cv_report)};
 			stop();
+
 			std::jthread th3{
 				 core::detail::universal_getter<objects::match_type::ORCID>{person,
 																								sum,
 																								on_progress_delegate},
+
 				 std::ref(mtx_report),
 				 std::ref(cv_report)};
 			stop();
