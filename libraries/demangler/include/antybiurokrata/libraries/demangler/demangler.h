@@ -131,6 +131,12 @@ namespace core
 	concept acceptable_string_view_types_req
 		 = std::is_same_v<string_view_type, str_v> || std::is_same_v<string_view_type, u16str_v>;
 
+	/**
+	 * @brief This class is wrapper for mangling and demangling given strings
+	 * 
+	 * @tparam string_type string to operate on (str or u16str)
+	 * @tparam string_view_type interface to use (str_v or u16str_v)
+	 */
 	template<acceptable_string_types_req string_type			  = str,
 				acceptable_string_view_types_req string_view_type = str_v>
 	class demangler : public Log<demangler<string_type, string_view_type>>

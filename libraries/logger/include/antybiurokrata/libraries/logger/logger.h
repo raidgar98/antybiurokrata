@@ -57,7 +57,7 @@ class logger
 		DEBUG = std::numeric_limits<uint16_t>::max()
 	};
 
-	inline static log_level level{log_level::WARN};	  // by default log all
+	inline static log_level level{log_level::WARN};	  // by default log warnings
 
 	template<log_level lvl> constexpr static bool log_on_current_log_level()
 	{

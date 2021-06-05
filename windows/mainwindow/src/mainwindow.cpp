@@ -375,5 +375,6 @@ Treść wyjątku: ")"};
 	ss << report->get_callstack_as_string() << std::endl;
 
 	std::unique_ptr<info_dialog> window{new info_dialog{QString::fromStdString(ss.str()), this}};
+	window->setWindowTitle(QString("Wystąpił błąd!"));
 	window->exec();
 }
