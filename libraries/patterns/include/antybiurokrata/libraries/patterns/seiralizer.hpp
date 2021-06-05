@@ -178,7 +178,8 @@ namespace patterns
 		 * @tparam class_t::*value reference to member in class
 		 * @tparam T type of current member
 		*/
-		template<typename class_t, typename class_member_t, class_member_t class_t::*value, typename T>
+		template<typename class_t, typename class_member_t, class_member_t class_t::*value,
+					typename T>
 		struct ser<value, T>
 		{
 			using is_serializable_class = std::true_type;
